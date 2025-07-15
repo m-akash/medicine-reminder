@@ -1,0 +1,55 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  name      String
+  email     String   @unique
+  password  String
+  createdAt DateTime @default(now())
+
+  prescriptions Prescription[]
+}
+
+model Prescription {
+  id         String   @id @default(uuid())
+  userEmail  String
+  imageUrl   String?
+  uploadDate DateTime @default(now())
+  notes      String?
+
+  user      User       @relation(fields: [userEmail], references: [email], onDelete: Cascade)
+  medicines Medicine[]
+}
+
+model Medicine {
+  id             String    @id @default(uuid())
+  prescriptionId String
+  userEmail      String
+  name           String
+  dosage         String?
+  frequency      String? // e.g., "1-0-1"
+  startDate      DateTime?
+  durationDays   Int?
+  instructions   String?
+
+  prescription Prescription @relation(fields: [prescriptionId], references: [id], onDelete: Cascade)
+  reminders    Reminder[]
+}
+
+model Reminder {
+  id             String   @id @default(uuid())
+  medicineId     String
+  reminderTime   DateTime
+  repeatEveryDay Boolean  @default(true)
+  isActive       Boolean  @default(true)
+
+  medicine Medicine @relation(fields: [medicineId], references: [id], onDelete: Cascade)
+}
