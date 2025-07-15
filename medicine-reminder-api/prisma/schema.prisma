@@ -45,11 +45,19 @@ model Medicine {
 }
 
 model Reminder {
-  id             String   @id @default(uuid())
+  id             String  @id @default(uuid())
   medicineId     String
-  reminderTime   DateTime
-  repeatEveryDay Boolean  @default(true)
-  isActive       Boolean  @default(true)
+  repeatEveryDay Boolean @default(true)
+  isActive       Boolean @default(true)
 
-  medicine Medicine @relation(fields: [medicineId], references: [id], onDelete: Cascade)
+  medicine Medicine       @relation(fields: [medicineId], references: [id], onDelete: Cascade)
+  times    ReminderTime[]
+}
+
+model ReminderTime {
+  id         String   @id @default(uuid())
+  reminderId String
+  time       DateTime
+
+  reminder Reminder @relation(fields: [reminderId], references: [id], onDelete: Cascade)
 }
