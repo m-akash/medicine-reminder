@@ -1,5 +1,5 @@
 import React from "react";
-import AddMedicineForm from "../../components/AddMedicineForm";
+import AddMedicineForm from "../../components/AddMedicineForm.tsx";
 
 const AddMedicine = () => {
   return (

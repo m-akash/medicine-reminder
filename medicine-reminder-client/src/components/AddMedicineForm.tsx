@@ -1,17 +1,17 @@
-import useAxiosSecure from "../hooks/useAxiosSecure";
+import useAxiosSecure from "../hooks/useAxiosSecure.tsx";
 
 const AddMedicineForm = () => {
   const axiosSecure = useAxiosSecure();
-  const handleSubmit = async (event) => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const form = event.target;
+    const form = event.target as HTMLFormElement;
     const userEmail = "akash@gmail.com";
-    const name = form.name.value;
-    const dosage = form.dosage.value;
-    const frequency = form.frequency.value;
-    const startDate = form.startDate.value;
-    const durationDays = form.durationDays.value;
-    const instructions = form.instructions.value;
+    const name = (form.elements.namedItem("name") as HTMLInputElement).value;
+    const dosage = (form.elements.namedItem("dosage") as HTMLInputElement).value;
+    const frequency = (form.elements.namedItem("frequency") as HTMLInputElement).value;
+    const startDate = (form.elements.namedItem("startDate") as HTMLInputElement).value;
+    const durationDays = (form.elements.namedItem("durationDays") as HTMLInputElement).value;
+    const instructions = (form.elements.namedItem("instructions") as HTMLTextAreaElement).value;
 
     const mediItem = {
       userEmail: userEmail,

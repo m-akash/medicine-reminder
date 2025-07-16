@@ -1,12 +1,12 @@
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import Root from "../layouts/Root";
-import Home from "../pages/Home/Home";
-import MyMedications from "../pages/MyMedications/MyMedications";
-import Medications from "../pages/Medications/Medications";
-import Schedule from "../pages/Schedule/Schedule";
-import Reports from "../pages/Reports/Reports";
-import AddMedicine from "../pages/AddMedicine/AddMedicine";
-import UpdateMedicine from "../pages/UpdateMedicine/UpdateMedicine";
+import Root from "../layouts/Root.tsx";
+import Home from "../pages/Home/Home.tsx";
+import MyMedications from "../pages/MyMedications/MyMedications.tsx";
+import Medications from "../pages/Medications/Medications.tsx";
+import Schedule from "../pages/Schedule/Schedule.tsx";
+import Reports from "../pages/Reports/Reports.tsx";
+import AddMedicine from "../pages/AddMedicine/AddMedicine.tsx";
+import UpdateMedicine from "../pages/UpdateMedicine/UpdateMedicine.tsx";
 const router = createBrowserRouter([
   {
     path: "/",

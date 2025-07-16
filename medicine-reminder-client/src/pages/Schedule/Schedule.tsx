@@ -1,4 +1,6 @@
-import React, { useState } from "react";
+import React from "react";
+import type { JSX } from "react";
+import { useState } from "react";
 import { FaPlus, FaPills, FaCheckCircle, FaClock } from "react-icons/fa";
 
 const weekDays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -41,13 +43,13 @@ const sampleSchedule = [
   },
 ];
 
-const statusStyles = {
+const statusStyles: { [key: string]: string } = {
   taken: "text-green-600 bg-green-100",
   upcoming: "text-blue-600 bg-blue-100",
   missed: "text-red-600 bg-red-100",
 };
 
-const statusIcon = {
+const statusIcon: { [key: string]: JSX.Element } = {
   taken: <FaCheckCircle className="text-green-500" />,
   upcoming: <FaClock className="text-blue-500" />,
   missed: <FaClock className="text-red-500" />,

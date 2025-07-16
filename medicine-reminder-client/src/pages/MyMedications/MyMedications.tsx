@@ -58,7 +58,7 @@ const medications = [
   },
 ];
 
-const getRemainingColor = (days) => {
+const getRemainingColor = (days: number) => {
   if (days <= 3) return "text-red-500";
   if (days <= 7) return "text-yellow-500";
   return "text-green-500";
