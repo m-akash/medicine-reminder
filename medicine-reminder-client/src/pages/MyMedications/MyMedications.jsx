@@ -1,6 +1,7 @@
 import React from "react";
 import { FaPills, FaEdit, FaBell, FaTrash } from "react-icons/fa";
 import { GiPill, GiMedicines, GiVial } from "react-icons/gi";
+import { Link } from "react-router-dom";
 
 const medications = [
   {
@@ -72,10 +73,11 @@ const MyMedications = () => {
             My Medications
           </h1>
           <button className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-semibold text-base sm:text-lg shadow w-full sm:w-auto justify-center">
-            <span className="text-2xl">+</span> Add Medication
+            <Link to="/add-medicine">
+              <span className="text-2xl">+</span> Add Medication
+            </Link>
           </button>
         </div>
-        {/* Table for md+ screens, cards for mobile */}
         <div className="hidden md:block w-full overflow-x-auto">
           <table className="min-w-full bg-white rounded-lg">
             <thead>
@@ -114,7 +116,9 @@ const MyMedications = () => {
                   </td>
                   <td className="py-4 px-3 md:px-6 flex gap-4 text-xl">
                     <button className="hover:text-indigo-600" title="Edit">
-                      <FaEdit />
+                      <Link to="/update-medicine">
+                        <FaEdit />
+                      </Link>
                     </button>
                     <button className="hover:text-yellow-500" title="Remind">
                       <FaBell />
@@ -128,17 +132,17 @@ const MyMedications = () => {
             </tbody>
           </table>
         </div>
-        {/* Card layout for mobile */}
         <div className="flex flex-col gap-4 md:hidden w-full">
           {medications.map((med) => (
             <div
               key={med.name}
               className="rounded-xl border border-gray-200 shadow p-4 flex flex-col gap-2 bg-white w-full relative"
             >
-              {/* Action buttons at top right for mobile */}
               <div className="absolute top-4 right-4 flex gap-2 text-xl">
                 <button className="hover:text-indigo-600" title="Edit">
-                  <FaEdit />
+                  <Link to="/update-medicine">
+                    <FaEdit />
+                  </Link>
                 </button>
                 <button className="hover:text-yellow-500" title="Remind">
                   <FaBell />
@@ -149,7 +153,6 @@ const MyMedications = () => {
               </div>
               <div className="flex items-center gap-4 mb-2 pr-20">
                 {" "}
-                {/* Add pr-20 to avoid overlap with actions */}
                 {med.icon}
                 <div>
                   <div className="font-semibold text-lg">{med.name}</div>
@@ -170,7 +173,6 @@ const MyMedications = () => {
                   {med.remaining} days
                 </div>
               </div>
-              {/* Remove bottom action buttons for mobile */}
             </div>
           ))}
         </div>

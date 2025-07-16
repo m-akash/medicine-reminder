@@ -1,5 +1,5 @@
 import React from "react";
-import { NavLink } from "react-router-dom";
+import { Link, NavLink } from "react-router-dom";
 
 const Navbar = () => {
   const navLinks = (
@@ -63,7 +63,7 @@ const Navbar = () => {
     </>
   );
   return (
-    <div className="navbar bg-gradient-to-r from-blue-700 via-indigo-800 to-amber-600 shadow-lg py-2 px-4">
+    <div className="navbar bg-gradient-to-r from-blue-700 via-indigo-800 to-amber-600 shadow-lg py-2 px-4 sticky top-0 z-50">
       <div className="navbar-start">
         <div className="dropdown">
           <div tabIndex={0} role="button" className="btn btn-ghost lg:hidden">
@@ -89,14 +89,16 @@ const Navbar = () => {
             {navLinks}
           </ul>
         </div>
-        <a className="btn btn-ghost text-2xl font-extrabold tracking-tight text-white drop-shadow-lg">
-          <span className="bg-clip-text text-transparent bg-gradient-to-r from-amber-400 to-amber-700">
-            Medi
-          </span>
-          <span className="ml-1 bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-indigo-500">
-            Reminder
-          </span>
-        </a>
+        <button className="btn btn-ghost text-2xl font-extrabold tracking-tight text-white drop-shadow-lg">
+          <Link to="/">
+            <span className="bg-clip-text text-transparent bg-gradient-to-r from-amber-400 to-amber-700">
+              Medi
+              <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-indigo-500">
+                Rem
+              </span>
+            </span>
+          </Link>
+        </button>
       </div>
       <div className="navbar-center hidden lg:flex">
         <ul className="menu menu-horizontal px-1 space-x-2">{navLinks}</ul>

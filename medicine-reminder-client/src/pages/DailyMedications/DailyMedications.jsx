@@ -92,7 +92,7 @@ const medications = [
 
 const DailyMedications = () => {
   return (
-    <div className=" flex flex-col items-center justify-center p-2 relative">
+    <div className=" flex flex-col items-center justify-center relative">
       <div className="bg-white rounded-2xl shadow-md p-2 sm:p-4 md:p-8 w-full max-w-md md:max-w-7xl">
         <h1 className="text-2xl md:text-3xl font-bold mb-6 text-blue-700 text-center">
           Today's Medications

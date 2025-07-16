@@ -1,14 +1,13 @@
 import express, { Request, Response } from "express";
+const cors = require("cors");
 const app = express();
 
+app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
 import userRouter from "./routers/user.route";
 app.use("/api", userRouter);
-
-import prescriptionRouter from "./routers/prescription.route";
-app.use("/api", prescriptionRouter);
 
 import medicineRouter from "./routers/medicine.route";
 app.use("/api", medicineRouter);

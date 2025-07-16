@@ -31,14 +31,14 @@ const createMedicine = async (
   res: Response
 ): Promise<Response> => {
   try {
+    const dateOnly = new Date(req.body.startDate);
     const newMedicine = await prisma.medicine.create({
       data: {
-        prescriptionId: req.body.prescriptionId,
         userEmail: req.body.userEmail,
         name: req.body.name,
         dosage: req.body.dosage,
         frequency: req.body.frequency,
-        startDate: req.body.startDate,
+        startDate: dateOnly,
         durationDays: req.body.durationDays,
         instructions: req.body.instructions,
       },
@@ -60,13 +60,14 @@ const updateMedicine = async (
   res: Response
 ): Promise<Response> => {
   try {
+    const dateOnly = new Date(req.body.startDate);
     const updatedMedicine = await prisma.medicine.update({
       where: { id: req.params.id },
       data: {
         name: req.body.name,
         dosage: req.body.dosage,
         frequency: req.body.frequency,
-        startDate: req.body.startDate,
+        startDate: dateOnly,
         durationDays: req.body.durationDays,
         instructions: req.body.instructions,
       },
