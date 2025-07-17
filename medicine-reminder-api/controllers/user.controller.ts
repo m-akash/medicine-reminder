@@ -44,7 +44,7 @@ const createUser = async (req: Request, res: Response): Promise<Response> => {
     if (findUser) {
       return res
         .status(400)
-        .json({ status: 400, message: "User already taken!" });
+        .json({ status: 400, message: "User already taken" });
     }
     const newUser = await prisma.user.create({
       data: {

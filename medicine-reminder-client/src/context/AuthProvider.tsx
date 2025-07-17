@@ -1,3 +1,4 @@
+import React, { useEffect, useState } from "react";
 import {
   createUserWithEmailAndPassword,
   GoogleAuthProvider,
@@ -7,11 +8,10 @@ import {
   onAuthStateChanged,
   User as FirebaseUser,
 } from "firebase/auth";
-import React, { useEffect, useState } from "react";
+import auth from "../firebase/firebase.init.ts";
 import { AuthContextType, User } from "../types/index.ts";
 import useAxiosPublic from "../hooks/useAxiosPublic.tsx";
 import AuthContext from "./AuthContext.tsx";
-import auth from "../firebase/firebase.init.ts";
 
 const AuthProvider = ({ children }: React.PropsWithChildren) => {
   const [user, setUser] = useState<User | null>(null);
@@ -22,16 +22,11 @@ const AuthProvider = ({ children }: React.PropsWithChildren) => {
   const createUser = async (email: string, password: string, name: string) => {
     setLoading(true);
     try {
-      const result = await createUserWithEmailAndPassword(
-        auth,
-        email,
-        password
-      );
-      await axiosPublic.post("/api/user/register", { email, password, name });
-      setLoading(false);
+      await createUserWithEmailAndPassword(auth, email, password);
     } catch (error) {
-      setLoading(false);
       throw error;
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -39,10 +34,10 @@ const AuthProvider = ({ children }: React.PropsWithChildren) => {
     setLoading(true);
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      setLoading(false);
     } catch (error) {
-      setLoading(false);
       throw error;
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -56,10 +51,10 @@ const AuthProvider = ({ children }: React.PropsWithChildren) => {
           name: result.user.displayName,
         });
       }
-      setLoading(false);
     } catch (error) {
-      setLoading(false);
       throw error;
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -67,44 +62,40 @@ const AuthProvider = ({ children }: React.PropsWithChildren) => {
     setLoading(true);
     try {
       await signOut(auth);
-      setLoading(false);
     } catch (error) {
-      setLoading(false);
       throw error;
+    } finally {
+      setLoading(false);
     }
   };
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(
-      auth,
-      (currentUser: FirebaseUser | null) => {
-        if (currentUser) {
-          const userInfo: User = {
-            id: currentUser.uid,
-            name: currentUser.displayName || currentUser.email || "",
-            email: currentUser.email || "",
-            createdAt: new Date(),
-            lastLogin: new Date(),
-            //   role: "user",
-          };
-          setUser(userInfo);
-          axiosPublic.post("/jwt", { email: currentUser.email }).then((res) => {
-            if (res.data.token) {
-              localStorage.setItem("access-token", res.data.token);
-              setLoading(false);
-            }
-          });
-        } else {
-          setUser(null);
-          localStorage.removeItem("access-token");
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      if (currentUser) {
+        const userInfo: User = {
+          id: currentUser.uid,
+          name: currentUser.displayName || currentUser.email || "",
+          email: currentUser.email || "",
+          createdAt: new Date(),
+          lastLogin: new Date(),
+        };
+        setUser(userInfo);
+        axiosPublic.post("/jwt", { email: currentUser.email }).then((res) => {
+          if (res.data.token) {
+            localStorage.setItem("access-token", res.data.token);
+          }
           setLoading(false);
-        }
-        console.log("State Captured: ", currentUser?.email);
+        });
+      } else {
+        setUser(null);
+        localStorage.removeItem("access-token");
+        setLoading(false);
       }
-    );
-    return () => {
-      unsubscribe();
-    };
+
+      console.log("Auth state changed:", currentUser?.email);
+    });
+
+    return () => unsubscribe();
   }, [axiosPublic]);
 
   const userInfo: AuthContextType = {

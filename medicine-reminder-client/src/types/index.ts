@@ -18,3 +18,10 @@ export interface AuthContextType {
   logoutUser: () => Promise<void>;
   loginWithGoogle: () => Promise<void>;
 }
+
+export interface FirebaseUser {
+  uid: string;
+  email: string | null;
+  displayName: string | null;
+  photoURL: string | null;
+}
