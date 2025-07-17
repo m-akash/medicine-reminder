@@ -7,6 +7,7 @@ import Schedule from "../pages/Schedule/Schedule.tsx";
 import Reports from "../pages/Reports/Reports.tsx";
 import AddMedicine from "../pages/AddMedicine/AddMedicine.tsx";
 import UpdateMedicine from "../pages/UpdateMedicine/UpdateMedicine.tsx";
+import Register from "../pages/Register/Register.tsx";
 const router = createBrowserRouter([
   {
     path: "/",
@@ -35,6 +36,10 @@ const router = createBrowserRouter([
       {
         path: "/update-medicine",
         element: <UpdateMedicine></UpdateMedicine>,
+      },
+      {
+        path: "/register",
+        element: <Register></Register>,
       },
     ],
   },

@@ -51,6 +51,7 @@ const createUser = async (req: Request, res: Response): Promise<Response> => {
         name,
         email,
         password,
+        lastLogin: new Date(),
       },
     });
     return res.status(201).json({
@@ -58,6 +59,40 @@ const createUser = async (req: Request, res: Response): Promise<Response> => {
       message: "User created successfully",
       newUser,
     });
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ status: 500, message: "Internal server error", error });
+  }
+};
+
+const socialLogin = async (req: Request, res: Response): Promise<Response> => {
+  try {
+    const { email, name, password } = req.body;
+    const user = await prisma.user.findUnique({
+      where: { email },
+    });
+    if (user) {
+      const updatedUser = await prisma.user.update({
+        where: { email },
+        data: { lastLogin: new Date() },
+      });
+      return res
+        .status(200)
+        .json({ status: 200, message: "Login successful", user: updatedUser });
+    } else {
+      const newUser = await prisma.user.create({
+        data: {
+          name,
+          email,
+          password,
+          lastLogin: new Date(),
+        },
+      });
+      return res
+        .status(201)
+        .json({ status: 201, message: "Login successful", user: newUser });
+    }
   } catch (error) {
     return res
       .status(500)
@@ -122,4 +157,11 @@ const deleteUser = async (req: Request, res: Response): Promise<Response> => {
   }
 };
 
-export { findUserByEmail, createUser, getUsers, updateUser, deleteUser };
+export {
+  findUserByEmail,
+  createUser,
+  socialLogin,
+  getUsers,
+  updateUser,
+  deleteUser,
+};

@@ -1,5 +1,5 @@
 import React from "react";
-import MyMedications from "../MyMedications/MyMedications.tsx";
+import MyMedications from "../MyMedications/MyMedications";
 
 const Medications = () => {
   return (

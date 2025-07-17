@@ -1,8 +1,8 @@
 import React from "react";
-import Greeting from "../Greeting/Greeting.tsx";
-import DailyMedications from "../DailyMedications/DailyMedications.tsx";
-import MyMedications from "../MyMedications/MyMedications.tsx";
-import RefillReminder from "../RefillReminder/RefillReminder.tsx";
+import Greeting from "../Greeting/Greeting";
+import DailyMedications from "../DailyMedications/DailyMedications";
+import MyMedications from "../MyMedications/MyMedications";
+import RefillReminder from "../RefillReminder/RefillReminder";
 
 const Home = () => {
   return (

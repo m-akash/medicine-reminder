@@ -1,4 +1,4 @@
-import UpdateForm from "../../components/UpdateForm.tsx";
+import UpdateForm from "../../components/UpdateForm";
 
 const UpdateMedicine = () => {
   return (
