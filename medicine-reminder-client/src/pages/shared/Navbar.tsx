@@ -1,7 +1,20 @@
 import React from "react";
-import { Link, NavLink } from "react-router-dom";
+import { Link, NavLink, useNavigate } from "react-router-dom";
+import useAuth from "../../hooks/useAuth.tsx";
 
 const Navbar = () => {
+  const { user, logoutUser } = useAuth();
+  const navigate = useNavigate();
+  const handleLogout = () => {
+    logoutUser()
+      .then(() => {
+        alert("Logout successfully!");
+        navigate("/");
+      })
+      .catch(() => {
+        alert("Unsuccessfull attempt!");
+      });
+  };
   const navLinks = (
     <>
       <li>
@@ -125,37 +138,53 @@ const Navbar = () => {
             </div>
           </button>
         </div>
-        <div className="dropdown dropdown-end">
-          <div
-            tabIndex={0}
-            role="button"
-            className="btn btn-ghost btn-circle avatar border-2 border-amber-400 hover:border-amber-600 transition-all duration-300"
-          >
-            <div className="w-11 rounded-full ring ring-amber-400 ring-offset-base-100 ring-offset-2 overflow-hidden">
-              <img
-                alt="User avatar"
-                src="https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp"
-              />
+        {user ? (
+          <div className="dropdown dropdown-end">
+            <div
+              tabIndex={0}
+              role="button"
+              className="btn btn-ghost btn-circle avatar border-2 border-amber-400 hover:border-amber-600 transition-all duration-300"
+            >
+              <div className="w-11 rounded-full ring ring-amber-400 ring-offset-base-100 ring-offset-2 overflow-hidden">
+                <img
+                  alt="User avatar"
+                  src="https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp"
+                />
+              </div>
             </div>
+            <ul
+              tabIndex={0}
+              className="menu menu-sm dropdown-content bg-gradient-to-br from-blue-800 via-indigo-900 to-amber-700 rounded-xl z-20 mt-3 w-56 p-3 shadow-xl"
+            >
+              <li>
+                <a className="flex items-center gap-2">
+                  <span className="font-semibold text-white">Profile</span>
+                  <span className="badge badge-accent">New</span>
+                </a>
+              </li>
+              <li>
+                <a className="text-white">Settings</a>
+              </li>
+              <li>
+                <Link
+                  to="/logout"
+                  onClick={handleLogout}
+                  className="text-white"
+                >
+                  Logout
+                </Link>
+              </li>
+            </ul>
           </div>
-          <ul
-            tabIndex={0}
-            className="menu menu-sm dropdown-content bg-gradient-to-br from-blue-800 via-indigo-900 to-amber-700 rounded-xl z-20 mt-3 w-56 p-3 shadow-xl"
-          >
-            <li>
-              <a className="flex items-center gap-2">
-                <span className="font-semibold text-white">Profile</span>
-                <span className="badge badge-accent">New</span>
-              </a>
-            </li>
-            <li>
-              <a className="text-white">Settings</a>
-            </li>
-            <li>
-              <a className="text-white">Logout</a>
-            </li>
-          </ul>
-        </div>
+        ) : (
+          <div className="dropdown dropdown-end">
+            <Link to="/login">
+              <button className="px-6 py-2 bg-gradient-to-r from-amber-400 to-amber-600 text-white font-bold rounded-lg shadow-md transition-all duration-300 hover:from-amber-500 hover:to-amber-700 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2">
+                Login
+              </button>
+            </Link>
+          </div>
+        )}
       </div>
     </div>
   );

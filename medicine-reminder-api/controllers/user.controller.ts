@@ -85,7 +85,7 @@ const socialLogin = async (req: Request, res: Response): Promise<Response> => {
         data: {
           name,
           email,
-          password,
+          password: "social-login",
           lastLogin: new Date(),
         },
       });

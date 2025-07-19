@@ -8,6 +8,7 @@ import Reports from "../pages/Reports/Reports.tsx";
 import AddMedicine from "../pages/AddMedicine/AddMedicine.tsx";
 import UpdateMedicine from "../pages/UpdateMedicine/UpdateMedicine.tsx";
 import Register from "../pages/Register/Register.tsx";
+import Login from "../pages/Login/Login.tsx";
 const router = createBrowserRouter([
   {
     path: "/",
@@ -40,6 +41,10 @@ const router = createBrowserRouter([
       {
         path: "/register",
         element: <Register></Register>,
+      },
+      {
+        path: "/login",
+        element: <Login></Login>,
       },
     ],
   },

@@ -45,12 +45,11 @@ const AuthProvider = ({ children }: React.PropsWithChildren) => {
     setLoading(true);
     try {
       const result = await signInWithPopup(auth, provider);
-      if (result.user) {
-        await axiosPublic.post("/api/user/social-login", {
-          email: result.user.email,
-          name: result.user.displayName,
-        });
-      }
+      const data = await axiosPublic.post("/api/user/social-login", {
+        email: result.user.email,
+        name: result.user.displayName,
+      });
+      console.log(data);
     } catch (error) {
       throw error;
     } finally {

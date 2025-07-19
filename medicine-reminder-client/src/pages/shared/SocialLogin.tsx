@@ -9,11 +9,11 @@ const SocialLogin = () => {
   const handleLoginWithGoogle = async () => {
     try {
       const result: any = await loginWithGoogle();
-      const userData = {
-        email: result.user?.email,
-        name: result.user?.displayName,
-      };
-      await axiosPublic.post("/api/users/social-login", userData);
+      // const userData = {
+      //   email: result.user?.email,
+      //   name: result.user?.displayName,
+      // };
+      // await axiosPublic.post("/api/user/social-login", userData);
       alert("Successfully signed in with Google!");
       navigate("/");
     } catch (error) {
