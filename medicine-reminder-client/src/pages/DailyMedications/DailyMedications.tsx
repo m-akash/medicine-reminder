@@ -1,4 +1,6 @@
 import React from "react";
+import AddMedicineForm from "../../components/AddMedicineForm.tsx";
+import { Link } from "react-router-dom";
 
 const medications = [
   {
@@ -177,14 +179,14 @@ const DailyMedications = () => {
           ))}
         </div>
       </div>
-      {/* Floating Action Button for mobile only */}
-      <button
-        className="fixed bottom-6 right-6 z-50 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-lg w-16 h-16 flex items-center justify-center text-3xl md:hidden transition-all duration-200"
-        aria-label="Add Medication"
-        onClick={() => alert("Add Medication (not implemented)")}
-      >
-        +
-      </button>
+      <Link to="/add-medicine">
+        <button
+          className="fixed bottom-6 right-6 z-50 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-lg w-16 h-16 flex items-center justify-center text-3xl md:hidden transition-all duration-200"
+          aria-label="Add Medication"
+        >
+          +
+        </button>
+      </Link>
     </div>
   );
 };

@@ -9,6 +9,7 @@ import AddMedicine from "../pages/AddMedicine/AddMedicine.tsx";
 import UpdateMedicine from "../pages/UpdateMedicine/UpdateMedicine.tsx";
 import Register from "../pages/Register/Register.tsx";
 import Login from "../pages/Login/Login.tsx";
+import PrivateRoute from "./PrivateRoute.tsx";
 const router = createBrowserRouter([
   {
     path: "/",
@@ -20,23 +21,43 @@ const router = createBrowserRouter([
       },
       {
         path: "/medication",
-        element: <Medications />,
+        element: (
+          <PrivateRoute>
+            <Medications />
+          </PrivateRoute>
+        ),
       },
       {
         path: "/schedule",
-        element: <Schedule></Schedule>,
+        element: (
+          <PrivateRoute>
+            <Schedule />
+          </PrivateRoute>
+        ),
       },
       {
         path: "/reports",
-        element: <Reports></Reports>,
+        element: (
+          <PrivateRoute>
+            <Reports />
+          </PrivateRoute>
+        ),
       },
       {
         path: "/add-medicine",
-        element: <AddMedicine></AddMedicine>,
+        element: (
+          <PrivateRoute>
+            <AddMedicine />
+          </PrivateRoute>
+        ),
       },
       {
         path: "/update-medicine",
-        element: <UpdateMedicine></UpdateMedicine>,
+        element: (
+          <PrivateRoute>
+            <UpdateMedicine />
+          </PrivateRoute>
+        ),
       },
       {
         path: "/register",

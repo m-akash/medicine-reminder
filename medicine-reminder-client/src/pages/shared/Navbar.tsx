@@ -1,6 +1,7 @@
 import React from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import useAuth from "../../hooks/useAuth.tsx";
+import defaultPhoto from "../../assets/others/profile.png";
 
 const Navbar = () => {
   const { user, logoutUser } = useAuth();
@@ -146,10 +147,7 @@ const Navbar = () => {
               className="btn btn-ghost btn-circle avatar border-2 border-amber-400 hover:border-amber-600 transition-all duration-300"
             >
               <div className="w-11 rounded-full ring ring-amber-400 ring-offset-base-100 ring-offset-2 overflow-hidden">
-                <img
-                  alt="User avatar"
-                  src="https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp"
-                />
+                <img alt="User avatar" src={user?.photoURL || defaultPhoto} />
               </div>
             </div>
             <ul

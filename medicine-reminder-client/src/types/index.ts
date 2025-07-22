@@ -25,3 +25,7 @@ export interface FirebaseUser {
   displayName: string | null;
   photoURL: string | null;
 }
+
+export interface ChildrenProps {
+  children: React.ReactNode;
+}

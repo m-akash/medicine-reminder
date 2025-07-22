@@ -1,6 +1,6 @@
 import React, { useContext, useState } from "react";
 import AuthContext from "../../context/AuthContext.tsx";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import SocialLogin from "../shared/SocialLogin.tsx";
 
 const Login = () => {
@@ -8,6 +8,9 @@ const Login = () => {
   const [form, setForm] = useState({ email: "", password: "" });
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const from = location.state?.from?.pathname || "/";
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -20,7 +23,7 @@ const Login = () => {
       await loginUser(form.email, form.password);
       alert("Login successful!");
       setForm({ email: "", password: "" });
-      navigate("/");
+      navigate(from, { replace: true });
     } catch (error: any) {
       alert(error?.message || "Login failed. Please try again.");
     } finally {
