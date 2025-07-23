@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import prisma from "../config/db.config";
+import { parseISO, startOfDay } from "date-fns";
 
 const getMedicineByEmail = async (
   req: Request,
@@ -85,17 +86,21 @@ const updateMedicine = async (
   res: Response
 ): Promise<Response> => {
   try {
-    const dateOnly = new Date(req.body.startDate);
+    // Only set date if provided
+    const dateOnly = req.body.startDate ? new Date(req.body.startDate) : undefined;
+    // Build update data object
+    const updateData: any = {
+      name: req.body.name,
+      dosage: req.body.dosage,
+      frequency: req.body.frequency,
+      durationDays: req.body.durationDays,
+      instructions: req.body.instructions,
+    };
+    if (dateOnly) updateData.startDate = dateOnly;
+    if (typeof req.body.taken !== 'undefined') updateData.taken = req.body.taken;
     const updatedMedicine = await prisma.medicine.update({
       where: { id: req.params.id },
-      data: {
-        name: req.body.name,
-        dosage: req.body.dosage,
-        frequency: req.body.frequency,
-        startDate: dateOnly,
-        durationDays: req.body.durationDays,
-        instructions: req.body.instructions,
-      },
+      data: updateData,
     });
     return res.status(200).json({
       status: 200,
@@ -129,10 +134,51 @@ const deleteMedicine = async (
   }
 };
 
+// Get taken status for a specific medicine and date
+const getMedicineTakenDay = async (req: Request, res: Response): Promise<Response> => {
+  try {
+    const { id } = req.params;
+    const dateStr = req.query.date as string;
+    if (!dateStr) {
+      return res.status(400).json({ status: 400, message: "Missing date query param" });
+    }
+    const date = startOfDay(parseISO(dateStr));
+    const takenDay = await prisma.medicineTakenDay.findFirst({
+      where: { medicineId: id, date },
+    });
+    return res.status(200).json({ status: 200, takenDay });
+  } catch (error) {
+    return res.status(500).json({ status: 500, message: "Internal server error", error });
+  }
+};
+
+// Set taken status for a specific medicine and date
+const setMedicineTakenDay = async (req: Request, res: Response): Promise<Response> => {
+  try {
+    const { id } = req.params;
+    const { date, taken } = req.body;
+    if (!date || typeof taken !== "string") {
+      return res.status(400).json({ status: 400, message: "Missing date or taken in body" });
+    }
+    const day = startOfDay(parseISO(date));
+    // Upsert: update if exists, else create
+    const takenDay = await prisma.medicineTakenDay.upsert({
+      where: { medicineId_date: { medicineId: id, date: day } },
+      update: { taken },
+      create: { medicineId: id, date: day, taken },
+    });
+    return res.status(200).json({ status: 200, takenDay });
+  } catch (error) {
+    return res.status(500).json({ status: 500, message: "Internal server error", error });
+  }
+};
+
 export {
   getMedicineByEmail,
   getMedicineById,
   createMedicine,
   updateMedicine,
   deleteMedicine,
+  getMedicineTakenDay,
+  setMedicineTakenDay,
 };

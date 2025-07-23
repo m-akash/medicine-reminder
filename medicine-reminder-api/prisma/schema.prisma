@@ -28,9 +28,11 @@ model Medicine {
   startDate    DateTime? @db.Date
   durationDays Int?
   instructions String?
+  taken        String?   // '1-0-0' for per-period taken status
 
   user      User       @relation(fields: [userEmail], references: [email], onDelete: Cascade)
   reminders Reminder[]
+  medicineTakenDays MedicineTakenDay[]
 }
 
 model Reminder {
@@ -49,4 +51,15 @@ model ReminderTime {
   time       DateTime
 
   reminder Reminder @relation(fields: [reminderId], references: [id], onDelete: Cascade)
+}
+
+model MedicineTakenDay {
+  id         String   @id @default(uuid())
+  medicineId String
+  date       DateTime @db.Date
+  taken      String   // e.g., '1-0-1' for that day
+
+  medicine   Medicine @relation(fields: [medicineId], references: [id], onDelete: Cascade)
+
+  @@unique([medicineId, date])
 }

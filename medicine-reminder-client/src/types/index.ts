@@ -39,4 +39,5 @@ export interface Medicine {
   startDate: string;
   durationDays: number;
   instructions?: string;
+  taken?: string;
 }
