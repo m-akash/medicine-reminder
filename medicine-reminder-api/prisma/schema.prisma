@@ -27,11 +27,16 @@ model Medicine {
   frequency    String?
   startDate    DateTime? @db.Date
   durationDays Int?
+  originalDurationDays Int? // NEW: original duration for refills
   instructions String?
-  taken        String?   // '1-0-0' for per-period taken status
+  taken        String? // '1-0-0' for per-period taken status
+  totalPills   Int // NEW: total number of pills
+  originalTotalPills Int? // NEW: original total pills for refills
+  pillsPerDose Int // NEW: pills per dose
+  dosesPerDay  Int? // NEW: doses per day (optional)
 
-  user      User       @relation(fields: [userEmail], references: [email], onDelete: Cascade)
-  reminders Reminder[]
+  user              User               @relation(fields: [userEmail], references: [email], onDelete: Cascade)
+  reminders         Reminder[]
   medicineTakenDays MedicineTakenDay[]
 }
 
@@ -57,9 +62,16 @@ model MedicineTakenDay {
   id         String   @id @default(uuid())
   medicineId String
   date       DateTime @db.Date
-  taken      String   // e.g., '1-0-1' for that day
+  taken      String // e.g., '1-0-1' for that day
 
-  medicine   Medicine @relation(fields: [medicineId], references: [id], onDelete: Cascade)
+  medicine Medicine @relation(fields: [medicineId], references: [id], onDelete: Cascade)
 
   @@unique([medicineId, date])
+}
+
+model Pharmacy {
+  id      String @id @default(uuid())
+  name    String
+  address String
+  phone   String
 }

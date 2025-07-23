@@ -5,6 +5,7 @@ import { Link } from "react-router-dom";
 import useAuth from "../../hooks/useAuth.tsx";
 import useMedicinesUser from "../../hooks/useMedicinesUser.tsx";
 import { Medicine } from "../../types/index.ts";
+import useAxiosSecure from "../../hooks/useAxiosSecure.tsx";
 
 const getMedicineIcon = (days: number) => {
   if (days <= 3)
@@ -79,10 +80,24 @@ const getTime = (frequency: string) => {
 
 const MyMedications = () => {
   const { user } = useAuth();
+  const axiosSecure = useAxiosSecure();
   const email = user?.email || "";
-  const { data } = useMedicinesUser(email);
+  const { data, refetch } = useMedicinesUser(email);
 
   const medicines: Medicine[] = data?.findMedicine || [];
+
+  const handleDelete = async (id: string) => {
+    try {
+      await axiosSecure.delete(`/api/medicine/${id}`);
+      if (refetch) {
+        refetch();
+      } else {
+        window.location.reload();
+      }
+    } catch (error) {
+      console.error("Failed to delete medicine", error);
+    }
+  };
 
   return (
     <div className="w-full">
@@ -177,7 +192,7 @@ const MyMedications = () => {
                         >
                           <FaBell />
                         </button>
-                        <button className="hover:text-red-500" title="Delete">
+                        <button className="hover:text-red-500" title="Delete" onClick={() => handleDelete(med.id)}>
                           <FaTrash />
                         </button>
                       </td>
@@ -230,6 +245,7 @@ const MyMedications = () => {
                       <button
                         className="rounded-full p-2 bg-red-50 hover:bg-red-100 text-red-500 shadow-sm"
                         title="Delete"
+                        onClick={() => handleDelete(med.id)}
                       >
                         <FaTrash />
                       </button>

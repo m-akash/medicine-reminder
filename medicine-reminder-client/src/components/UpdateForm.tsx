@@ -15,7 +15,12 @@ const UpdateForm = () => {
     frequency: med?.frequency || "",
     startDate: med?.startDate ? med.startDate.slice(0, 10) : "",
     durationDays: med?.durationDays?.toString() || "",
+    originalDurationDays: med?.originalDurationDays?.toString() || "",
     instructions: med?.instructions || "",
+    totalPills: med?.totalPills?.toString() || "",
+    originalTotalPills: med?.originalTotalPills?.toString() || "",
+    pillsPerDose: med?.pillsPerDose?.toString() || "",
+    dosesPerDay: med?.dosesPerDay?.toString() || "",
   });
 
   const handleChange = (
@@ -27,13 +32,29 @@ const UpdateForm = () => {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const payload = {
+
+    if (!med.id) {
+      alert("Medicine ID is missing.");
+      return;
+    }
+
+    // Validate and sanitize fields
+    const payload: any = {
       ...form,
-      durationDays: Number(form.durationDays),
-      startDate: form.startDate
-        ? new Date(form.startDate).toISOString()
-        : undefined,
+      durationDays: form.durationDays ? Number(form.durationDays) : undefined,
+      originalDurationDays: form.originalDurationDays ? Number(form.originalDurationDays) : undefined,
+      totalPills: form.totalPills ? Number(form.totalPills) : undefined,
+      originalTotalPills: form.originalTotalPills ? Number(form.originalTotalPills) : undefined,
+      pillsPerDose: form.pillsPerDose ? Number(form.pillsPerDose) : undefined,
+      dosesPerDay: form.dosesPerDay ? Number(form.dosesPerDay) : undefined,
+      startDate: form.startDate ? new Date(form.startDate).toISOString() : undefined,
     };
+
+    // Remove undefined fields
+    Object.keys(payload).forEach(
+      (key) => payload[key] === undefined && delete payload[key]
+    );
+
     try {
       const updateMedi = await axiosSecure.put(
         `/api/medicine/${med.id}`,
@@ -42,10 +63,10 @@ const UpdateForm = () => {
       if (updateMedi.statusText === "OK") {
         alert(`${med.name} updated successfully!`);
       }
-      console.log(updateMedi);
       navigate("/medication");
     } catch (err) {
       console.error("Update failed", err);
+      alert("Update failed. Please check your input and try again.");
     }
   };
   return (
@@ -117,6 +138,66 @@ const UpdateForm = () => {
           placeholder="e.g. 30"
         />
       </div>
+      <div className="form-control">
+        <label className="label font-semibold text-black">
+          Original Duration (days)
+        </label>
+        <input
+          type="number"
+          name="originalDurationDays"
+          value={form.originalDurationDays}
+          onChange={handleChange}
+          className="input input-bordered w-full bg-gray-100 text-black"
+          min="1"
+          placeholder="e.g. 30"
+        />
+      </div>
+      <div className="form-control">
+        <label className="label font-semibold text-black">Total Pills</label>
+        <input
+          type="number"
+          name="totalPills"
+          value={form.totalPills}
+          onChange={handleChange}
+          className="input input-bordered w-full bg-gray-100 text-black"
+          min="1"
+          placeholder="e.g. 60"
+        />
+      </div>
+      <div className="form-control">
+        <label className="label font-semibold text-black">
+          Original Total Pills
+        </label>
+        <input
+          type="number"
+          name="originalTotalPills"
+          value={form.originalTotalPills}
+          onChange={handleChange}
+          className="input input-bordered w-full bg-gray-100 text-black"
+          min="1"
+          placeholder="e.g. 60"
+        />
+      </div>
+      <input
+        name="pillsPerDose"
+        value={form.pillsPerDose}
+        onChange={handleChange}
+        required
+        type="number"
+        min="1"
+        placeholder="Pills Per Dose"
+        className="input input-bordered w-full text-black bg-gray-100"
+      />
+      <input
+        name="dosesPerDay"
+        value={form.dosesPerDay}
+        onChange={handleChange}
+        required
+        type="number"
+        min="1"
+        placeholder="Doses Per Day"
+        className="input input-bordered w-full text-black bg-gray-100"
+      />
       <div className="form-control">
         <label className="label font-semibold text-black">Instructions</label>
         <textarea
