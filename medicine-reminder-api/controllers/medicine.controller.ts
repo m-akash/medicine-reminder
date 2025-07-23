@@ -26,6 +26,31 @@ const getMedicineByEmail = async (
   }
 };
 
+const getMedicineById = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  try {
+    const findMedi = await prisma.medicine.findUnique({
+      where: { id: req.params.id },
+    });
+    if (!findMedi) {
+      return res
+        .status(404)
+        .json({ status: 404, message: "Medicine not found!" });
+    }
+    return res.status(200).json({
+      status: 200,
+      message: "Medicine find successfully!",
+      findMedi,
+    });
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ status: 500, message: "Internal server error", error });
+  }
+};
+
 const createMedicine = async (
   req: Request,
   res: Response
@@ -104,4 +129,10 @@ const deleteMedicine = async (
   }
 };
 
-export { getMedicineByEmail, createMedicine, updateMedicine, deleteMedicine };
+export {
+  getMedicineByEmail,
+  getMedicineById,
+  createMedicine,
+  updateMedicine,
+  deleteMedicine,
+};

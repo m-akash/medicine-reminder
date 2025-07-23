@@ -52,12 +52,14 @@ const router = createBrowserRouter([
         ),
       },
       {
-        path: "/update-medicine",
+        path: "/update-medicine/:id",
         element: (
           <PrivateRoute>
             <UpdateMedicine />
           </PrivateRoute>
         ),
+        loader: ({ params }) =>
+          fetch(`http://localhost:8000/api/medicine/${params.id}`),
       },
       {
         path: "/register",

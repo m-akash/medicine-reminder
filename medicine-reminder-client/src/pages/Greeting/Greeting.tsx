@@ -1,10 +1,17 @@
 import React from "react";
 import useAuth from "../../hooks/useAuth.tsx";
+import useUserByEmail from "../../hooks/useUserByEmail.tsx";
+import { User } from "../../types/index.ts";
 
 const Greeting = () => {
   const { user } = useAuth();
-  const firstName = user?.name.split(" ")[0];
+  const email = user?.email || "";
+  const { data } = useUserByEmail(email);
+  const userInfo: User | undefined = data?.findUser;
+
+  const firstName = userInfo?.name.split(" ")[0] || "";
   const firstInitial = firstName?.charAt(0)?.toUpperCase() || "?";
+
   const today = new Date();
   const formattedDate = today.toLocaleDateString(undefined, {
     weekday: "long",

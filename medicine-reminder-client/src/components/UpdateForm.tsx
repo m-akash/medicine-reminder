@@ -1,26 +1,52 @@
 import React, { useState } from "react";
+import useAxiosSecure from "../hooks/useAxiosSecure.tsx";
+import { data, useLoaderData, useNavigate } from "react-router-dom";
 
 const UpdateForm = () => {
+  const loaderData = useLoaderData();
+  const med = loaderData?.findMedi || {};
+  const axiosSecure = useAxiosSecure();
+  const navigate = useNavigate();
+
   const [form, setForm] = useState({
-    prescriptionId: "",
-    userEmail: "",
-    name: "",
-    dosage: "",
-    frequency: "",
-    startDate: "",
-    durationDays: "",
-    instructions: "",
+    userEmail: med?.userEmail || "",
+    name: med?.name || "",
+    dosage: med?.dosage || "",
+    frequency: med?.frequency || "",
+    startDate: med?.startDate ? med.startDate.slice(0, 10) : "",
+    durationDays: med?.durationDays?.toString() || "",
+    instructions: med?.instructions || "",
   });
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // TODO: handle form submission (API call or parent callback)
-    console.log(form);
+    const payload = {
+      ...form,
+      durationDays: Number(form.durationDays),
+      startDate: form.startDate
+        ? new Date(form.startDate).toISOString()
+        : undefined,
+    };
+    try {
+      const updateMedi = await axiosSecure.put(
+        `/api/medicine/${med.id}`,
+        payload
+      );
+      if (updateMedi.statusText === "OK") {
+        alert(`${med.name} updated successfully!`);
+      }
+      console.log(updateMedi);
+      navigate("/medication");
+    } catch (err) {
+      console.error("Update failed", err);
+    }
   };
   return (
     <form
@@ -30,7 +56,6 @@ const UpdateForm = () => {
       <h2 className="text-2xl font-bold text-indigo-700 mb-2 text-center">
         Update Medicine
       </h2>
-      <input type="hidden" name="prescriptionId" value={form.prescriptionId} />
       <input type="hidden" name="userEmail" value={form.userEmail} />
       <div className="form-control">
         <label className="label font-semibold text-black">

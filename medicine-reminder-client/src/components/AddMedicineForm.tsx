@@ -1,17 +1,26 @@
+import { useNavigate } from "react-router-dom";
 import useAxiosSecure from "../hooks/useAxiosSecure.tsx";
 
 const AddMedicineForm = () => {
   const axiosSecure = useAxiosSecure();
+  const navigate = useNavigate();
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const form = event.target as HTMLFormElement;
     const userEmail = "akash@gmail.com";
     const name = (form.elements.namedItem("name") as HTMLInputElement).value;
-    const dosage = (form.elements.namedItem("dosage") as HTMLInputElement).value;
-    const frequency = (form.elements.namedItem("frequency") as HTMLInputElement).value;
-    const startDate = (form.elements.namedItem("startDate") as HTMLInputElement).value;
-    const durationDays = (form.elements.namedItem("durationDays") as HTMLInputElement).value;
-    const instructions = (form.elements.namedItem("instructions") as HTMLTextAreaElement).value;
+    const dosage = (form.elements.namedItem("dosage") as HTMLInputElement)
+      .value;
+    const frequency = (form.elements.namedItem("frequency") as HTMLInputElement)
+      .value;
+    const startDate = (form.elements.namedItem("startDate") as HTMLInputElement)
+      .value;
+    const durationDays = (
+      form.elements.namedItem("durationDays") as HTMLInputElement
+    ).value;
+    const instructions = (
+      form.elements.namedItem("instructions") as HTMLTextAreaElement
+    ).value;
 
     const mediItem = {
       userEmail: userEmail,
@@ -26,6 +35,7 @@ const AddMedicineForm = () => {
     if (result.statusText === "Created") {
       alert("Medicine Created successfully!");
       form.reset();
+      navigate("/medication");
     }
     console.log(result);
   };

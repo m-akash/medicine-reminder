@@ -29,3 +29,14 @@ export interface FirebaseUser {
 export interface ChildrenProps {
   children: React.ReactNode;
 }
+
+export interface Medicine {
+  id: string;
+  userEmail: string;
+  name: string;
+  dosage: string;
+  frequency: string;
+  startDate: string;
+  durationDays: number;
+  instructions?: string;
+}

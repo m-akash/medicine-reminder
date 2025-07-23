@@ -2,61 +2,38 @@ import React from "react";
 import { FaPills, FaEdit, FaBell, FaTrash } from "react-icons/fa";
 import { GiPill, GiMedicines, GiVial } from "react-icons/gi";
 import { Link } from "react-router-dom";
+import useAuth from "../../hooks/useAuth.tsx";
+import useMedicinesUser from "../../hooks/useMedicinesUser.tsx";
+import { Medicine } from "../../types/index.ts";
 
-const medications = [
-  {
-    name: "Lisinopril",
-    icon: (
-      <FaPills
-        className="text-blue-400 bg-blue-100 rounded-full p-2"
-        size={40}
-      />
-    ),
-    dosage: "10mg",
-    frequency: "Once daily",
-    time: "8:00 AM",
-    remaining: 3,
-  },
-  {
-    name: "Metformin",
-    icon: (
-      <GiPill
-        className="text-green-400 bg-green-100 rounded-full p-2"
-        size={40}
-      />
-    ),
-    dosage: "500mg",
-    frequency: "Twice daily",
-    time: "2:00 PM, 8:00 PM",
-    remaining: 7,
-  },
-  {
-    name: "Atorvastatin",
-    icon: (
+const getMedicineIcon = (days: number) => {
+  if (days <= 3)
+    return (
+      <>
+        <FaPills
+          className="text-blue-400 bg-blue-100 rounded-full p-2"
+          size={40}
+        />
+      </>
+    );
+  if (days <= 7)
+    return (
+      <>
+        <GiPill
+          className="text-green-400 bg-green-100 rounded-full p-2"
+          size={40}
+        />
+      </>
+    );
+  return (
+    <>
       <GiMedicines
         className="text-purple-400 bg-purple-100 rounded-full p-2"
         size={40}
       />
-    ),
-    dosage: "20mg",
-    frequency: "Once daily",
-    time: "8:00 PM",
-    remaining: 20,
-  },
-  {
-    name: "Vitamin D",
-    icon: (
-      <GiVial
-        className="text-yellow-400 bg-yellow-100 rounded-full p-2"
-        size={40}
-      />
-    ),
-    dosage: "1000 IU",
-    frequency: "Once daily",
-    time: "8:00 AM",
-    remaining: 45,
-  },
-];
+    </>
+  );
+};
 
 const getRemainingColor = (days: number) => {
   if (days <= 3) return "text-red-500";
@@ -64,7 +41,49 @@ const getRemainingColor = (days: number) => {
   return "text-green-500";
 };
 
+const getFreq = (frequency: string) => {
+  if (frequency === "1-1-1") {
+    return "Three times daily";
+  }
+  if (frequency === "1-0-1" || frequency === "0-1-1" || frequency === "1-1-0") {
+    return "Twice daily";
+  }
+  if (frequency === "1-0-0" || frequency === "0-0-1" || frequency === "0-1-0") {
+    return "Once daily";
+  }
+};
+
+const getTime = (frequency: string) => {
+  if (frequency === "1-1-1") {
+    return "08:00 AM, 02:00 PM, 08:00 PM";
+  }
+  if (frequency === "1-0-1") {
+    return "08:00 AM, 08:00 PM";
+  }
+  if (frequency === "0-1-1") {
+    return "02:00 PM, 08:00 PM";
+  }
+  if (frequency === "1-1-0") {
+    return "08:00 AM, 02:00 PM";
+  }
+  if (frequency === "1-0-0") {
+    return "08:00 AM";
+  }
+  if (frequency === "0-0-1") {
+    return "08:00 PM";
+  }
+  if (frequency === "0-1-0") {
+    return "02:00 PM";
+  }
+};
+
 const MyMedications = () => {
+  const { user } = useAuth();
+  const email = user?.email || "";
+  const { data } = useMedicinesUser(email);
+
+  const medicines: Medicine[] = data?.findMedicine || [];
+
   return (
     <div className="w-full">
       <div className="bg-white text-black rounded-2xl shadow-lg p-4 sm:p-6 md:p-8 w-full">
@@ -78,104 +97,164 @@ const MyMedications = () => {
             </Link>
           </button>
         </div>
-        <div className="hidden md:block w-full overflow-x-auto">
-          <table className="min-w-full bg-white rounded-lg">
-            <thead>
-              <tr className="bg-gray-100 text-gray-700 text-left">
-                <th className="py-4 px-3 md:px-6 font-semibold">Medication</th>
-                <th className="py-4 px-3 md:px-6 font-semibold">Dosage</th>
-                <th className="py-4 px-3 md:px-6 font-semibold">Frequency</th>
-                <th className="py-4 px-3 md:px-6 font-semibold">Time</th>
-                <th className="py-4 px-3 md:px-6 font-semibold">Remaining</th>
-                <th className="py-4 px-3 md:px-6 font-semibold">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {medications.map((med) => (
-                <tr
-                  key={med.name}
-                  className="border-b last:border-b-0 hover:bg-gray-50 transition"
-                >
-                  <td className="py-4 px-3 md:px-6 flex items-center gap-4">
-                    {med.icon}
-                    <span className="font-semibold text-lg">{med.name}</span>
-                  </td>
-                  <td className="py-4 px-3 md:px-6 font-medium">
-                    {med.dosage}
-                  </td>
-                  <td className="py-4 px-3 md:px-6 font-medium">
-                    {med.frequency}
-                  </td>
-                  <td className="py-4 px-3 md:px-6 font-medium">{med.time}</td>
-                  <td
-                    className={`py-4 px-3 md:px-6 font-bold ${getRemainingColor(
-                      med.remaining
-                    )}`}
-                  >
-                    {med.remaining} days
-                  </td>
-                  <td className="py-4 px-3 md:px-6 flex gap-4 text-xl">
-                    <button className="hover:text-indigo-600" title="Edit">
-                      <Link to="/update-medicine">
-                        <FaEdit />
-                      </Link>
-                    </button>
-                    <button className="hover:text-yellow-500" title="Remind">
-                      <FaBell />
-                    </button>
-                    <button className="hover:text-red-500" title="Delete">
-                      <FaTrash />
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-        <div className="flex flex-col gap-4 md:hidden w-full">
-          {medications.map((med) => (
-            <div
-              key={med.name}
-              className="rounded-xl border border-gray-200 shadow p-4 flex flex-col gap-2 bg-white w-full relative"
+        {medicines.length === 0 ? (
+          <div className="flex flex-col items-center py-10">
+            <FaPills className="text-5xl text-gray-300 mb-4" />
+            <h2 className="text-lg text-gray-500 mb-2">
+              You have no medicines to take now.
+            </h2>
+            <Link
+              to="/add-medicine"
+              className="mt-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-semibold"
             >
-              <div className="absolute top-4 right-4 flex gap-2 text-xl">
-                <button className="hover:text-indigo-600" title="Edit">
-                  <Link to="/update-medicine">
-                    <FaEdit />
-                  </Link>
-                </button>
-                <button className="hover:text-yellow-500" title="Remind">
-                  <FaBell />
-                </button>
-                <button className="hover:text-red-500" title="Delete">
-                  <FaTrash />
-                </button>
-              </div>
-              <div className="flex items-center gap-4 mb-2 pr-20">
-                {" "}
-                {med.icon}
-                <div>
-                  <div className="font-semibold text-lg">{med.name}</div>
-                  <div className="text-sm text-gray-500">
-                    {med.dosage} • {med.frequency}
+              Add Medication
+            </Link>
+          </div>
+        ) : (
+          <>
+            <div className="hidden md:block w-full overflow-x-auto">
+              <table className="min-w-full bg-white rounded-lg">
+                <thead>
+                  <tr className="bg-gray-100 text-gray-700 text-left">
+                    <th className="py-4 px-3 md:px-6 font-semibold">
+                      Medication
+                    </th>
+                    <th className="py-4 px-3 md:px-6 font-semibold">Dosage</th>
+                    <th className="py-4 px-3 md:px-6 font-semibold">
+                      Frequency
+                    </th>
+                    <th className="py-4 px-3 md:px-6 font-semibold">Time</th>
+                    <th className="py-4 px-3 md:px-6 font-semibold">
+                      Start Date
+                    </th>
+                    <th className="py-4 px-3 md:px-6 font-semibold">
+                      Duration
+                    </th>
+                    <th className="py-4 px-3 md:px-6 font-semibold">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {medicines.map((med: Medicine) => (
+                    <tr
+                      key={med.id}
+                      className="border-b last:border-b-0 hover:bg-gray-50 transition"
+                    >
+                      <td className="py-4 px-3 md:px-6 flex items-center gap-4">
+                        {getMedicineIcon(med.durationDays)}
+                        <span className="font-semibold text-lg">
+                          {med.name}
+                        </span>
+                      </td>
+                      <td className="py-4 px-3 md:px-6 font-medium">
+                        {med.dosage}
+                      </td>
+                      <td className="py-4 px-3 md:px-6 font-medium">
+                        {getFreq(med.frequency)}
+                      </td>
+
+                      <td className="py-4 px-3 md:px-6 font-medium">
+                        {getTime(med.frequency)}
+                      </td>
+                      <td className="py-4 px-3 md:px-6 font-medium">
+                        {med.startDate?.slice(0, 10)}
+                      </td>
+                      <td
+                        className={`py-4 px-3 md:px-6 font-bold ${getRemainingColor(
+                          med.durationDays
+                        )}`}
+                      >
+                        {med.durationDays} days
+                      </td>
+                      <td className="py-4 px-3 md:px-6 flex gap-4 text-xl">
+                        <button className="hover:text-indigo-600" title="Edit">
+                          <Link to={`/update-medicine/${med.id}`}>
+                            <FaEdit />
+                          </Link>
+                        </button>
+                        <button
+                          className="hover:text-yellow-500"
+                          title="Remind"
+                        >
+                          <FaBell />
+                        </button>
+                        <button className="hover:text-red-500" title="Delete">
+                          <FaTrash />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <div className="flex flex-col gap-4 md:hidden w-full">
+              {medicines.map((med: Medicine) => (
+                <div
+                  key={med.id}
+                  className="flex flex-col bg-white rounded-2xl shadow-lg border-1 p-4 border-indigo-500 relative overflow-hidden"
+                >
+                  <div className="flex items-center gap-4 mb-2">
+                    <div className="flex-shrink-0">
+                      {getMedicineIcon(med.durationDays)}
+                    </div>
+                    <div className="flex-1">
+                      <div className="font-bold text-lg text-indigo-700 mb-1">
+                        {med.name}
+                      </div>
+                      <div className="flex flex-wrap gap-2 mb-1">
+                        <span className="bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full text-xs font-semibold">
+                          {med.dosage}
+                        </span>
+                        <span className="bg-purple-100 text-purple-700 px-3 py-1 rounded-full text-xs font-semibold">
+                          {getFreq(med.frequency)}
+                        </span>
+                      </div>
+                      <div className="text-xs text-gray-500 font-medium">
+                        {getTime(med.frequency)}
+                      </div>
+                    </div>
+                    <div className="flex flex-col gap-2 ml-2">
+                      <button
+                        className="rounded-full p-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 shadow-sm"
+                        title="Edit"
+                      >
+                        <Link to={`/update-medicine/${med.id}`}>
+                          <FaEdit />
+                        </Link>
+                      </button>
+                      <button
+                        className="rounded-full p-2 bg-yellow-50 hover:bg-yellow-100 text-yellow-500 shadow-sm"
+                        title="Remind"
+                      >
+                        <FaBell />
+                      </button>
+                      <button
+                        className="rounded-full p-2 bg-red-50 hover:bg-red-100 text-red-500 shadow-sm"
+                        title="Delete"
+                      >
+                        <FaTrash />
+                      </button>
+                    </div>
+                  </div>
+                  <div className="flex justify-between items-center mt-2 pt-2 border-t border-gray-100">
+                    <div className="text-xs text-gray-500 font-medium">
+                      Start:{" "}
+                      <span className="font-semibold text-gray-700">
+                        {med.startDate?.slice(0, 10)}
+                      </span>
+                    </div>
+                    <div
+                      className={`font-bold text-xs ${getRemainingColor(
+                        med.durationDays
+                      )}`}
+                    >
+                      {med.durationDays} days
+                    </div>
                   </div>
                 </div>
-              </div>
-              <div className="flex justify-between items-center">
-                <div className="text-sm font-medium text-gray-700">
-                  Time: {med.time}
-                </div>
-                <div
-                  className={`font-bold text-sm ${getRemainingColor(
-                    med.remaining
-                  )}`}
-                >
-                  {med.remaining} days
-                </div>
-              </div>
+              ))}
             </div>
-          ))}
-        </div>
+          </>
+        )}
       </div>
     </div>
   );
