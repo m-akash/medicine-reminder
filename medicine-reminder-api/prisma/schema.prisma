@@ -20,20 +20,20 @@ model User {
 }
 
 model Medicine {
-  id           String    @id @default(uuid())
-  userEmail    String
-  name         String
-  dosage       String?
-  frequency    String?
-  startDate    DateTime? @db.Date
-  durationDays Int?
-  originalDurationDays Int? // NEW: original duration for refills
-  instructions String?
-  taken        String? // '1-0-0' for per-period taken status
-  totalPills   Int // NEW: total number of pills
-  originalTotalPills Int? // NEW: original total pills for refills
-  pillsPerDose Int // NEW: pills per dose
-  dosesPerDay  Int? // NEW: doses per day (optional)
+  id                   String    @id @default(uuid())
+  userEmail            String
+  name                 String
+  dosage               String?
+  frequency            String?
+  startDate            DateTime? @db.Date
+  durationDays         Int?
+  originalDurationDays Int?
+  instructions         String?
+  taken                String?
+  totalPills           Int
+  originalTotalPills   Int?
+  pillsPerDose         Int
+  dosesPerDay          Int?
 
   user              User               @relation(fields: [userEmail], references: [email], onDelete: Cascade)
   reminders         Reminder[]
@@ -62,7 +62,7 @@ model MedicineTakenDay {
   id         String   @id @default(uuid())
   medicineId String
   date       DateTime @db.Date
-  taken      String // e.g., '1-0-1' for that day
+  taken      String
 
   medicine Medicine @relation(fields: [medicineId], references: [id], onDelete: Cascade)
 

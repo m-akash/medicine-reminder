@@ -2,9 +2,17 @@ import React from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import useAuth from "../../hooks/useAuth.tsx";
 import defaultPhoto from "../../assets/others/profile.png";
+import useUserByEmail from "../../hooks/useUserByEmail.tsx";
+import { User } from "../../types/index.ts";
 
 const Navbar = () => {
   const { user, logoutUser } = useAuth();
+  const email = user?.email || "";
+  const { data } = useUserByEmail(email);
+  const userInfo: User | undefined = data?.findUser;
+
+  const firstName = userInfo?.name.split(" ")[0] || "";
+  const firstInitial = firstName?.charAt(0)?.toUpperCase() || "?";
   const navigate = useNavigate();
   const handleLogout = () => {
     logoutUser()
@@ -146,8 +154,10 @@ const Navbar = () => {
               role="button"
               className="btn btn-ghost btn-circle avatar border-2 border-amber-400 hover:border-amber-600 transition-all duration-300"
             >
-              <div className="w-11 rounded-full ring ring-amber-400 ring-offset-base-100 ring-offset-2 overflow-hidden">
-                <img alt="User avatar" src={user?.photoURL || defaultPhoto} />
+              <div className="w-11 rounded-full ring bg-blue-900 ring-amber-400 ring-offset-base-100 ring-offset-2 overflow-hidden">
+                <span className="text-white text-2xl font-extralight">
+                  {firstInitial}
+                </span>
               </div>
             </div>
             <ul

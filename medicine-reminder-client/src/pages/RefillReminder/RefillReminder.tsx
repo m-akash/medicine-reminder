@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import { FaPills, FaExclamationTriangle } from "react-icons/fa";
 import useAuth from "../../hooks/useAuth.tsx";
 import useAxiosSecure from "../../hooks/useAxiosSecure.tsx";
+import Reports from "../Reports/Reports.tsx";
+import Report from "../../components/Report.tsx";
 
 interface Medication {
   id: string;
@@ -45,8 +47,8 @@ const RefillReminder: React.FC = () => {
   };
 
   return (
-    <div>
-      <div className="max-w-3xl mx-auto">
+    <div className="flex flex-col md:flex-row gap-4 md:gap-8 w-full">
+      <div className="w-full md:w-1/2 mb-4 md:mb-0">
         <div className="bg-white rounded-2xl shadow-lg p-6 flex flex-col gap-6">
           <h2 className="text-2xl font-bold text-indigo-700 mb-4 flex items-center gap-2">
             <FaExclamationTriangle className="text-amber-400" /> Refill
@@ -128,6 +130,9 @@ const RefillReminder: React.FC = () => {
             )}
           </div>
         </div>
+      </div>
+      <div className="w-full md:w-1/2">
+        <Report />
       </div>
     </div>
   );

@@ -21,7 +21,6 @@ const Login = () => {
     setLoading(true);
     try {
       await loginUser(form.email, form.password);
-      alert("Login successful!");
       setForm({ email: "", password: "" });
       navigate(from, { replace: true });
     } catch (error: any) {

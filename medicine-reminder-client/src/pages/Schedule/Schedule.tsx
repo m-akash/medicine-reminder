@@ -1,46 +1,17 @@
-import React from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import type { JSX } from "react";
-import { useState } from "react";
 import { FaPlus, FaPills, FaCheckCircle, FaClock } from "react-icons/fa";
+import useAuth from "../../hooks/useAuth.tsx";
+import useMedicinesUser from "../../hooks/useMedicinesUser.tsx";
+import useAxiosSecure from "../../hooks/useAxiosSecure.tsx";
+import { Medicine } from "../../types/index.ts";
+import { format, addDays, startOfDay } from "date-fns";
 
 const weekDays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-
-// Sample schedule data
-const sampleSchedule = [
-  {
-    day: 0, // Sunday
-    meds: [
-      { name: "Lisinopril", time: "8:00 AM", status: "taken" },
-      { name: "Metformin", time: "2:00 PM", status: "upcoming" },
-    ],
-  },
-  {
-    day: 1, // Monday
-    meds: [{ name: "Atorvastatin", time: "8:00 PM", status: "upcoming" }],
-  },
-  {
-    day: 2, // Tuesday
-    meds: [{ name: "Vitamin D", time: "8:00 AM", status: "missed" }],
-  },
-  {
-    day: 3, // Wednesday
-    meds: [],
-  },
-  {
-    day: 4, // Thursday
-    meds: [{ name: "Metformin", time: "2:00 PM", status: "upcoming" }],
-  },
-  {
-    day: 5, // Friday
-    meds: [
-      { name: "Lisinopril", time: "8:00 AM", status: "taken" },
-      { name: "Atorvastatin", time: "8:00 PM", status: "upcoming" },
-    ],
-  },
-  {
-    day: 6, // Saturday
-    meds: [],
-  },
+const periodTimes = [
+  { label: "Morning", time: "8:00 AM", idx: 0 },
+  { label: "Afternoon", time: "2:00 PM", idx: 1 },
+  { label: "Evening", time: "8:00 PM", idx: 2 },
 ];
 
 const statusStyles: { [key: string]: string } = {
@@ -55,10 +26,117 @@ const statusIcon: { [key: string]: JSX.Element } = {
   missed: <FaClock className="text-red-500" />,
 };
 
+function getDateOfWeekday(weekdayIdx: number) {
+  // Returns the date (YYYY-MM-DD) of the next occurrence of the given weekday in the current week
+  const today = new Date();
+  const current = today.getDay();
+  const diff = weekdayIdx - current;
+  const date = addDays(startOfDay(today), diff);
+  return format(date, "yyyy-MM-dd");
+}
+
 const Schedule = () => {
   const [selectedDay, setSelectedDay] = useState(new Date().getDay());
-
   const today = new Date().getDay();
+  const { user } = useAuth();
+  const email = user?.email || "";
+  const { data, isLoading, isError } = useMedicinesUser(email);
+  const medicines: Medicine[] = data?.findMedicine || [];
+  const axiosSecure = useAxiosSecure();
+  const [takenMap, setTakenMap] = useState<Record<string, string>>({});
+  const [loadingTaken, setLoadingTaken] = useState(false);
+
+  // Compute which medicines are scheduled for the selected day
+  const scheduledMeds = useMemo(() => {
+    const meds: { med: Medicine; periods: number[] }[] = [];
+    if (!medicines.length) return meds;
+    const selectedDate = getDateOfWeekday(selectedDay);
+    const selectedDateObj = new Date(selectedDate);
+    medicines.forEach((med) => {
+      const start = new Date(med.startDate);
+      const end = addDays(start, med.durationDays - 1);
+      if (selectedDateObj < start || selectedDateObj > end) return;
+      // frequency: e.g. "1-0-1" (morning-evening)
+      const freqArr = med.frequency.split("-").map(Number);
+      const periods: number[] = [];
+      freqArr.forEach((val: number, idx: number) => {
+        if (val === 1) periods.push(idx);
+      });
+      if (periods.length > 0) {
+        meds.push({ med, periods });
+      }
+    });
+    return meds;
+  }, [medicines, selectedDay]);
+
+  // Fetch taken status for all scheduled medicines for the selected day
+  useEffect(() => {
+    if (!scheduledMeds.length) {
+      setTakenMap({});
+      return;
+    }
+    let cancelled = false;
+    const fetchAll = async () => {
+      setLoadingTaken(true);
+      const results: Record<string, string> = {};
+      const date = getDateOfWeekday(selectedDay);
+      await Promise.all(
+        scheduledMeds.map(async ({ med }) => {
+          try {
+            const res = await axiosSecure.get(
+              `/api/medicine/${med.id}/taken?date=${date}`
+            );
+            results[med.id] = res.data.takenDay?.taken || "0-0-0";
+          } catch {
+            results[med.id] = "0-0-0";
+          }
+        })
+      );
+      if (!cancelled) setTakenMap(results);
+      setLoadingTaken(false);
+    };
+    fetchAll();
+    return () => {
+      cancelled = true;
+    };
+  }, [scheduledMeds, selectedDay, axiosSecure]);
+
+  // Group by period for display
+  const periodMeds = useMemo(() => {
+    const groups: { [periodIdx: number]: { med: Medicine; taken: boolean }[] } = {
+      0: [], 1: [], 2: [],
+    };
+    scheduledMeds.forEach(({ med, periods }) => {
+      const takenArr = takenMap[med.id]?.split("-") || ["0", "0", "0"];
+      periods.forEach((periodIdx) => {
+        groups[periodIdx].push({ med, taken: takenArr[periodIdx] === "1" });
+      });
+    });
+    return groups;
+  }, [scheduledMeds, takenMap]);
+
+  // Helper to get status for a med/period
+  function getStatus(med: Medicine, periodIdx: number): "taken" | "missed" | "upcoming" {
+    const takenArr = takenMap[med.id]?.split("-") || ["0", "0", "0"];
+    if (takenArr[periodIdx] === "1") return "taken";
+    // Determine if missed or upcoming
+    const selectedDate = getDateOfWeekday(selectedDay);
+    const now = new Date();
+    const scheduled = new Date(selectedDate);
+    const [hour, minute] = periodTimes[periodIdx].time
+      .replace(" AM", "")
+      .replace(" PM", "")
+      .split(":")
+      .map(Number);
+    scheduled.setHours(
+      periodTimes[periodIdx].time.includes("PM") && hour !== 12 ? hour + 12 : hour,
+      minute,
+      0,
+      0
+    );
+    if (now > scheduled && selectedDay === today) return "missed";
+    return "upcoming";
+  }
 
   return (
     <div className="min-h-screen bg-gray-100 py-8 px-2 flex flex-col items-center">
@@ -91,33 +169,49 @@ const Schedule = () => {
           <h2 className="text-lg font-semibold text-gray-800 mb-4 text-center">
             {weekDays[selectedDay]}'s Medications
           </h2>
-          {sampleSchedule[selectedDay].meds.length === 0 ? (
+          {isLoading || loadingTaken ? (
+            <div className="text-center text-gray-400 py-8">Loading...</div>
+          ) : isError ? (
+            <div className="text-center text-red-400 py-8">Failed to load schedule.</div>
+          ) : scheduledMeds.length === 0 ? (
             <div className="text-gray-400 text-center py-8">
               <FaPills className="mx-auto text-4xl mb-2" />
               No medications scheduled for this day.
             </div>
           ) : (
             <ul className="flex flex-col gap-4">
-              {sampleSchedule[selectedDay].meds.map((med, i) => (
-                <li
-                  key={i}
-                  className={`flex items-center gap-4 p-4 rounded-xl shadow-sm border ${
-                    statusStyles[med.status]
-                  }`}
-                >
-                  <span className="text-2xl">{statusIcon[med.status]}</span>
-                  <div className="flex-1">
-                    <div className="font-bold text-lg">{med.name}</div>
-                    <div className="text-gray-600 text-sm">{med.time}</div>
-                  </div>
-                  <span
-                    className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                      statusStyles[med.status]
-                    }`}
-                  >
-                    {med.status.charAt(0).toUpperCase() + med.status.slice(1)}
-                  </span>
-                </li>
+              {periodTimes.map((period, periodIdx) => (
+                <React.Fragment key={period.label}>
+                  {periodMeds[periodIdx].length > 0 && (
+                    <li className="mb-2">
+                      <div className="font-semibold text-indigo-700 mb-1">
+                        {period.label} <span className="text-gray-500 text-xs">({period.time})</span>
+                      </div>
+                      <ul className="flex flex-col gap-2">
+                        {periodMeds[periodIdx].map(({ med, taken }, i) => {
+                          const status = getStatus(med, periodIdx);
+                          return (
+                            <li
+                              key={med.id + "-" + periodIdx}
+                              className={`flex items-center gap-4 p-4 rounded-xl shadow-sm border ${statusStyles[status]}`}
+                            >
+                              <span className="text-2xl">{statusIcon[status]}</span>
+                              <div className="flex-1">
+                                <div className="font-bold text-lg">{med.name}</div>
+                                <div className="text-gray-600 text-sm">{med.dosage}</div>
+                              </div>
+                              <span
+                                className={`px-3 py-1 rounded-full text-xs font-semibold ${statusStyles[status]}`}
+                              >
+                                {status.charAt(0).toUpperCase() + status.slice(1)}
+                              </span>
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    </li>
+                  )}
+                </React.Fragment>
               ))}
             </ul>
           )}

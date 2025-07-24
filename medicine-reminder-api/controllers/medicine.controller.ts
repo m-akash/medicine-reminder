@@ -66,10 +66,10 @@ const createMedicine = async (
         frequency: req.body.frequency,
         startDate: dateOnly,
         durationDays: req.body.durationDays,
-        originalDurationDays: req.body.durationDays, // set original
+        originalDurationDays: req.body.durationDays,
         instructions: req.body.instructions,
         totalPills: req.body.totalPills,
-        originalTotalPills: req.body.totalPills, // set original
+        originalTotalPills: req.body.totalPills,
         pillsPerDose: req.body.pillsPerDose,
         dosesPerDay: req.body.dosesPerDay,
       },
@@ -146,7 +146,6 @@ const deleteMedicine = async (
   }
 };
 
-// Get taken status for a specific medicine and date
 const getMedicineTakenDay = async (
   req: Request,
   res: Response
@@ -171,7 +170,6 @@ const getMedicineTakenDay = async (
   }
 };
 
-// Set taken status for a specific medicine and date
 const setMedicineTakenDay = async (
   req: Request,
   res: Response
@@ -185,7 +183,6 @@ const setMedicineTakenDay = async (
         .json({ status: 400, message: "Missing date or taken in body" });
     }
     const day = startOfDay(parseISO(date));
-    // Upsert: update if exists, else create
     const takenDay = await prisma.medicineTakenDay.upsert({
       where: { medicineId_date: { medicineId: id, date: day } },
       update: { taken },
@@ -199,7 +196,34 @@ const setMedicineTakenDay = async (
   }
 };
 
-// Get refill reminders for a user (medicines with low pillsLeft or daysLeft)
+const getMedicineTakenHistory = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  try {
+    const { id } = req.params;
+    const { from, to } = req.query;
+    if (!from || !to) {
+      return res.status(400).json({ status: 400, message: "Missing from or to query param" });
+    }
+    const fromDate = startOfDay(parseISO(from as string));
+    const toDate = startOfDay(parseISO(to as string));
+    const takenHistory = await prisma.medicineTakenDay.findMany({
+      where: {
+        medicineId: id,
+        date: {
+          gte: fromDate,
+          lte: toDate,
+        },
+      },
+      orderBy: { date: "asc" },
+    });
+    return res.status(200).json({ status: 200, takenHistory });
+  } catch (error) {
+    return res.status(500).json({ status: 500, message: "Internal server error", error });
+  }
+};
+
 const getRefillReminders = async (
   req: Request,
   res: Response
@@ -222,14 +246,11 @@ const getRefillReminders = async (
       },
     });
     const now = new Date();
-    // For each medicine, count total doses taken
     const reminders = await Promise.all(
       medicines.map(async (med) => {
-        // Count total doses taken for this medicine
         const takenDays = await prisma.medicineTakenDay.findMany({
           where: { medicineId: med.id },
         });
-        // Each takenDay.taken is a string like '1-0-1' (for 3 doses per day)
         let dosesTaken = 0;
         takenDays.forEach((td) => {
           if (td.taken) {
@@ -239,7 +260,6 @@ const getRefillReminders = async (
               .reduce((a, b) => a + b, 0);
           }
         });
-        // Calculate pillsLeft and daysLeft
         const pillsPerDose = med.pillsPerDose ?? 1;
         const dosesPerDay = med.dosesPerDay ?? 1;
         const totalPills = med.totalPills ?? 0;
@@ -266,22 +286,6 @@ const getRefillReminders = async (
   }
 };
 
-// Get all pharmacies
-const getPharmacies = async (
-  req: Request,
-  res: Response
-): Promise<Response> => {
-  try {
-    const pharmacies = await prisma.pharmacy.findMany();
-    return res.status(200).json(pharmacies);
-  } catch (error) {
-    return res
-      .status(500)
-      .json({ status: 500, message: "Internal server error", error });
-  }
-};
-
-// PATCH /api/medications/:id/refill
 const refillMedicine = async (
   req: Request,
   res: Response
@@ -289,16 +293,18 @@ const refillMedicine = async (
   try {
     const { id } = req.params;
     const medicine = await prisma.medicine.findUnique({ where: { id } });
-    if (!medicine)
+    if (!medicine) {
       return res
         .status(404)
         .json({ status: 404, message: "Medicine not found" });
+    }
     const updateData: any = {};
-    if (medicine.originalTotalPills != null)
+    if (medicine.originalTotalPills != null) {
       updateData.totalPills = medicine.originalTotalPills;
-    if (medicine.originalDurationDays != null)
+    }
+    if (medicine.originalDurationDays != null) {
       updateData.durationDays = medicine.originalDurationDays;
-    // Delete all taken history for this medicine
+    }
     await prisma.medicineTakenDay.deleteMany({ where: { medicineId: id } });
     const updated = await prisma.medicine.update({
       where: { id },
@@ -314,6 +320,20 @@ const refillMedicine = async (
   }
 };
 
+const getPharmacies = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  try {
+    const pharmacies = await prisma.pharmacy.findMany();
+    return res.status(200).json(pharmacies);
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ status: 500, message: "Internal server error", error });
+  }
+};
+
 export {
   getMedicineByEmail,
   getMedicineById,
@@ -322,6 +342,7 @@ export {
   deleteMedicine,
   getMedicineTakenDay,
   setMedicineTakenDay,
+  getMedicineTakenHistory,
   getRefillReminders,
   getPharmacies,
   refillMedicine,
