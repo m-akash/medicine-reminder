@@ -37,13 +37,16 @@ const AddMedicineForm: React.FC = () => {
     return times;
   };
 
-  const calculateOriginalTotalPills = (frequency: string, originalDurationDays: string) => {
+  const calculateOriginalTotalPills = (
+    frequency: string,
+    originalDurationDays: string
+  ) => {
     if (!frequency || !originalDurationDays) return "";
-    
+
     const pattern = frequency.split("-").map(Number);
     const dosesPerDay = pattern.reduce((sum, dose) => sum + dose, 0);
     const totalPills = dosesPerDay * Number(originalDurationDays);
-    
+
     return totalPills.toString();
   };
   const [loading, setLoading] = useState(false);
@@ -58,18 +61,24 @@ const AddMedicineForm: React.FC = () => {
 
     if (name === "frequency") {
       const times = parseFrequencyAndSetTimes(value);
-      const originalTotalPills = calculateOriginalTotalPills(value, form.originalDurationDays);
+      const originalTotalPills = calculateOriginalTotalPills(
+        value,
+        form.originalDurationDays
+      );
       setForm((prev) => ({
         ...prev,
         [name]: value,
         scheduledTimes: times,
-        dosesPerDay: times.length.toString(), // This automatically sets the correct value
+        dosesPerDay: times.length.toString(),
         originalTotalPills: originalTotalPills,
       }));
     }
 
     if (name === "originalDurationDays") {
-      const originalTotalPills = calculateOriginalTotalPills(form.frequency, value);
+      const originalTotalPills = calculateOriginalTotalPills(
+        form.frequency,
+        value
+      );
       setForm((prev) => ({
         ...prev,
         [name]: value,
@@ -132,7 +141,7 @@ const AddMedicineForm: React.FC = () => {
   return (
     <form
       onSubmit={handleSubmit}
-      className="space-y-4 bg-white p-6 rounded-xl shadow"
+      className="space-y-3 bg-white p-6 rounded-xl shadow"
     >
       <h2 className="text-xl font-bold text-primary text-center mb-2">
         Add Medicine

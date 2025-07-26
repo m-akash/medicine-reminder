@@ -1,2 +1,17 @@
 @import "tailwindcss";
 @plugin "daisyui";
+
+/* Base styles with Nunito font */
+body {
+  font-family: "Nunito", ui-sans-serif, system-ui, sans-serif;
+}
+
+/* Ensure all text elements use Nunito */
+* {
+  font-family: inherit;
+}
+
+/* Custom font family utility */
+.font-nunito {
+  font-family: "Nunito", sans-serif;
+}
