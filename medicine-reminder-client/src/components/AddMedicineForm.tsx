@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import useAxiosSecure from "../hooks/useAxiosSecure.tsx";
 import useAuth from "../hooks/useAuth.tsx";
+import { medicineNotifications, formNotifications } from "../utils/notifications.ts";
 
 const AddMedicineForm: React.FC = () => {
   const { user } = useAuth();
@@ -50,8 +51,6 @@ const AddMedicineForm: React.FC = () => {
     return totalPills.toString();
   };
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -91,15 +90,11 @@ const AddMedicineForm: React.FC = () => {
     e.preventDefault();
 
     if (form.scheduledTimes.length === 0) {
-      setError(
-        "Please set the frequency pattern (e.g., 1-0-1) to automatically schedule times"
-      );
+      formNotifications.requiredField("frequency pattern");
       return;
     }
 
     setLoading(true);
-    setError(null);
-    setSuccess(null);
     try {
       await axiosSecure.post("/api/medicine", {
         userEmail: user?.email,
@@ -116,7 +111,7 @@ const AddMedicineForm: React.FC = () => {
         pillsPerDose: Number(form.pillsPerDose),
         dosesPerDay: Number(form.dosesPerDay),
       });
-      setSuccess("Medicine added successfully!");
+      medicineNotifications.added(form.name);
       setForm({
         name: "",
         dosage: "",
@@ -132,7 +127,7 @@ const AddMedicineForm: React.FC = () => {
         dosesPerDay: "",
       });
     } catch (err: any) {
-      setError(err.message || "Failed to add medicine");
+      formNotifications.requiredField(err.message || "Failed to add medicine");
     } finally {
       setLoading(false);
     }
@@ -322,8 +317,6 @@ const AddMedicineForm: React.FC = () => {
       >
         {loading ? "Adding..." : "Add Medicine"}
       </button>
-      {error && <div className="text-red-500 text-sm">{error}</div>}
-      {success && <div className="text-green-600 text-sm">{success}</div>}
     </form>
   );
 };

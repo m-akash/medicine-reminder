@@ -17,7 +17,6 @@ const Navbar = () => {
   const handleLogout = () => {
     logoutUser()
       .then(() => {
-        alert("Logout successfully!");
         navigate("/");
       })
       .catch(() => {

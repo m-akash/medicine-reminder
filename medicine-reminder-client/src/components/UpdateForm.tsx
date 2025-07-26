@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import useAxiosSecure from "../hooks/useAxiosSecure.tsx";
 import { data, useLoaderData, useNavigate } from "react-router-dom";
+import { medicineNotifications, formNotifications } from "../utils/notifications.ts";
 
 const UpdateForm = () => {
   const loaderData = useLoaderData();
@@ -70,7 +71,7 @@ const UpdateForm = () => {
     e.preventDefault();
 
     if (!med.id) {
-      alert("Medicine ID is missing.");
+      formNotifications.requiredField("Medicine ID");
       return;
     }
 
@@ -98,12 +99,12 @@ const UpdateForm = () => {
         payload
       );
       if (updateMedi.statusText === "OK") {
-        alert(`${med.name} updated successfully!`);
+        medicineNotifications.updated(med.name);
       }
       navigate("/medication");
     } catch (err) {
       console.error("Update failed", err);
-      alert("Update failed. Please check your input and try again.");
+      formNotifications.requiredField("Update failed. Please check your input and try again.");
     }
   };
   return (

@@ -2,10 +2,13 @@ import { useContext } from "react";
 import AuthContext from "../../context/AuthContext.tsx";
 import useAxiosPublic from "../../hooks/useAxiosPublic.tsx";
 import { useNavigate } from "react-router-dom";
+import { authNotifications } from "../../utils/notifications.ts";
+
 const SocialLogin = () => {
   const { loginWithGoogle } = useContext(AuthContext);
   const axiosPublic = useAxiosPublic();
   const navigate = useNavigate();
+  
   const handleLoginWithGoogle = async () => {
     try {
       const result: any = await loginWithGoogle();
@@ -14,12 +17,13 @@ const SocialLogin = () => {
       //   name: result.user?.displayName,
       // };
       // await axiosPublic.post("/api/user/social-login", userData);
-      alert("Successfully signed in with Google!");
+      authNotifications.loginSuccess();
       navigate("/");
     } catch (error) {
-      alert("Failed to sign in with Google. Please try again.");
+      authNotifications.loginError("Failed to sign in with Google. Please try again.");
     }
   };
+  
   return (
     <div className="flex justify-center items-center  md:mt-10 ">
       <button

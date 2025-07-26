@@ -86,7 +86,6 @@ const AuthProvider = ({ children }: React.PropsWithChildren) => {
           }
           setLoading(false);
         });
-        // Request and save FCM token
         if (currentUser.email && window.Notification) {
           try {
             const token = await requestFCMToken();           
