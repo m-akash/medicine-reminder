@@ -16,6 +16,8 @@ model User {
   createdAt DateTime @default(now())
   lastLogin DateTime @default(now())
 
+  fcmToken  String?
+
   medicines Medicine[]
 }
 
@@ -29,11 +31,13 @@ model Medicine {
   durationDays         Int?
   originalDurationDays Int?
   instructions         String?
-  taken                String?
   totalPills           Int
   originalTotalPills   Int?
   pillsPerDose         Int
   dosesPerDay          Int?
+
+  scheduledTime        DateTime
+  taken                Boolean
 
   user              User               @relation(fields: [userEmail], references: [email], onDelete: Cascade)
   reminders         Reminder[]

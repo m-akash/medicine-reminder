@@ -12,6 +12,7 @@ import auth from "../firebase/firebase.init.ts";
 import { AuthContextType, User } from "../types/index.ts";
 import useAxiosPublic from "../hooks/useAxiosPublic.tsx";
 import AuthContext from "./AuthContext.tsx";
+import { requestFCMToken } from "../firebase/firebase.init.ts";
 
 const AuthProvider = ({ children }: React.PropsWithChildren) => {
   const [user, setUser] = useState<User | null>(null);
@@ -69,7 +70,7 @@ const AuthProvider = ({ children }: React.PropsWithChildren) => {
   };
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       if (currentUser) {
         const userInfo: User = {
           id: currentUser.uid,
@@ -85,6 +86,20 @@ const AuthProvider = ({ children }: React.PropsWithChildren) => {
           }
           setLoading(false);
         });
+        // Request and save FCM token
+        if (currentUser.email && window.Notification) {
+          try {
+            const token = await requestFCMToken();           
+            if (token) {
+              await axiosPublic.post("/api/user/save-fcm-token", {
+                email: currentUser.email,
+                token,
+              });
+            }
+          } catch (err) {
+            console.error("FCM token error", err);
+          }
+        }
       } else {
         setUser(null);
         localStorage.removeItem("access-token");

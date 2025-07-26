@@ -131,7 +131,7 @@ const RefillReminder: React.FC = () => {
           </div>
         </div>
       </div>
-      <div className="w-full md:w-1/2">
+      <div className="w-full md:w-1/2 ">
         <Report />
       </div>
     </div>

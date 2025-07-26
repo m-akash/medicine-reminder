@@ -11,6 +11,8 @@ import {
   getPharmacies,
   refillMedicine,
   getMedicineTakenHistory,
+  createReminder,
+  createRemindersForExistingMedicines,
 } from "../controllers/medicine.controller";
 const router = express.Router();
 
@@ -30,5 +32,10 @@ router.get("/medicine/:id/taken-history", getMedicineTakenHistory);
 // New endpoints
 router.get("/refill-reminders", getRefillReminders);
 router.get("/pharmacies", getPharmacies);
+router.post("/reminder", createReminder);
+router.post(
+  "/create-reminders-for-existing",
+  createRemindersForExistingMedicines
+);
 
 export default router;

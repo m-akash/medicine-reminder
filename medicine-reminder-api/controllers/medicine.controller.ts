@@ -2,6 +2,16 @@ import { Request, Response } from "express";
 import prisma from "../config/db.config";
 import { parseISO, startOfDay } from "date-fns";
 
+// Helper function to create date with time in local timezone
+const createLocalDateTime = (dateStr: string, timeStr: string): Date => {
+  const [year, month, day] = dateStr.split("-").map(Number);
+  const [hour, minute] = timeStr.split(":").map(Number);
+
+  // Create date in local timezone
+  const date = new Date(year, month - 1, day, hour, minute, 0, 0);
+  return date;
+};
+
 const getMedicineByEmail = async (
   req: Request,
   res: Response
@@ -34,6 +44,13 @@ const getMedicineById = async (
   try {
     const findMedi = await prisma.medicine.findUnique({
       where: { id: req.params.id },
+      include: {
+        reminders: {
+          include: {
+            times: true,
+          },
+        },
+      },
     });
     if (!findMedi) {
       return res
@@ -58,6 +75,15 @@ const createMedicine = async (
 ): Promise<Response> => {
   try {
     const dateOnly = new Date(req.body.startDate);
+    const scheduledTimes = req.body.scheduledTimes || [];
+
+    // Use first scheduled time as the main scheduledTime for backward compatibility
+    const mainScheduledTime =
+      scheduledTimes.length > 0
+        ? createLocalDateTime(req.body.startDate, scheduledTimes[0])
+        : dateOnly;
+
+    // Create medicine with reminder and multiple reminder times
     const newMedicine = await prisma.medicine.create({
       data: {
         userEmail: req.body.userEmail,
@@ -72,8 +98,29 @@ const createMedicine = async (
         originalTotalPills: req.body.totalPills,
         pillsPerDose: req.body.pillsPerDose,
         dosesPerDay: req.body.dosesPerDay,
+        scheduledTime: mainScheduledTime,
+        taken: false,
+        reminders: {
+          create: {
+            repeatEveryDay: true,
+            isActive: true,
+            times: {
+              create: scheduledTimes.map((time: string) => ({
+                time: createLocalDateTime(req.body.startDate, time),
+              })),
+            },
+          },
+        },
+      },
+      include: {
+        reminders: {
+          include: {
+            times: true,
+          },
+        },
       },
     });
+
     return res.status(201).json({
       status: 201,
       message: "Medicine created successfully",
@@ -94,6 +141,17 @@ const updateMedicine = async (
     const dateOnly = req.body.startDate
       ? new Date(req.body.startDate)
       : undefined;
+    const scheduledTimes = req.body.scheduledTimes || [];
+
+    // Use first scheduled time as the main scheduledTime for backward compatibility
+    const mainScheduledTime =
+      scheduledTimes.length > 0
+        ? createLocalDateTime(
+            req.body.startDate || new Date().toISOString().split("T")[0],
+            scheduledTimes[0]
+          )
+        : undefined;
+
     const updateData: any = {
       name: req.body.name,
       dosage: req.body.dosage,
@@ -107,13 +165,49 @@ const updateMedicine = async (
       dosesPerDay: req.body.dosesPerDay,
     };
     if (dateOnly) updateData.startDate = dateOnly;
+    if (mainScheduledTime) updateData.scheduledTime = mainScheduledTime;
     if (typeof req.body.taken !== "undefined") {
       updateData.taken = req.body.taken;
     }
+
+    // Update medicine
     const updatedMedicine = await prisma.medicine.update({
       where: { id: req.params.id },
       data: updateData,
     });
+
+    // Update reminders if scheduledTimes are provided
+    if (scheduledTimes.length > 0) {
+      // Delete existing reminders and times
+      await prisma.reminderTime.deleteMany({
+        where: {
+          reminder: {
+            medicineId: req.params.id,
+          },
+        },
+      });
+      await prisma.reminder.deleteMany({
+        where: { medicineId: req.params.id },
+      });
+
+      // Create new reminder with updated times
+      await prisma.reminder.create({
+        data: {
+          medicineId: req.params.id,
+          repeatEveryDay: true,
+          isActive: true,
+          times: {
+            create: scheduledTimes.map((time: string) => ({
+              time: createLocalDateTime(
+                req.body.startDate || new Date().toISOString().split("T")[0],
+                time
+              ),
+            })),
+          },
+        },
+      });
+    }
+
     return res.status(200).json({
       status: 200,
       message: "Medicine updated successfully",
@@ -204,7 +298,9 @@ const getMedicineTakenHistory = async (
     const { id } = req.params;
     const { from, to } = req.query;
     if (!from || !to) {
-      return res.status(400).json({ status: 400, message: "Missing from or to query param" });
+      return res
+        .status(400)
+        .json({ status: 400, message: "Missing from or to query param" });
     }
     const fromDate = startOfDay(parseISO(from as string));
     const toDate = startOfDay(parseISO(to as string));
@@ -220,7 +316,9 @@ const getMedicineTakenHistory = async (
     });
     return res.status(200).json({ status: 200, takenHistory });
   } catch (error) {
-    return res.status(500).json({ status: 500, message: "Internal server error", error });
+    return res
+      .status(500)
+      .json({ status: 500, message: "Internal server error", error });
   }
 };
 
@@ -320,6 +418,47 @@ const refillMedicine = async (
   }
 };
 
+const createReminder = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  try {
+    const { medicineId, time } = req.body;
+
+    if (!medicineId || !time) {
+      return res
+        .status(400)
+        .json({ status: 400, message: "Missing medicineId or time" });
+    }
+
+    const reminder = await prisma.reminder.create({
+      data: {
+        medicineId,
+        repeatEveryDay: true,
+        isActive: true,
+        times: {
+          create: {
+            time: new Date(time),
+          },
+        },
+      },
+      include: {
+        times: true,
+      },
+    });
+
+    return res.status(201).json({
+      status: 201,
+      message: "Reminder created successfully",
+      reminder,
+    });
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ status: 500, message: "Internal server error", error });
+  }
+};
+
 const getPharmacies = async (
   req: Request,
   res: Response
@@ -327,6 +466,53 @@ const getPharmacies = async (
   try {
     const pharmacies = await prisma.pharmacy.findMany();
     return res.status(200).json(pharmacies);
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ status: 500, message: "Internal server error", error });
+  }
+};
+
+const createRemindersForExistingMedicines = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  try {
+    // Find all medicines that don't have reminders
+    const medicinesWithoutReminders = await prisma.medicine.findMany({
+      where: {
+        reminders: {
+          none: {},
+        },
+      },
+    });
+
+    const createdReminders = [];
+
+    for (const medicine of medicinesWithoutReminders) {
+      const reminder = await prisma.reminder.create({
+        data: {
+          medicineId: medicine.id,
+          repeatEveryDay: true,
+          isActive: true,
+          times: {
+            create: {
+              time: medicine.scheduledTime,
+            },
+          },
+        },
+        include: {
+          times: true,
+        },
+      });
+      createdReminders.push(reminder);
+    }
+
+    return res.status(200).json({
+      status: 200,
+      message: `Created ${createdReminders.length} reminders for existing medicines`,
+      createdReminders,
+    });
   } catch (error) {
     return res
       .status(500)
@@ -346,4 +532,6 @@ export {
   getRefillReminders,
   getPharmacies,
   refillMedicine,
+  createReminder,
+  createRemindersForExistingMedicines,
 };

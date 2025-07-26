@@ -157,6 +157,22 @@ const deleteUser = async (req: Request, res: Response): Promise<Response> => {
   }
 };
 
+const saveFcmToken = async (req: Request, res: Response) => {
+  const { email, token } = req.body;
+  if (!email || !token)
+    return res.status(400).json({ error: "Missing email or token" });
+
+  try {
+    await prisma.user.update({
+      where: { email },
+      data: { fcmToken: token },
+    });
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: "Failed to save token" });
+  }
+};
+
 export {
   findUserByEmail,
   createUser,
@@ -164,4 +180,5 @@ export {
   getUsers,
   updateUser,
   deleteUser,
+  saveFcmToken,
 };

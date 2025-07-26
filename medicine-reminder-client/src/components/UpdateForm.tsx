@@ -8,12 +8,18 @@ const UpdateForm = () => {
   const axiosSecure = useAxiosSecure();
   const navigate = useNavigate();
 
+  // Extract scheduled times from existing reminders
+  const existingTimes = med?.reminders?.[0]?.times?.map((t: any) => 
+    new Date(t.time).toTimeString().slice(0, 5)
+  ) || [];
+
   const [form, setForm] = useState({
     userEmail: med?.userEmail || "",
     name: med?.name || "",
     dosage: med?.dosage || "",
     frequency: med?.frequency || "",
     startDate: med?.startDate ? med.startDate.slice(0, 10) : "",
+    scheduledTimes: existingTimes,
     durationDays: med?.durationDays?.toString() || "",
     originalDurationDays: med?.originalDurationDays?.toString() || "",
     instructions: med?.instructions || "",
@@ -23,11 +29,41 @@ const UpdateForm = () => {
     dosesPerDay: med?.dosesPerDay?.toString() || "",
   });
 
+  // Default times for different periods
+  const defaultTimes = {
+    morning: "08:00",
+    afternoon: "14:00", 
+    evening: "20:00"
+  };
+
+  // Parse frequency pattern and set times accordingly
+  const parseFrequencyAndSetTimes = (frequency: string) => {
+    const pattern = frequency.split('-').map(Number);
+    const times = [];
+    
+    if (pattern[0] === 1) times.push(defaultTimes.morning); // Morning
+    if (pattern[1] === 1) times.push(defaultTimes.afternoon); // Afternoon  
+    if (pattern[2] === 1) times.push(defaultTimes.evening); // Evening
+    
+    return times;
+  };
+
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
+    
+    // Auto-set scheduled times when frequency changes
+    if (name === 'frequency') {
+      const times = parseFrequencyAndSetTimes(value);
+      setForm(prev => ({
+        ...prev,
+        [name]: value,
+        scheduledTimes: times,
+        dosesPerDay: times.length.toString()
+      }));
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -48,6 +84,7 @@ const UpdateForm = () => {
       pillsPerDose: form.pillsPerDose ? Number(form.pillsPerDose) : undefined,
       dosesPerDay: form.dosesPerDay ? Number(form.dosesPerDay) : undefined,
       startDate: form.startDate ? new Date(form.startDate).toISOString() : undefined,
+      scheduledTimes: form.scheduledTimes,
     };
 
     // Remove undefined fields
@@ -104,16 +141,45 @@ const UpdateForm = () => {
         />
       </div>
       <div className="form-control">
-        <label className="label font-semibold text-black">Frequency</label>
+        <label className="label font-semibold text-black">Frequency Pattern (Key Field)</label>
         <input
           type="text"
           name="frequency"
           value={form.frequency}
           onChange={handleChange}
-          className="input input-bordered w-full bg-gray-100 text-black"
-          placeholder="e.g. Once daily, Twice daily, etc."
+          className="input input-bordered w-full bg-gray-100 text-black border-2 border-blue-300"
+          placeholder="e.g. 1-0-1 (Morning-Evening)"
         />
+        <p className="text-xs text-gray-500 mt-1">Format: Morning-Afternoon-Evening (1 = take, 0 = skip)</p>
       </div>
+      
+      {/* Scheduled Times Display */}
+      <div className="form-control">
+        <label className="label font-semibold text-black">Scheduled Times (Auto-set based on frequency pattern)</label>
+        {form.scheduledTimes.length > 0 ? (
+          <div className="bg-green-50 p-3 rounded border border-green-200">
+            <p className="text-sm text-green-800 font-medium mb-2">✅ Scheduled times:</p>
+            <div className="space-y-1">
+              {form.scheduledTimes.map((time: string, index: number) => (
+                <div key={index} className="flex items-center gap-2">
+                  <span className="text-sm text-green-700">
+                    {index + 1}. {time === "08:00" ? "8:00 AM (Morning)" : 
+                                 time === "14:00" ? "2:00 PM (Afternoon)" : 
+                                 time === "20:00" ? "8:00 PM (Evening)" : time}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : (
+          <div className="bg-blue-50 p-3 rounded border border-blue-200">
+            <p className="text-sm text-blue-800">
+              💡 Set frequency pattern above to automatically schedule times
+            </p>
+          </div>
+        )}
+      </div>
+      
       <div className="form-control">
         <label className="label font-semibold text-black">Start Date</label>
         <input
@@ -198,6 +264,18 @@ const UpdateForm = () => {
         placeholder="Doses Per Day"
         className="input input-bordered w-full text-black bg-gray-100"
       />
+      
+      {/* Help Section */}
+      <div className="text-sm text-gray-600 bg-blue-50 p-3 rounded">
+        <p><strong>💡 Frequency Pattern Examples:</strong></p>
+        <ul className="list-disc list-inside mt-1">
+          <li><strong>1-0-0:</strong> 8:00 AM (Morning only)</li>
+          <li><strong>0-1-0:</strong> 2:00 PM (Afternoon only)</li>
+          <li><strong>0-0-1:</strong> 8:00 PM (Evening only)</li>
+          <li><strong>1-0-1:</strong> 8:00 AM + 8:00 PM (Morning + Evening)</li>
+          <li><strong>1-1-1:</strong> 8:00 AM + 2:00 PM + 8:00 PM (All three times)</li>
+        </ul>
+      </div>
       <div className="form-control">
         <label className="label font-semibold text-black">Instructions</label>
         <textarea
