@@ -66,7 +66,7 @@ const Report = () => {
             }
             totalScheduled += scheduled;
             const res = await axiosSecure.get(
-              `/api/medicine/${med.id}/taken-history?from=${from}&to=${to}`
+              `/api/medicine/${med.id}/history?from=${from}&to=${to}`
             );
             const takenHistory: { taken: string }[] =
               res.data.takenHistory || [];

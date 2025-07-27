@@ -1,12 +1,15 @@
 import React from "react";
-import { FaPills, FaEdit, FaBell, FaTrash } from "react-icons/fa";
-import { GiPill, GiMedicines, GiVial } from "react-icons/gi";
+import { FaPills, FaEdit, FaTrash } from "react-icons/fa";
+import { GiPill, GiMedicines } from "react-icons/gi";
 import { Link } from "react-router-dom";
 import useAuth from "../../hooks/useAuth.tsx";
 import useMedicinesUser from "../../hooks/useMedicinesUser.tsx";
 import { Medicine } from "../../types/index.ts";
 import useAxiosSecure from "../../hooks/useAxiosSecure.tsx";
-import { showConfirm, medicineNotifications } from "../../utils/notifications.ts";
+import {
+  showConfirm,
+  medicineNotifications,
+} from "../../utils/notifications.ts";
 
 const getMedicineIcon = (days: number) => {
   if (days <= 3)
@@ -92,7 +95,7 @@ const MyMedications = () => {
       "Delete Medication",
       `Are you sure you want to delete "${medicineName}"? This action cannot be undone.`
     );
-    
+
     if (result.isConfirmed) {
       try {
         await axiosSecure.delete(`/api/medicine/${id}`);
@@ -104,7 +107,9 @@ const MyMedications = () => {
         }
       } catch (error) {
         console.error("Failed to delete medicine", error);
-        medicineNotifications.deleted("Failed to delete medicine. Please try again.");
+        medicineNotifications.deleted(
+          "Failed to delete medicine. Please try again."
+        );
       }
     }
   };
@@ -153,7 +158,10 @@ const MyMedications = () => {
                       Start Date
                     </th>
                     <th className="py-4 px-3 md:px-6 font-semibold">
-                      Duration
+                      Total Duration
+                    </th>
+                    <th className="py-4 px-3 md:px-6 font-semibold">
+                      Current Duration
                     </th>
                     <th className="py-4 px-3 md:px-6 font-semibold">Actions</th>
                   </tr>
@@ -185,6 +193,13 @@ const MyMedications = () => {
                       </td>
                       <td
                         className={`py-4 px-3 md:px-6 font-bold ${getRemainingColor(
+                          med.originalDurationDays
+                        )}`}
+                      >
+                        {med.originalDurationDays} days
+                      </td>
+                      <td
+                        className={`py-4 px-3 md:px-6 font-bold ${getRemainingColor(
                           med.durationDays
                         )}`}
                       >
@@ -196,13 +211,12 @@ const MyMedications = () => {
                             <FaEdit />
                           </Link>
                         </button>
+
                         <button
-                          className="hover:text-yellow-500"
-                          title="Remind"
+                          className="hover:text-red-500"
+                          title="Delete"
+                          onClick={() => handleDelete(med.id, med.name)}
                         >
-                          <FaBell />
-                        </button>
-                        <button className="hover:text-red-500" title="Delete" onClick={() => handleDelete(med.id, med.name)}>
                           <FaTrash />
                         </button>
                       </td>
@@ -246,12 +260,7 @@ const MyMedications = () => {
                           <FaEdit />
                         </Link>
                       </button>
-                      <button
-                        className="rounded-full p-2 bg-yellow-50 hover:bg-yellow-100 text-yellow-500 shadow-sm"
-                        title="Remind"
-                      >
-                        <FaBell />
-                      </button>
+
                       <button
                         className="rounded-full p-2 bg-red-50 hover:bg-red-100 text-red-500 shadow-sm"
                         title="Delete"

@@ -1,6 +1,6 @@
 import app from "./app";
 import dotenv from "dotenv";
-import "./schedulers/medicineReminder"; // Import the scheduler to start it
+import "./schedulers/medicineReminder";
 dotenv.config();
 
 const port: number | string = process.env["PORT"] || 3001;

@@ -9,15 +9,16 @@ datasource db {
 }
 
 model User {
-  id        String        @id @default(uuid())
-  name      String
-  email     String        @unique
-  password  String
-  createdAt DateTime      @default(now())
-  lastLogin DateTime      @default(now())
-  fcmToken  String?
-  medicines Medicine[]
-  settings  UserSettings?
+  id            String        @id @default(uuid())
+  name          String
+  email         String        @unique
+  password      String
+  createdAt     DateTime      @default(now())
+  lastLogin     DateTime      @default(now())
+  fcmToken      String?
+  medicines     Medicine[]
+  settings      UserSettings?
+  notifications Notification[]
 }
 
 model Medicine {
@@ -77,4 +78,17 @@ model UserSettings {
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
   user             User     @relation(fields: [userEmail], references: [email], onDelete: Cascade)
+}
+
+model Notification {
+  id           String   @id @default(uuid())
+  userEmail    String
+  title        String
+  message      String
+  type         String   // 'reminder', 'missed_dose', 'refill', 'system', 'success'
+  isRead       Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  medicineId   String?
+  medicineName String?
+  user         User     @relation(fields: [userEmail], references: [email], onDelete: Cascade)
 }

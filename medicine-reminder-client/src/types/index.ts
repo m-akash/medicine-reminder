@@ -37,7 +37,20 @@ export interface Medicine {
   dosage: string;
   frequency: string;
   startDate: string;
+  originalDurationDays: number;
   durationDays: number;
   instructions?: string;
   taken?: string;
+}
+
+export interface Notification {
+  id: string;
+  userEmail: string;
+  title: string;
+  message: string;
+  type: "reminder" | "missed_dose" | "refill" | "system" | "success";
+  isRead: boolean;
+  createdAt: Date;
+  medicineId?: string;
+  medicineName?: string;
 }

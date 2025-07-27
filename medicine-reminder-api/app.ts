@@ -20,6 +20,9 @@ app.use("/api", userRouter);
 import medicineRouter from "./routers/medicine.route";
 app.use("/api", medicineRouter);
 
+import notificationRouter from "./routers/notification.route";
+app.use("/api", notificationRouter);
+
 app.post("/jwt", async (req: Request, res: Response) => {
   const user = req.body;
   if (!JWT.jwtSecret) {

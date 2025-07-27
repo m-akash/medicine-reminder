@@ -2,6 +2,10 @@ import cron from "node-cron";
 import prisma from "../config/db.config";
 import { sendFCMNotification } from "../utils/fcmUtils";
 import { addMinutes, isAfter, startOfDay } from "date-fns";
+import {
+  createMedicineReminderNotification,
+  createMissedDoseNotification,
+} from "../utils/notificationUtils";
 
 console.log("Medicine reminder scheduler module loaded");
 
@@ -67,7 +71,6 @@ cron.schedule("* * * * *", async () => {
       continue;
     }
 
-    // Check if notifications are enabled for this user
     const userSettings = med.user.settings;
     if (
       userSettings &&
@@ -153,10 +156,8 @@ cron.schedule("* * * * *", async () => {
           };
         })
       );
-
-      // Get user's reminder advance time (default to 30 minutes)
       const userSettings = medicinesAtTime[0]?.medicine?.user?.settings;
-      let reminderAdvance = 30; // default 30 minutes
+      let reminderAdvance = 0;
 
       if (
         userSettings &&
@@ -164,20 +165,23 @@ cron.schedule("* * * * *", async () => {
         userSettings.notifications
       ) {
         const notifications = userSettings.notifications as any;
-        reminderAdvance = notifications.reminderAdvance || 30;
+        reminderAdvance = notifications.reminderAdvance || 0;
       }
 
       const upcomingTime = addMinutes(doseTime, -reminderAdvance);
       const upcomingDiff = Math.abs(now.getTime() - upcomingTime.getTime());
-
-      if (isAfter(doseTime, now) && upcomingDiff < 60000) {
+      if (
+        reminderAdvance > 0 &&
+        isAfter(doseTime, now) &&
+        upcomingDiff < 60000
+      ) {
         const doseTimeName = getDoseTimeName(doseTime);
         const medicineNames = medicinesAtTime
           .map(({ medicine }) => `${medicine.name}(${medicine.dosage})`)
           .join(", ");
 
         console.log(
-          `Sending upcoming notification: ${doseTimeName} dose: ${medicineNames}`
+          `[NOTIFY-UPCOMING] fcmToken: ${fcmToken} | medicines: ${medicineNames} | doseTime: ${doseTime.toISOString()} | type: upcoming`
         );
         await sendFCMNotification(
           fcmToken,
@@ -187,7 +191,6 @@ cron.schedule("* * * * *", async () => {
       }
 
       const currentDiff = Math.abs(now.getTime() - doseTime.getTime());
-
       if (currentDiff < 60000) {
         const doseTimeName = getDoseTimeName(doseTime);
         const medicineNames = medicinesAtTime
@@ -195,18 +198,34 @@ cron.schedule("* * * * *", async () => {
           .join(", ");
 
         console.log(
-          `Sending current notification: ${doseTimeName} dose: ${medicineNames}`
+          `[NOTIFY-CURRENT] fcmToken: ${fcmToken} | medicines: ${medicineNames} | doseTime: ${doseTime.toISOString()} | type: current`
         );
         await sendFCMNotification(
           fcmToken,
           "Time to Take Medicine",
           `It's time to take your (${doseTimeName.toLowerCase()} dose) medicines: ${medicineNames}!`
         );
+
+        for (const { medicine } of medicinesAtTime) {
+          try {
+            await createMedicineReminderNotification(
+              medicine.userEmail,
+              medicine.name,
+              medicine.dosage || "",
+              doseTimeName,
+              medicine.id
+            );
+          } catch (error) {
+            console.error(
+              `Error creating notification for ${medicine.name}:`,
+              error
+            );
+          }
+        }
       }
 
       const missedTime = addMinutes(doseTime, 60);
       const missedDiff = Math.abs(now.getTime() - missedTime.getTime());
-
       if (isAfter(now, missedTime) && missedDiff < 60000) {
         const untakenMedicines = takenStatuses
           .filter((status) => !status.taken)
@@ -219,9 +238,8 @@ cron.schedule("* * * * *", async () => {
     }
 
     if (allMissedMedicines.length > 0) {
-      // Check if missed dose alerts are enabled for this user
       const userSettings = allMissedMedicines[0]?.medicine?.user?.settings;
-      let missedDoseAlertsEnabled = true; // default enabled
+      let missedDoseAlertsEnabled = true;
 
       if (
         userSettings &&
@@ -229,12 +247,11 @@ cron.schedule("* * * * *", async () => {
         userSettings.notifications
       ) {
         const notifications = userSettings.notifications as any;
-        missedDoseAlertsEnabled = notifications.missedDoseAlerts !== false; // default to true if not set
+        missedDoseAlertsEnabled = notifications.missedDoseAlerts !== false;
       }
 
       if (missedDoseAlertsEnabled) {
         const medicinesByDoseTime = new Map<string, any[]>();
-
         allMissedMedicines.forEach(({ medicine, doseTime }) => {
           const doseTimeName = getDoseTimeName(doseTime);
           if (!medicinesByDoseTime.has(doseTimeName)) {
@@ -242,7 +259,6 @@ cron.schedule("* * * * *", async () => {
           }
           medicinesByDoseTime.get(doseTimeName)!.push(medicine);
         });
-
         const doseTimeMessages = Array.from(medicinesByDoseTime.entries()).map(
           ([doseTimeName, medicines]) => {
             const medicineNames = medicines
@@ -256,12 +272,39 @@ cron.schedule("* * * * *", async () => {
           doseTimeMessages.join(". ") +
           ". Please take them as soon as possible!";
 
-        console.log(`Sending consolidated missed notification: ${message}`);
+        console.log(
+          `[NOTIFY-MISSED] fcmToken: ${fcmToken} | medicines: ${Array.from(
+            medicinesByDoseTime.values()
+          )
+            .flat()
+            .map((m) => m.name)
+            .join(", ")} | type: missed | message: ${message}`
+        );
         await sendFCMNotification(
           fcmToken,
           "Missed Medicine Reminder",
           message
         );
+
+        // Create a single database notification for all missed medicines
+        try {
+          const userEmail = allMissedMedicines[0]?.medicine?.userEmail;
+          const medicineNames = allMissedMedicines
+            .map(({ medicine }) => `${medicine.name}(${medicine.dosage})`)
+            .join(", ");
+          await createMissedDoseNotification(
+            userEmail,
+            medicineNames,
+            "",
+            "Missed Dose",
+            undefined
+          );
+        } catch (error) {
+          console.error(
+            `Error creating missed dose notification for group:`,
+            error
+          );
+        }
       }
     }
   }

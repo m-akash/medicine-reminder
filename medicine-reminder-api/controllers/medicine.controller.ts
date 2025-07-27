@@ -568,6 +568,103 @@ const createRemindersForExistingMedicines = async (
   }
 };
 
+const getReminderStatus = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  try {
+    const { id } = req.params;
+
+    const reminder = await prisma.reminder.findFirst({
+      where: { medicineId: id },
+      include: {
+        times: true,
+      },
+    });
+
+    if (!reminder) {
+      return res.status(404).json({
+        status: 404,
+        message: "Reminder not found for this medicine",
+      });
+    }
+
+    return res.status(200).json({
+      status: 200,
+      message: "Reminder status retrieved successfully",
+      reminder: {
+        id: reminder.id,
+        isActive: reminder.isActive,
+        repeatEveryDay: reminder.repeatEveryDay,
+        times: reminder.times.map((time) => ({
+          id: time.id,
+          time: time.time,
+        })),
+      },
+    });
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ status: 500, message: "Internal server error", error });
+  }
+};
+
+const toggleReminderStatus = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  try {
+    const { id } = req.params;
+    const { isActive } = req.body;
+
+    if (typeof isActive !== "boolean") {
+      return res.status(400).json({
+        status: 400,
+        message: "isActive must be a boolean value",
+      });
+    }
+
+    const reminder = await prisma.reminder.findFirst({
+      where: { medicineId: id },
+    });
+
+    if (!reminder) {
+      return res.status(404).json({
+        status: 404,
+        message: "Reminder not found for this medicine",
+      });
+    }
+
+    const updatedReminder = await prisma.reminder.update({
+      where: { id: reminder.id },
+      data: { isActive },
+      include: {
+        times: true,
+      },
+    });
+
+    return res.status(200).json({
+      status: 200,
+      message: `Reminder ${
+        isActive ? "activated" : "deactivated"
+      } successfully`,
+      reminder: {
+        id: updatedReminder.id,
+        isActive: updatedReminder.isActive,
+        repeatEveryDay: updatedReminder.repeatEveryDay,
+        times: updatedReminder.times.map((time) => ({
+          id: time.id,
+          time: time.time,
+        })),
+      },
+    });
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ status: 500, message: "Internal server error", error });
+  }
+};
+
 export {
   getMedicineByEmail,
   getMedicineById,
@@ -581,4 +678,6 @@ export {
   refillMedicine,
   createReminder,
   createRemindersForExistingMedicines,
+  getReminderStatus,
+  toggleReminderStatus,
 };
