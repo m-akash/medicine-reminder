@@ -1,7 +1,6 @@
 import { toast } from "react-toastify";
 import Swal from "sweetalert2";
 
-// Toast notification types
 export const showToast = {
   success: (message: string) => {
     toast.success(message, {
@@ -56,7 +55,6 @@ export const showToast = {
   },
 };
 
-// SweetAlert2 confirmation dialogs
 export const showConfirm = {
   delete: (
     title: string = "Are you sure?",
@@ -107,7 +105,6 @@ export const showConfirm = {
   },
 };
 
-// SweetAlert2 success/error messages
 export const showAlert = {
   success: (title: string, text?: string) => {
     Swal.fire({
@@ -148,7 +145,6 @@ export const showAlert = {
   },
 };
 
-// Medicine-specific notifications
 export const medicineNotifications = {
   added: (medicineName: string) => {
     showToast.success(`${medicineName} has been added successfully!`);
@@ -181,7 +177,6 @@ export const medicineNotifications = {
   },
 };
 
-// Auth-specific notifications
 export const authNotifications = {
   loginSuccess: () => {
     showToast.success("Welcome back! You have been logged in successfully.");
@@ -211,7 +206,6 @@ export const authNotifications = {
   },
 };
 
-// Form validation notifications
 export const formNotifications = {
   requiredField: (fieldName: string) => {
     showToast.warning(`Please fill in the ${fieldName} field.`);
@@ -230,7 +224,6 @@ export const formNotifications = {
   },
 };
 
-// Network/API notifications
 export const apiNotifications = {
   networkError: () => {
     showToast.error("Network error. Please check your internet connection.");

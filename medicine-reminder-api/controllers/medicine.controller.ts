@@ -2,13 +2,44 @@ import { Request, Response } from "express";
 import prisma from "../config/db.config";
 import { parseISO, startOfDay } from "date-fns";
 
-// Helper function to create date with time in local timezone
 const createLocalDateTime = (dateStr: string, timeStr: string): Date => {
+  console.log("Creating local date time with:", { dateStr, timeStr });
+
+  if (!dateStr || !timeStr) {
+    console.error("Invalid date or time string:", { dateStr, timeStr });
+    throw new Error("Invalid date or time string");
+  }
+
   const [year, month, day] = dateStr.split("-").map(Number);
   const [hour, minute] = timeStr.split(":").map(Number);
 
-  // Create date in local timezone
+  console.log("Parsed values:", { year, month, day, hour, minute });
+
+  if (
+    isNaN(year) ||
+    isNaN(month) ||
+    isNaN(day) ||
+    isNaN(hour) ||
+    isNaN(minute)
+  ) {
+    console.error("Invalid numeric values:", {
+      year,
+      month,
+      day,
+      hour,
+      minute,
+    });
+    throw new Error("Invalid numeric values for date/time");
+  }
+
   const date = new Date(year, month - 1, day, hour, minute, 0, 0);
+
+  if (isNaN(date.getTime())) {
+    console.error("Invalid date created:", date);
+    throw new Error("Invalid date created");
+  }
+
+  console.log("Created date:", date);
   return date;
 };
 
@@ -77,13 +108,11 @@ const createMedicine = async (
     const dateOnly = new Date(req.body.startDate);
     const scheduledTimes = req.body.scheduledTimes || [];
 
-    // Use first scheduled time as the main scheduledTime for backward compatibility
     const mainScheduledTime =
       scheduledTimes.length > 0
         ? createLocalDateTime(req.body.startDate, scheduledTimes[0])
         : dateOnly;
 
-    // Create medicine with reminder and multiple reminder times
     const newMedicine = await prisma.medicine.create({
       data: {
         userEmail: req.body.userEmail,
@@ -92,10 +121,10 @@ const createMedicine = async (
         frequency: req.body.frequency,
         startDate: dateOnly,
         durationDays: req.body.durationDays,
-        originalDurationDays: req.body.durationDays,
+        originalDurationDays: req.body.originalDurationDays,
         instructions: req.body.instructions,
         totalPills: req.body.totalPills,
-        originalTotalPills: req.body.totalPills,
+        originalTotalPills: req.body.originalTotalPills,
         pillsPerDose: req.body.pillsPerDose,
         dosesPerDay: req.body.dosesPerDay,
         scheduledTime: mainScheduledTime,
@@ -138,24 +167,42 @@ const updateMedicine = async (
   res: Response
 ): Promise<Response> => {
   try {
+    console.log("Update medicine request body:", req.body);
+    console.log("Medicine ID:", req.params.id);
+
+    const existingMedicine = await prisma.medicine.findUnique({
+      where: { id: req.params.id },
+    });
+
+    if (!existingMedicine) {
+      console.log("Medicine not found:", req.params.id);
+      return res.status(404).json({
+        status: 404,
+        message: "Medicine not found",
+      });
+    }
+
+    console.log("Found existing medicine:", existingMedicine);
+
     const dateOnly = req.body.startDate
       ? new Date(req.body.startDate)
       : undefined;
     const scheduledTimes = req.body.scheduledTimes || [];
 
-    // Use first scheduled time as the main scheduledTime for backward compatibility
+    const dateString = req.body.startDate
+      ? new Date(req.body.startDate).toISOString().split("T")[0]
+      : new Date().toISOString().split("T")[0];
+
     const mainScheduledTime =
       scheduledTimes.length > 0
-        ? createLocalDateTime(
-            req.body.startDate || new Date().toISOString().split("T")[0],
-            scheduledTimes[0]
-          )
+        ? createLocalDateTime(dateString, scheduledTimes[0])
         : undefined;
 
     const updateData: any = {
       name: req.body.name,
       dosage: req.body.dosage,
       frequency: req.body.frequency,
+      startDate: dateOnly,
       durationDays: req.body.durationDays,
       originalDurationDays: req.body.originalDurationDays,
       instructions: req.body.instructions,
@@ -164,21 +211,33 @@ const updateMedicine = async (
       pillsPerDose: req.body.pillsPerDose,
       dosesPerDay: req.body.dosesPerDay,
     };
+
+    // Only include fields that are not undefined or null
+    Object.keys(updateData).forEach(
+      (key) =>
+        (updateData[key] === undefined || updateData[key] === null) &&
+        delete updateData[key]
+    );
+
     if (dateOnly) updateData.startDate = dateOnly;
     if (mainScheduledTime) updateData.scheduledTime = mainScheduledTime;
     if (typeof req.body.taken !== "undefined") {
       updateData.taken = req.body.taken;
     }
 
-    // Update medicine
+    console.log("Update data:", updateData);
+
     const updatedMedicine = await prisma.medicine.update({
       where: { id: req.params.id },
       data: updateData,
     });
 
-    // Update reminders if scheduledTimes are provided
+    console.log("Medicine updated successfully:", updatedMedicine);
+
     if (scheduledTimes.length > 0) {
-      // Delete existing reminders and times
+      console.log("Updating reminders with times:", scheduledTimes);
+
+      // Delete existing reminder times first
       await prisma.reminderTime.deleteMany({
         where: {
           reminder: {
@@ -186,11 +245,13 @@ const updateMedicine = async (
           },
         },
       });
+
+      // Delete existing reminders
       await prisma.reminder.deleteMany({
         where: { medicineId: req.params.id },
       });
 
-      // Create new reminder with updated times
+      // Create new reminder with times
       await prisma.reminder.create({
         data: {
           medicineId: req.params.id,
@@ -198,14 +259,13 @@ const updateMedicine = async (
           isActive: true,
           times: {
             create: scheduledTimes.map((time: string) => ({
-              time: createLocalDateTime(
-                req.body.startDate || new Date().toISOString().split("T")[0],
-                time
-              ),
+              time: createLocalDateTime(dateString, time),
             })),
           },
         },
       });
+
+      console.log("Reminders updated successfully");
     }
 
     return res.status(200).json({
@@ -214,9 +274,12 @@ const updateMedicine = async (
       updatedMedicine,
     });
   } catch (error) {
-    return res
-      .status(500)
-      .json({ status: 500, message: "Internal server error", error });
+    console.error("Error updating medicine:", error);
+    return res.status(500).json({
+      status: 500,
+      message: "Internal server error",
+      error: error instanceof Error ? error.message : String(error),
+    });
   }
 };
 
@@ -459,26 +522,11 @@ const createReminder = async (
   }
 };
 
-const getPharmacies = async (
-  req: Request,
-  res: Response
-): Promise<Response> => {
-  try {
-    const pharmacies = await prisma.pharmacy.findMany();
-    return res.status(200).json(pharmacies);
-  } catch (error) {
-    return res
-      .status(500)
-      .json({ status: 500, message: "Internal server error", error });
-  }
-};
-
 const createRemindersForExistingMedicines = async (
   req: Request,
   res: Response
 ): Promise<Response> => {
   try {
-    // Find all medicines that don't have reminders
     const medicinesWithoutReminders = await prisma.medicine.findMany({
       where: {
         reminders: {
@@ -530,7 +578,6 @@ export {
   setMedicineTakenDay,
   getMedicineTakenHistory,
   getRefillReminders,
-  getPharmacies,
   refillMedicine,
   createReminder,
   createRemindersForExistingMedicines,

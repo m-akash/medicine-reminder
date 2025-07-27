@@ -9,57 +9,52 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(uuid())
+  id        String        @id @default(uuid())
   name      String
-  email     String   @unique
+  email     String        @unique
   password  String
-  createdAt DateTime @default(now())
-  lastLogin DateTime @default(now())
-
+  createdAt DateTime      @default(now())
+  lastLogin DateTime      @default(now())
   fcmToken  String?
-
   medicines Medicine[]
+  settings  UserSettings?
 }
 
 model Medicine {
-  id                   String    @id @default(uuid())
-  userEmail            String
+  id                   String             @id @default(uuid())
   name                 String
   dosage               String?
-  frequency            String?
-  startDate            DateTime? @db.Date
-  durationDays         Int?
-  originalDurationDays Int?
+  frequency            String
+  startDate            DateTime           @db.Date
+  durationDays         Int
   instructions         String?
-  totalPills           Int
-  originalTotalPills   Int?
+  userEmail            String
+  dosesPerDay          Int
   pillsPerDose         Int
-  dosesPerDay          Int?
-
+  totalPills           Int
+  originalDurationDays Int
+  originalTotalPills   Int
   scheduledTime        DateTime
   taken                Boolean
-
-  user              User               @relation(fields: [userEmail], references: [email], onDelete: Cascade)
-  reminders         Reminder[]
-  medicineTakenDays MedicineTakenDay[]
+  user                 User               @relation(fields: [userEmail], references: [email], onDelete: Cascade)
+  medicineTakenDays    MedicineTakenDay[]
+  reminders            Reminder[]
 }
 
 model Reminder {
-  id             String  @id @default(uuid())
+  id             String         @id @default(uuid())
   medicineId     String
-  repeatEveryDay Boolean @default(true)
-  isActive       Boolean @default(true)
-
-  medicine Medicine       @relation(fields: [medicineId], references: [id], onDelete: Cascade)
-  times    ReminderTime[]
+  repeatEveryDay Boolean        @default(true)
+  isActive       Boolean        @default(true)
+  medicine       Medicine       @relation(fields: [medicineId], references: [id], onDelete: Cascade)
+  times          ReminderTime[]
 }
 
 model ReminderTime {
   id         String   @id @default(uuid())
   reminderId String
   time       DateTime
-
-  reminder Reminder @relation(fields: [reminderId], references: [id], onDelete: Cascade)
+  reminder   Reminder @relation(fields: [reminderId], references: [id], onDelete: Cascade)
 }
 
 model MedicineTakenDay {
@@ -67,15 +62,19 @@ model MedicineTakenDay {
   medicineId String
   date       DateTime @db.Date
   taken      String
-
-  medicine Medicine @relation(fields: [medicineId], references: [id], onDelete: Cascade)
+  medicine   Medicine @relation(fields: [medicineId], references: [id], onDelete: Cascade)
 
   @@unique([medicineId, date])
 }
 
-model Pharmacy {
-  id      String @id @default(uuid())
-  name    String
-  address String
-  phone   String
+model UserSettings {
+  id               String   @id @default(uuid())
+  userEmail        String   @unique
+  notifications    Json
+  medicineDefaults Json
+  privacy          Json
+  appearance       Json
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  user             User     @relation(fields: [userEmail], references: [email], onDelete: Cascade)
 }

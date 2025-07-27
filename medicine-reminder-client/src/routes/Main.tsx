@@ -7,6 +7,7 @@ import Schedule from "../pages/Schedule/Schedule.tsx";
 import Reports from "../pages/Reports/Reports.tsx";
 import AddMedicine from "../pages/AddMedicine/AddMedicine.tsx";
 import UpdateMedicine from "../pages/UpdateMedicine/UpdateMedicine.tsx";
+import Settings from "../pages/Settings/Settings.tsx";
 import Register from "../pages/Register/Register.tsx";
 import Login from "../pages/Login/Login.tsx";
 import PrivateRoute from "./PrivateRoute.tsx";
@@ -60,6 +61,14 @@ const router = createBrowserRouter([
         ),
         loader: ({ params }) =>
           fetch(`http://localhost:8000/api/medicine/${params.id}`),
+      },
+      {
+        path: "/settings",
+        element: (
+          <PrivateRoute>
+            <Settings />
+          </PrivateRoute>
+        ),
       },
       {
         path: "/register",

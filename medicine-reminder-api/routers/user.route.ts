@@ -7,6 +7,8 @@ import {
   socialLogin,
   updateUser,
   saveFcmToken,
+  getUserSettings,
+  saveUserSettings,
 } from "../controllers/user.controller";
 const router = express.Router();
 
@@ -17,5 +19,7 @@ router.post("/user/social-login", socialLogin);
 router.put("/user/:email", updateUser);
 router.delete("/user/:email", deleteUser);
 router.post("/user/save-fcm-token", saveFcmToken);
+router.get("/user/:email/settings", getUserSettings);
+router.put("/user/:email/settings", saveUserSettings);
 
 export default router;

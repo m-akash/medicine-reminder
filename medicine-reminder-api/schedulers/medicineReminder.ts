@@ -41,7 +41,11 @@ cron.schedule("* * * * *", async () => {
 
   const medicines = await prisma.medicine.findMany({
     include: {
-      user: true,
+      user: {
+        include: {
+          settings: true,
+        },
+      },
       reminders: {
         where: { isActive: true },
         include: {
@@ -61,6 +65,22 @@ cron.schedule("* * * * *", async () => {
         `Medicine ${med.name} has no FCM token for user ${med.userEmail}`
       );
       continue;
+    }
+
+    // Check if notifications are enabled for this user
+    const userSettings = med.user.settings;
+    if (
+      userSettings &&
+      typeof userSettings.notifications === "object" &&
+      userSettings.notifications
+    ) {
+      const notifications = userSettings.notifications as any;
+      if (!notifications.enabled) {
+        console.log(
+          `Notifications disabled for user ${med.userEmail}, skipping medicine ${med.name}`
+        );
+        continue;
+      }
     }
 
     console.log(`Processing medicine: ${med.name}`);
@@ -134,7 +154,20 @@ cron.schedule("* * * * *", async () => {
         })
       );
 
-      const upcomingTime = addMinutes(doseTime, -30);
+      // Get user's reminder advance time (default to 30 minutes)
+      const userSettings = medicinesAtTime[0]?.medicine?.user?.settings;
+      let reminderAdvance = 30; // default 30 minutes
+
+      if (
+        userSettings &&
+        typeof userSettings.notifications === "object" &&
+        userSettings.notifications
+      ) {
+        const notifications = userSettings.notifications as any;
+        reminderAdvance = notifications.reminderAdvance || 30;
+      }
+
+      const upcomingTime = addMinutes(doseTime, -reminderAdvance);
       const upcomingDiff = Math.abs(now.getTime() - upcomingTime.getTime());
 
       if (isAfter(doseTime, now) && upcomingDiff < 60000) {
@@ -186,30 +219,50 @@ cron.schedule("* * * * *", async () => {
     }
 
     if (allMissedMedicines.length > 0) {
-      const medicinesByDoseTime = new Map<string, any[]>();
+      // Check if missed dose alerts are enabled for this user
+      const userSettings = allMissedMedicines[0]?.medicine?.user?.settings;
+      let missedDoseAlertsEnabled = true; // default enabled
 
-      allMissedMedicines.forEach(({ medicine, doseTime }) => {
-        const doseTimeName = getDoseTimeName(doseTime);
-        if (!medicinesByDoseTime.has(doseTimeName)) {
-          medicinesByDoseTime.set(doseTimeName, []);
-        }
-        medicinesByDoseTime.get(doseTimeName)!.push(medicine);
-      });
+      if (
+        userSettings &&
+        typeof userSettings.notifications === "object" &&
+        userSettings.notifications
+      ) {
+        const notifications = userSettings.notifications as any;
+        missedDoseAlertsEnabled = notifications.missedDoseAlerts !== false; // default to true if not set
+      }
 
-      const doseTimeMessages = Array.from(medicinesByDoseTime.entries()).map(
-        ([doseTimeName, medicines]) => {
-          const medicineNames = medicines
-            .map((medicine) => `${medicine.name}(${medicine.dosage})`)
-            .join(", ");
-          return `You missed your (${doseTimeName.toLowerCase()} dose) medicines: ${medicineNames}`;
-        }
-      );
+      if (missedDoseAlertsEnabled) {
+        const medicinesByDoseTime = new Map<string, any[]>();
 
-      const message =
-        doseTimeMessages.join(". ") + ". Please take them as soon as possible!";
+        allMissedMedicines.forEach(({ medicine, doseTime }) => {
+          const doseTimeName = getDoseTimeName(doseTime);
+          if (!medicinesByDoseTime.has(doseTimeName)) {
+            medicinesByDoseTime.set(doseTimeName, []);
+          }
+          medicinesByDoseTime.get(doseTimeName)!.push(medicine);
+        });
 
-      console.log(`Sending consolidated missed notification: ${message}`);
-      await sendFCMNotification(fcmToken, "Missed Medicine Reminder", message);
+        const doseTimeMessages = Array.from(medicinesByDoseTime.entries()).map(
+          ([doseTimeName, medicines]) => {
+            const medicineNames = medicines
+              .map((medicine) => `${medicine.name}(${medicine.dosage})`)
+              .join(", ");
+            return `You missed your (${doseTimeName.toLowerCase()} dose) medicines: ${medicineNames}`;
+          }
+        );
+
+        const message =
+          doseTimeMessages.join(". ") +
+          ". Please take them as soon as possible!";
+
+        console.log(`Sending consolidated missed notification: ${message}`);
+        await sendFCMNotification(
+          fcmToken,
+          "Missed Medicine Reminder",
+          message
+        );
+      }
     }
   }
 });

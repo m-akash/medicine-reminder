@@ -164,13 +164,9 @@ const Navbar = () => {
               className="menu menu-sm dropdown-content bg-gradient-to-br from-blue-800 via-indigo-900 to-amber-700 rounded-xl z-20 mt-3 w-56 p-3 shadow-xl"
             >
               <li>
-                <a className="flex items-center gap-2">
-                  <span className="font-semibold text-white">Profile</span>
-                  <span className="badge badge-accent">New</span>
-                </a>
-              </li>
-              <li>
-                <a className="text-white">Settings</a>
+                <Link to="/settings" className="text-white">
+                  Profile & Settings
+                </Link>
               </li>
               <li>
                 <Link

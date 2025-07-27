@@ -1,16 +1,24 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import useAxiosSecure from "../hooks/useAxiosSecure.tsx";
 import useAuth from "../hooks/useAuth.tsx";
-import { medicineNotifications, formNotifications } from "../utils/notifications.ts";
+import useUserSettings from "../hooks/useUserSettings.tsx";
+import {
+  medicineNotifications,
+  formNotifications,
+} from "../utils/notifications.ts";
+import { useNavigate } from "react-router-dom";
 
 const AddMedicineForm: React.FC = () => {
   const { user } = useAuth();
   const axiosSecure = useAxiosSecure();
+  const navigate = useNavigate();
+  const { settings } = useUserSettings(user?.email);
+
   const [form, setForm] = useState({
     name: "",
     dosage: "",
     frequency: "",
-    startDate: "",
+    startDate: new Date().toISOString().split("T")[0],
     scheduledTimes: [] as string[],
     durationDays: "",
     originalDurationDays: "",
@@ -21,6 +29,18 @@ const AddMedicineForm: React.FC = () => {
     dosesPerDay: "",
   });
 
+  useEffect(() => {
+    if (settings.medicineDefaults) {
+      const defaults = settings.medicineDefaults;
+      setForm((prev) => ({
+        ...prev,
+        // originalDurationDays: defaults.defaultDurationDays.toString(),
+        dosesPerDay: defaults.defaultDosesPerDay.toString(),
+        scheduledTimes: defaults.defaultReminderTimes,
+      }));
+    }
+  }, [settings.medicineDefaults]);
+
   const defaultTimes = {
     morning: "08:00",
     afternoon: "14:00",
@@ -30,11 +50,9 @@ const AddMedicineForm: React.FC = () => {
   const parseFrequencyAndSetTimes = (frequency: string) => {
     const pattern = frequency.split("-").map(Number);
     const times = [];
-
     if (pattern[0] === 1) times.push(defaultTimes.morning);
     if (pattern[1] === 1) times.push(defaultTimes.afternoon);
     if (pattern[2] === 1) times.push(defaultTimes.evening);
-
     return times;
   };
 
@@ -96,7 +114,7 @@ const AddMedicineForm: React.FC = () => {
 
     setLoading(true);
     try {
-      await axiosSecure.post("/api/medicine", {
+      const addedMedi = await axiosSecure.post("/api/medicine", {
         userEmail: user?.email,
         name: form.name,
         dosage: form.dosage,
@@ -111,12 +129,15 @@ const AddMedicineForm: React.FC = () => {
         pillsPerDose: Number(form.pillsPerDose),
         dosesPerDay: Number(form.dosesPerDay),
       });
-      medicineNotifications.added(form.name);
+      if (addedMedi.statusText === "Created") {
+        medicineNotifications.added(form.name);
+      }
+      navigate("/medication");
       setForm({
         name: "",
         dosage: "",
         frequency: "",
-        startDate: "",
+        startDate: new Date().toISOString().split("T")[0],
         scheduledTimes: [],
         durationDays: "",
         originalDurationDays: "",
@@ -141,21 +162,33 @@ const AddMedicineForm: React.FC = () => {
       <h2 className="text-xl font-bold text-primary text-center mb-2">
         Add Medicine
       </h2>
-      <input
-        name="name"
-        value={form.name}
-        onChange={handleChange}
-        required
-        placeholder="Medicine Name"
-        className="input input-bordered w-full text-black bg-gray-100"
-      />
-      <input
-        name="dosage"
-        value={form.dosage}
-        onChange={handleChange}
-        placeholder="Dosage (e.g. 500mg)"
-        className="input input-bordered w-full text-black bg-gray-100"
-      />
+      <div className="space-y-2">
+        <label htmlFor="name" className="text-sm font-medium text-gray-700">
+          Medicine Name
+        </label>
+        <input
+          id="name"
+          name="name"
+          value={form.name}
+          onChange={handleChange}
+          required
+          placeholder="Enter medicine name"
+          className="input input-bordered w-full text-black bg-gray-100"
+        />
+      </div>
+      <div className="space-y-2">
+        <label htmlFor="dosage" className="text-sm font-medium text-gray-700">
+          Dosage
+        </label>
+        <input
+          id="dosage"
+          name="dosage"
+          value={form.dosage}
+          onChange={handleChange}
+          placeholder="e.g. 500mg"
+          className="input input-bordered w-full text-black bg-gray-100"
+        />
+      </div>
       <div className="space-y-2">
         <label className="text-sm font-medium text-gray-700">
           Frequency Pattern (Key Field)
@@ -164,6 +197,7 @@ const AddMedicineForm: React.FC = () => {
           name="frequency"
           value={form.frequency}
           onChange={handleChange}
+          required
           placeholder="e.g. 1-0-1 (Morning-Evening)"
           className="input input-bordered w-full text-black bg-gray-100 border-2 border-blue-300"
         />
@@ -200,14 +234,14 @@ const AddMedicineForm: React.FC = () => {
         ) : (
           <div className="bg-blue-50 p-3 rounded border border-blue-200">
             <p className="text-sm text-blue-800">
-              💡 Set "Doses Per Day" below to automatically schedule times
+              Set "Doses Per Day" below to automatically schedule times
             </p>
           </div>
         )}
       </div>
       <div className="text-sm text-gray-600 bg-blue-50 p-3 rounded">
         <p>
-          <strong>💡 Automatic Scheduling:</strong> Times are automatically set
+          <strong>Automatic Scheduling:</strong> Times are automatically set
           based on frequency pattern:
         </p>
         <ul className="list-disc list-inside mt-1">
@@ -233,37 +267,62 @@ const AddMedicineForm: React.FC = () => {
           and evening)
         </p>
       </div>
-      <label className="text-sm font-medium text-gray-700">Started Date</label>
-      <input
-        name="startDate"
-        value={form.startDate}
-        onChange={handleChange}
-        required
-        type="date"
-        className="input input-bordered w-full text-black bg-gray-100"
-      />
-      <input
-        name="originalDurationDays"
-        value={form.originalDurationDays}
-        onChange={handleChange}
-        required
-        type="number"
-        min="1"
-        placeholder="How long will you take this medicine for in total? (days)"
-        className="input input-bordered w-full text-black bg-gray-100"
-      />
-      <input
-        name="durationDays"
-        value={form.durationDays}
-        onChange={handleChange}
-        required
-        type="number"
-        min="1"
-        placeholder="How long can you take the medicine you have now? (days)"
-        className="input input-bordered w-full text-black bg-gray-100"
-      />
+      <div className="space-y-2">
+        <label
+          htmlFor="startDate"
+          className="text-sm font-medium text-gray-700"
+        >
+          Start Date
+        </label>
+        <input
+          id="startDate"
+          name="startDate"
+          value={form.startDate}
+          onChange={handleChange}
+          required
+          type="date"
+          className="input input-bordered w-full text-black bg-gray-100 [&::-webkit-calendar-picker-indicator]:filter [&::-webkit-calendar-picker-indicator]:invert [&::-webkit-calendar-picker-indicator]:hover:scale-110 [&::-webkit-calendar-picker-indicator]:transition-transform"
+        />
+      </div>
+      <div className="space-y-2">
+        <label
+          htmlFor="originalDurationDays"
+          className="text-sm font-medium text-gray-700"
+        >
+          Total Treatment Duration (days)
+        </label>
+        <input
+          id="originalDurationDays"
+          name="originalDurationDays"
+          value={form.originalDurationDays}
+          onChange={handleChange}
+          required
+          type="number"
+          min="1"
+          placeholder="How long will you take this medicine for in total?"
+          className="input input-bordered w-full text-black bg-gray-100"
+        />
+      </div>
+      <div className="space-y-2">
+        <label
+          htmlFor="durationDays"
+          className="text-sm font-medium text-gray-700"
+        >
+          Current Supply Duration (days)
+        </label>
+        <input
+          id="durationDays"
+          name="durationDays"
+          value={form.durationDays}
+          onChange={handleChange}
+          required
+          type="number"
+          min="1"
+          placeholder="How long can you take the medicine you have now?"
+          className="input input-bordered w-full text-black bg-gray-100"
+        />
+      </div>
 
-      {/* Hidden input for originalTotalPills - automatically calculated from frequency and originalDurationDays */}
       <input
         name="originalTotalPills"
         value={form.originalTotalPills}
@@ -273,26 +332,44 @@ const AddMedicineForm: React.FC = () => {
         min="1"
         className="hidden"
       />
-      <input
-        name="totalPills"
-        value={form.totalPills}
-        onChange={handleChange}
-        required
-        type="number"
-        min="1"
-        placeholder="Total Pills"
-        className="input input-bordered w-full text-black bg-gray-100"
-      />
-      <input
-        name="pillsPerDose"
-        value={form.pillsPerDose}
-        onChange={handleChange}
-        required
-        type="number"
-        min="1"
-        placeholder="Pills Per Dose"
-        className="input input-bordered w-full text-black bg-gray-100"
-      />
+      <div className="space-y-2">
+        <label
+          htmlFor="totalPills"
+          className="text-sm font-medium text-gray-700"
+        >
+          Total Pills in Current Supply
+        </label>
+        <input
+          id="totalPills"
+          name="totalPills"
+          value={form.totalPills}
+          onChange={handleChange}
+          required
+          type="number"
+          min="1"
+          placeholder="How many pills do you have now?"
+          className="input input-bordered w-full text-black bg-gray-100"
+        />
+      </div>
+      <div className="space-y-2">
+        <label
+          htmlFor="pillsPerDose"
+          className="text-sm font-medium text-gray-700"
+        >
+          Pills Per Dose
+        </label>
+        <input
+          id="pillsPerDose"
+          name="pillsPerDose"
+          value={form.pillsPerDose}
+          onChange={handleChange}
+          required
+          type="number"
+          min="1"
+          placeholder="How many pills would you take per dose?"
+          className="input input-bordered w-full text-black bg-gray-100"
+        />
+      </div>
 
       <input
         name="dosesPerDay"
@@ -303,13 +380,22 @@ const AddMedicineForm: React.FC = () => {
         min="1"
         className="hidden"
       />
-      <textarea
-        name="instructions"
-        value={form.instructions}
-        onChange={handleChange}
-        placeholder="Instructions"
-        className="textarea textarea-bordered w-full text-black bg-gray-100"
-      />
+      <div className="space-y-2">
+        <label
+          htmlFor="instructions"
+          className="text-sm font-medium text-gray-700"
+        >
+          Special Instructions
+        </label>
+        <textarea
+          id="instructions"
+          name="instructions"
+          value={form.instructions}
+          onChange={handleChange}
+          placeholder="Any special instructions (optional)"
+          className="textarea textarea-bordered w-full text-black bg-gray-100"
+        />
+      </div>
       <button
         type="submit"
         className="btn btn-primary w-full"

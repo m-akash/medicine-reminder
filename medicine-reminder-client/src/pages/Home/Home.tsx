@@ -6,9 +6,26 @@ import RefillReminder from "../RefillReminder/RefillReminder.tsx";
 import useAuth from "../../hooks/useAuth.tsx";
 import Login from "../Login/Login.tsx";
 import BaseHelmet from "../../components/BaseHelmet.tsx";
+import LoadingSpinner from "../../components/LoadingSpinner.tsx";
 
 const Home = () => {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
+  if (loading) {
+    return (
+      <>
+        <BaseHelmet 
+          title="Medicine Reminder - Your Health Dashboard"
+          description="Manage your medications, track your daily doses, and stay on top of your health routine with our comprehensive medicine reminder dashboard."
+        />
+        <LoadingSpinner 
+          message="Loading your dashboard..." 
+          size="large" 
+          fullScreen={true} 
+        />
+      </>
+    );
+  }
+
   return (
     <>
       <BaseHelmet 

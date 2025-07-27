@@ -1,130 +1,205 @@
 import { Link } from "react-router-dom";
 import useMedicinesUser from "../../hooks/useMedicinesUser.tsx";
 import useAuth from "../../hooks/useAuth.tsx";
+import useUserSettings from "../../hooks/useUserSettings.tsx";
 import { Medicine, Medicine as MedicineBase } from "../../types/index.ts";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { format } from "date-fns";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import useAxiosSecure from "../../hooks/useAxiosSecure.tsx";
 
-const periodMeta = [
-  {
-    period: "Morning",
-    time: "8:00 AM",
-    icon: (
-      <span className="inline-flex items-center justify-center w-12 h-12 bg-blue-100 rounded-full">
-        <svg
-          width="28"
-          height="28"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-          className="text-blue-500"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M12 6V3m0 0a9 9 0 110 18m0-18v3m0 0a9 9 0 100 18m0-18v3"
-          />
-        </svg>
-      </span>
-    ),
-    bg: "bg-blue-50",
-  },
-  {
-    period: "Afternoon",
-    time: "2:00 PM",
-    icon: (
-      <span className="inline-flex items-center justify-center w-12 h-12 bg-yellow-100 rounded-full">
-        <svg
-          width="28"
-          height="28"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-          className="text-yellow-500"
-        >
-          <circle cx="12" cy="12" r="5" stroke="currentColor" strokeWidth="2" />
-          <path
-            stroke="currentColor"
-            strokeWidth="2"
-            d="M12 1v2m0 18v2m11-11h-2M3 12H1m16.95 7.07l-1.41-1.41M6.34 6.34L4.93 4.93m12.02 0l-1.41 1.41M6.34 17.66l-1.41 1.41"
-          />
-        </svg>
-      </span>
-    ),
-    bg: "bg-yellow-50",
-  },
-  {
-    period: "Evening",
-    time: "8:00 PM",
-    icon: (
-      <span className="inline-flex items-center justify-center w-12 h-12 bg-indigo-100 rounded-full">
-        <svg
-          width="28"
-          height="28"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-          className="text-indigo-500"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M21 12.79A9 9 0 1111.21 3a7 7 0 109.79 9.79z"
-          />
-        </svg>
-      </span>
-    ),
-    bg: "bg-indigo-50",
-  },
-];
+const formatTime12Hour = (time24: string): string => {
+  const [hours, minutes] = time24.split(":").map(Number);
+  const period = hours >= 12 ? "PM" : "AM";
+  const displayHours = hours % 12 || 12;
+  return `${displayHours.toString().padStart(2, "0")}:${minutes
+    .toString()
+    .padStart(2, "0")} ${period}`;
+};
 
-const periodTimes = [
-  { hour: 8, minute: 0 },
-  { hour: 14, minute: 0 },
-  { hour: 20, minute: 0 },
-];
+const parseTimeToHourMinute = (
+  time: string
+): { hour: number; minute: number } => {
+  const [hours, minutes] = time.split(":").map(Number);
+  return { hour: hours, minute: minutes };
+};
+
+const getPeriodName = (time: string): string => {
+  const hour = parseInt(time.split(":")[0]);
+  if (hour >= 5 && hour < 12) return "Morning";
+  if (hour >= 12 && hour < 17) return "Afternoon";
+  if (hour >= 17 && hour < 22) return "Evening";
+  return "Night";
+};
+
+const getPeriodStyle = (period: string) => {
+  switch (period) {
+    case "Morning":
+      return {
+        icon: (
+          <span className="inline-flex items-center justify-center w-12 h-12 bg-blue-100 rounded-full">
+            <svg
+              width="28"
+              height="28"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              className="text-blue-500"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 6V3m0 0a9 9 0 110 18m0-18v3m0 0a9 9 0 100 18m0-18v3"
+              />
+            </svg>
+          </span>
+        ),
+        bg: "bg-blue-50",
+      };
+    case "Afternoon":
+      return {
+        icon: (
+          <span className="inline-flex items-center justify-center w-12 h-12 bg-yellow-100 rounded-full">
+            <svg
+              width="28"
+              height="28"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              className="text-yellow-500"
+            >
+              <circle
+                cx="12"
+                cy="12"
+                r="5"
+                stroke="currentColor"
+                strokeWidth="2"
+              />
+              <path
+                stroke="currentColor"
+                strokeWidth="2"
+                d="M12 1v2m0 18v2m11-11h-2M3 12H1m16.95 7.07l-1.41-1.41M6.34 6.34L4.93 4.93m12.02 0l-1.41 1.41M6.34 17.66l-1.41 1.41"
+              />
+            </svg>
+          </span>
+        ),
+        bg: "bg-yellow-50",
+      };
+    case "Evening":
+      return {
+        icon: (
+          <span className="inline-flex items-center justify-center w-12 h-12 bg-indigo-100 rounded-full">
+            <svg
+              width="28"
+              height="28"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              className="text-indigo-500"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M21 12.79A9 9 0 1111.21 3a7 7 0 109.79 9.79z"
+              />
+            </svg>
+          </span>
+        ),
+        bg: "bg-indigo-50",
+      };
+    default:
+      return {
+        icon: (
+          <span className="inline-flex items-center justify-center w-12 h-12 bg-gray-100 rounded-full">
+            <svg
+              width="28"
+              height="28"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              className="text-gray-500"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"
+              />
+            </svg>
+          </span>
+        ),
+        bg: "bg-gray-50",
+      };
+  }
+};
 
 const DailyMedications = () => {
   const { user } = useAuth();
   const email = user?.email || "";
   const { data } = useMedicinesUser(email);
+  const { settings, loading: settingsLoading } = useUserSettings(email);
   const medicines: Medicine[] = data?.findMedicine || [];
 
   const [takenMap, setTakenMap] = useState<Record<string, string>>({});
   const axiosSecure = useAxiosSecure();
   const today = format(new Date(), "yyyy-MM-dd");
 
+  const { periodMeta, periodTimes } = useMemo(() => {
+    const defaultReminderTimes = settings.medicineDefaults
+      ?.defaultReminderTimes || ["08:00", "20:00"];
+
+    const meta = defaultReminderTimes.map((time) => {
+      const period = getPeriodName(time);
+      const style = getPeriodStyle(period);
+      return {
+        period,
+        time: formatTime12Hour(time),
+        icon: style.icon,
+        bg: style.bg,
+      };
+    });
+
+    const times = defaultReminderTimes.map((time) =>
+      parseTimeToHourMinute(time)
+    );
+
+    return { periodMeta: meta, periodTimes: times };
+  }, [settings.medicineDefaults?.defaultReminderTimes]);
+
   useEffect(() => {
-    if (!medicines.length) return;
+    if (!medicines.length || settingsLoading) return;
     const fetchAll = async () => {
       const results: Record<string, string> = {};
+      const defaultTakenStr = Array(periodMeta.length).fill("0").join("-");
+
       await Promise.all(
         medicines.map(async (med) => {
           try {
             const res = await axiosSecure.get(
               `/api/medicine/${med.id}/taken?date=${today}`
             );
-            results[med.id!] = res.data.takenDay?.taken || "0-0-0";
+            results[med.id!] = res.data.takenDay?.taken || defaultTakenStr;
           } catch {
-            results[med.id!] = "0-0-0";
+            results[med.id!] = defaultTakenStr;
           }
         })
       );
       setTakenMap(results);
     };
     fetchAll();
-  }, [medicines, today, axiosSecure]);
+  }, [medicines, today, axiosSecure, settingsLoading, periodMeta.length]);
 
-  const periodMeds: Medicine[][] = [[], [], []];
+  const periodMeds: Medicine[][] = Array(periodMeta.length)
+    .fill(null)
+    .map(() => []);
+
   medicines.forEach((med: Medicine) => {
     if (!med.frequency) return;
     const freqArr = med.frequency.split("-");
     freqArr.forEach((val: string, idx: number) => {
-      if (val === "1") {
+      if (val === "1" && idx < periodMeds.length) {
         periodMeds[idx].push(med);
       }
     });
@@ -149,9 +224,15 @@ const DailyMedications = () => {
   });
 
   const handleToggleTaken = (med: Medicine, periodIdx: number) => {
+    const defaultTakenArr = Array(periodMeta.length).fill("0");
     let takenArr = takenMap[med.id!]
       ? takenMap[med.id!].split("-")
-      : ["0", "0", "0"];
+      : defaultTakenArr;
+
+    while (takenArr.length < periodMeta.length) {
+      takenArr.push("0");
+    }
+
     takenArr[periodIdx] = takenArr[periodIdx] === "1" ? "0" : "1";
     const newTaken = takenArr.join("-");
     updateTakenMutation.mutate({ id: med.id!, taken: newTaken });
@@ -161,10 +242,16 @@ const DailyMedications = () => {
     if (meds.length === 0) {
       return { text: "Upcoming", color: "bg-gray-100 text-gray-700" };
     }
+    const defaultTakenArr = Array(periodMeta.length).fill("0");
     const takenCount = meds.filter((med) => {
-      const takenArr = takenMap[med.id!]
+      let takenArr = takenMap[med.id!]
         ? takenMap[med.id!].split("-")
-        : ["0", "0", "0"];
+        : defaultTakenArr;
+
+      while (takenArr.length < periodMeta.length) {
+        takenArr.push("0");
+      }
+
       return takenArr[periodIdx] === "1";
     }).length;
 
@@ -188,6 +275,18 @@ const DailyMedications = () => {
     }
     return { text: "Upcoming", color: "bg-indigo-100 text-indigo-700" };
   };
+
+  if (settingsLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center relative">
+        <div className="bg-white rounded-2xl shadow-md p-2 sm:p-4 md:p-8 w-full max-w-md md:max-w-7xl">
+          <div className="flex items-center justify-center h-64">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-700"></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className=" flex flex-col items-center justify-center relative">
@@ -219,9 +318,14 @@ const DailyMedications = () => {
                   <h2 className="text-lg md:text-xl font-semibold">
                     {meta.period}
                   </h2>
-                  <p className="text-gray-500 font-medium text-sm md:text-base">
-                    {meta.time}
-                  </p>
+                  <Link to="/settings">
+                    <p className="text-gray-500 font-medium text-sm md:text-base">
+                      {meta.time}{" "}
+                    </p>
+                    <p className="text-xs text-gray-500 mt-1">
+                      You can set your default time from settings
+                    </p>
+                  </Link>
                 </div>
               </div>
               <div className="mt-2 space-y-3 md:space-y-4">
@@ -229,9 +333,16 @@ const DailyMedications = () => {
                   <div className="text-gray-400">No medicines</div>
                 ) : (
                   periodMeds[idx].map((med: Medicine) => {
+                    const defaultTakenArr = Array(periodMeta.length).fill("0");
                     let takenArr = takenMap[med.id!]
                       ? takenMap[med.id!].split("-")
-                      : ["0", "0", "0"];
+                      : defaultTakenArr;
+
+                    // Ensure the array has the right length
+                    while (takenArr.length < periodMeta.length) {
+                      takenArr.push("0");
+                    }
+
                     let isTaken = takenArr[idx] === "1";
                     const now = new Date();
                     const scheduled = new Date();

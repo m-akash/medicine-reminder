@@ -173,6 +173,119 @@ const saveFcmToken = async (req: Request, res: Response) => {
   }
 };
 
+const getUserSettings = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  try {
+    const { email } = req.params;
+
+    const userSettings = await prisma.userSettings.findUnique({
+      where: { userEmail: email },
+    });
+
+    if (!userSettings) {
+      // Return default settings if none exist
+      const defaultSettings = {
+        notifications: {
+          enabled: true,
+          reminderAdvance: 30,
+          missedDoseAlerts: true,
+          refillReminders: true,
+          dailySummary: false,
+        },
+        medicineDefaults: {
+          defaultDosesPerDay: 2,
+          defaultReminderTimes: ["08:00", "20:00"],
+          defaultDurationDays: 30,
+        },
+        privacy: {
+          dataSharing: false,
+          analytics: true,
+        },
+        appearance: {
+          theme: "auto",
+          compactMode: false,
+          showAvatars: true,
+        },
+      };
+
+      return res.status(200).json({
+        status: 200,
+        message: "Default settings returned",
+        settings: defaultSettings,
+      });
+    }
+
+    return res.status(200).json({
+      status: 200,
+      message: "Settings retrieved successfully",
+      settings: {
+        notifications: userSettings.notifications,
+        medicineDefaults: userSettings.medicineDefaults,
+        privacy: userSettings.privacy,
+        appearance: userSettings.appearance,
+      },
+    });
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ status: 500, message: "Internal server error", error });
+  }
+};
+
+const saveUserSettings = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  try {
+    const { email } = req.params;
+    const { notifications, medicineDefaults, privacy, appearance } = req.body;
+
+    // Validate that user exists
+    const user = await prisma.user.findUnique({
+      where: { email },
+    });
+
+    if (!user) {
+      return res.status(404).json({ status: 404, message: "User not found" });
+    }
+
+    // Upsert settings (create if doesn't exist, update if exists)
+    const userSettings = await prisma.userSettings.upsert({
+      where: { userEmail: email },
+      update: {
+        notifications,
+        medicineDefaults,
+        privacy,
+        appearance,
+      },
+      create: {
+        userEmail: email,
+        notifications,
+        medicineDefaults,
+        privacy,
+        appearance,
+      },
+    });
+
+    return res.status(200).json({
+      status: 200,
+      message: "Settings saved successfully",
+      settings: {
+        notifications: userSettings.notifications,
+        medicineDefaults: userSettings.medicineDefaults,
+        privacy: userSettings.privacy,
+        appearance: userSettings.appearance,
+      },
+    });
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ status: 500, message: "Internal server error", error });
+  }
+};
+
 export {
   findUserByEmail,
   createUser,
@@ -181,4 +294,6 @@ export {
   updateUser,
   deleteUser,
   saveFcmToken,
+  getUserSettings,
+  saveUserSettings,
 };

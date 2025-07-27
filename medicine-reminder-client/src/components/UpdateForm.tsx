@@ -1,7 +1,10 @@
 import React, { useState } from "react";
 import useAxiosSecure from "../hooks/useAxiosSecure.tsx";
 import { data, useLoaderData, useNavigate } from "react-router-dom";
-import { medicineNotifications, formNotifications } from "../utils/notifications.ts";
+import {
+  medicineNotifications,
+  formNotifications,
+} from "../utils/notifications.ts";
 
 const UpdateForm = () => {
   const loaderData = useLoaderData();
@@ -9,17 +12,19 @@ const UpdateForm = () => {
   const axiosSecure = useAxiosSecure();
   const navigate = useNavigate();
 
-  // Extract scheduled times from existing reminders
-  const existingTimes = med?.reminders?.[0]?.times?.map((t: any) => 
-    new Date(t.time).toTimeString().slice(0, 5)
-  ) || [];
+  const existingTimes =
+    med?.reminders?.[0]?.times?.map((t: any) =>
+      new Date(t.time).toTimeString().slice(0, 5)
+    ) || [];
 
   const [form, setForm] = useState({
     userEmail: med?.userEmail || "",
     name: med?.name || "",
     dosage: med?.dosage || "",
     frequency: med?.frequency || "",
-    startDate: med?.startDate ? med.startDate.slice(0, 10) : "",
+    startDate: med?.startDate
+      ? med.startDate.slice(0, 10)
+      : new Date().toISOString().split("T")[0],
     scheduledTimes: existingTimes,
     durationDays: med?.durationDays?.toString() || "",
     originalDurationDays: med?.originalDurationDays?.toString() || "",
@@ -30,23 +35,36 @@ const UpdateForm = () => {
     dosesPerDay: med?.dosesPerDay?.toString() || "",
   });
 
-  // Default times for different periods
+  const [loading, setLoading] = useState(false);
+
   const defaultTimes = {
     morning: "08:00",
-    afternoon: "14:00", 
-    evening: "20:00"
+    afternoon: "14:00",
+    evening: "20:00",
   };
 
-  // Parse frequency pattern and set times accordingly
   const parseFrequencyAndSetTimes = (frequency: string) => {
-    const pattern = frequency.split('-').map(Number);
+    const pattern = frequency.split("-").map(Number);
     const times = [];
-    
-    if (pattern[0] === 1) times.push(defaultTimes.morning); // Morning
-    if (pattern[1] === 1) times.push(defaultTimes.afternoon); // Afternoon  
-    if (pattern[2] === 1) times.push(defaultTimes.evening); // Evening
-    
+
+    if (pattern[0] === 1) times.push(defaultTimes.morning);
+    if (pattern[1] === 1) times.push(defaultTimes.afternoon);
+    if (pattern[2] === 1) times.push(defaultTimes.evening);
+
     return times;
+  };
+
+  const calculateOriginalTotalPills = (
+    frequency: string,
+    originalDurationDays: string
+  ) => {
+    if (!frequency || !originalDurationDays) return "";
+
+    const pattern = frequency.split("-").map(Number);
+    const dosesPerDay = pattern.reduce((sum, dose) => sum + dose, 0);
+    const totalPills = dosesPerDay * Number(originalDurationDays);
+
+    return totalPills.toString();
   };
 
   const handleChange = (
@@ -54,15 +72,31 @@ const UpdateForm = () => {
   ) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
-    
-    // Auto-set scheduled times when frequency changes
-    if (name === 'frequency') {
+
+    if (name === "frequency") {
       const times = parseFrequencyAndSetTimes(value);
-      setForm(prev => ({
+      const originalTotalPills = calculateOriginalTotalPills(
+        value,
+        form.originalDurationDays
+      );
+      setForm((prev) => ({
         ...prev,
         [name]: value,
         scheduledTimes: times,
-        dosesPerDay: times.length.toString()
+        dosesPerDay: times.length.toString(),
+        originalTotalPills: originalTotalPills,
+      }));
+    }
+
+    if (name === "originalDurationDays") {
+      const originalTotalPills = calculateOriginalTotalPills(
+        form.frequency,
+        value
+      );
+      setForm((prev) => ({
+        ...prev,
+        [name]: value,
+        originalTotalPills: originalTotalPills,
       }));
     }
   };
@@ -75,23 +109,37 @@ const UpdateForm = () => {
       return;
     }
 
-    // Validate and sanitize fields
+    if (form.scheduledTimes.length === 0) {
+      formNotifications.requiredField("frequency pattern");
+      return;
+    }
+
+    setLoading(true);
+
     const payload: any = {
       ...form,
-      durationDays: form.durationDays ? Number(form.durationDays) : undefined,
-      originalDurationDays: form.originalDurationDays ? Number(form.originalDurationDays) : undefined,
-      totalPills: form.totalPills ? Number(form.totalPills) : undefined,
-      originalTotalPills: form.originalTotalPills ? Number(form.originalTotalPills) : undefined,
-      pillsPerDose: form.pillsPerDose ? Number(form.pillsPerDose) : undefined,
-      dosesPerDay: form.dosesPerDay ? Number(form.dosesPerDay) : undefined,
-      startDate: form.startDate ? new Date(form.startDate).toISOString() : undefined,
+      durationDays: form.durationDays ? Number(form.durationDays) : 0,
+      originalDurationDays: form.originalDurationDays
+        ? Number(form.originalDurationDays)
+        : 0,
+      totalPills: form.totalPills ? Number(form.totalPills) : 0,
+      originalTotalPills: form.originalTotalPills
+        ? Number(form.originalTotalPills)
+        : 0,
+      pillsPerDose: form.pillsPerDose ? Number(form.pillsPerDose) : 0,
+      dosesPerDay: form.dosesPerDay ? Number(form.dosesPerDay) : 0,
+      startDate: form.startDate
+        ? new Date(form.startDate).toISOString()
+        : new Date().toISOString(),
       scheduledTimes: form.scheduledTimes,
     };
 
-    // Remove undefined fields
     Object.keys(payload).forEach(
       (key) => payload[key] === undefined && delete payload[key]
     );
+
+    console.log("Sending update payload:", payload);
+    console.log("Medicine ID:", med.id);
 
     try {
       const updateMedi = await axiosSecure.put(
@@ -104,69 +152,87 @@ const UpdateForm = () => {
       navigate("/medication");
     } catch (err) {
       console.error("Update failed", err);
-      formNotifications.requiredField("Update failed. Please check your input and try again.");
+      formNotifications.requiredField(
+        "Update failed. Please check your input and try again."
+      );
+    } finally {
+      setLoading(false);
     }
   };
+
   return (
     <form
       onSubmit={handleSubmit}
-      className="max-w-lg mx-auto bg-white p-8  shadow-lg flex flex-col gap-6"
+      className="space-y-3 bg-white p-6 rounded-xl shadow"
     >
-      <h2 className="text-2xl font-bold text-indigo-700 mb-2 text-center">
+      <h2 className="text-xl font-bold text-primary text-center mb-2">
         Update Medicine
       </h2>
       <input type="hidden" name="userEmail" value={form.userEmail} />
-      <div className="form-control">
-        <label className="label font-semibold text-black">
+
+      <div className="space-y-2">
+        <label className="text-sm font-medium text-gray-700">
           Medicine Name<span className="text-red-500">*</span>
         </label>
         <input
-          type="text"
           name="name"
           value={form.name}
           onChange={handleChange}
-          className="input input-bordered w-full bg-gray-100 text-black"
-          placeholder="Enter medicine name"
           required
+          placeholder="Medicine Name"
+          className="input input-bordered w-full text-black bg-gray-100"
         />
       </div>
-      <div className="form-control">
-        <label className="label font-semibold text-black">Dosage</label>
+
+      <div className="space-y-2">
+        <label className="text-sm font-medium text-gray-700">Dosage</label>
         <input
-          type="text"
           name="dosage"
           value={form.dosage}
           onChange={handleChange}
-          className="input input-bordered w-full bg-gray-100 text-black"
-          placeholder="e.g. 10mg, 500mg, etc."
+          placeholder="Dosage (e.g. 500mg)"
+          className="input input-bordered w-full text-black bg-gray-100"
         />
       </div>
-      <div className="form-control">
-        <label className="label font-semibold text-black">Frequency Pattern (Key Field)</label>
+
+      <div className="space-y-2">
+        <label className="text-sm font-medium text-gray-700">
+          Frequency Pattern (Key Field)
+        </label>
         <input
-          type="text"
           name="frequency"
           value={form.frequency}
           onChange={handleChange}
-          className="input input-bordered w-full bg-gray-100 text-black border-2 border-blue-300"
+          required
           placeholder="e.g. 1-0-1 (Morning-Evening)"
+          className="input input-bordered w-full text-black bg-gray-100 border-2 border-blue-300"
         />
-        <p className="text-xs text-gray-500 mt-1">Format: Morning-Afternoon-Evening (1 = take, 0 = skip)</p>
+        <p className="text-xs text-gray-500">
+          Format: Morning-Afternoon-Evening (1 = take, 0 = skip)
+        </p>
       </div>
-      
-      {/* Scheduled Times Display */}
-      <div className="form-control">
-        <label className="label font-semibold text-black">Scheduled Times (Auto-set based on frequency pattern)</label>
+
+      <div className="space-y-2">
+        <label className="text-sm font-medium text-gray-700">
+          Scheduled Times (Auto-set based on frequency pattern)
+        </label>
         {form.scheduledTimes.length > 0 ? (
           <div className="bg-green-50 p-3 rounded border border-green-200">
-            <p className="text-sm text-green-800 font-medium mb-2">✅ Scheduled times:</p>
+            <p className="text-sm text-green-800 font-medium mb-2">
+              ✅ Scheduled times:
+            </p>
             <div className="space-y-1">
               {form.scheduledTimes.map((time: string, index: number) => (
                 <div key={index} className="flex items-center gap-2">
                   <span className="text-sm text-green-700">
-                    {index + 1}. {time === "08:00" ? "8:00 AM (Morning)" : 
-                                 time === "14:00" ? "2:00 PM (Afternoon)" : 
-                                 time === "20:00" ? "8:00 PM (Evening)" : time}
+                    {index + 1}.{" "}
+                    {time === "08:00"
+                      ? "8:00 AM (Morning)"
+                      : time === "14:00"
+                      ? "2:00 PM (Afternoon)"
+                      : time === "20:00"
+                      ? "8:00 PM (Evening)"
+                      : time}
                   </span>
                 </div>
               ))}
@@ -180,81 +246,124 @@ const UpdateForm = () => {
           </div>
         )}
       </div>
-      
-      <div className="form-control">
-        <label className="label font-semibold text-black">Start Date</label>
+
+      <div className="text-sm text-gray-600 bg-blue-50 p-3 rounded">
+        <p>
+          <strong>💡 Automatic Scheduling:</strong> Times are automatically set
+          based on frequency pattern:
+        </p>
+        <ul className="list-disc list-inside mt-1">
+          <li>
+            <strong>1-0-0:</strong> 8:00 AM (Morning only)
+          </li>
+          <li>
+            <strong>0-1-0:</strong> 2:00 PM (Afternoon only)
+          </li>
+          <li>
+            <strong>0-0-1:</strong> 8:00 PM (Evening only)
+          </li>
+          <li>
+            <strong>1-0-1:</strong> 8:00 AM + 8:00 PM (Morning + Evening)
+          </li>
+          <li>
+            <strong>1-1-1:</strong> 8:00 AM + 2:00 PM + 8:00 PM (All three
+            times)
+          </li>
+        </ul>
+        <p className="mt-2 text-xs text-gray-500">
+          Format: Morning-Afternoon-Evening (e.g., 1-0-1 means take in morning
+          and evening)
+        </p>
+      </div>
+
+      <div className="space-y-2">
+        <label className="text-sm font-medium text-gray-700">
+          Started Date<span className="text-red-500">*</span>
+        </label>
         <input
-          type="date"
           name="startDate"
           value={form.startDate}
           onChange={handleChange}
-          className="input input-bordered w-full bg-gray-100 text-black"
+          required
+          type="date"
+          className="input input-bordered w-full text-black bg-gray-100 [&::-webkit-calendar-picker-indicator]:filter [&::-webkit-calendar-picker-indicator]:invert [&::-webkit-calendar-picker-indicator]:hover:scale-110 [&::-webkit-calendar-picker-indicator]:transition-transform"
         />
       </div>
-      <div className="form-control">
-        <label className="label font-semibold text-black">
-          Duration (days)
+
+      <div className="space-y-2">
+        <label className="text-sm font-medium text-gray-700">
+          Total Duration (days)<span className="text-red-500">*</span>
         </label>
         <input
-          type="number"
-          name="durationDays"
-          value={form.durationDays}
-          onChange={handleChange}
-          className="input input-bordered w-full bg-gray-100 text-black"
-          min="1"
-          placeholder="e.g. 30"
-        />
-      </div>
-      <div className="form-control">
-        <label className="label font-semibold text-black">
-          Original Duration (days)
-        </label>
-        <input
-          type="number"
           name="originalDurationDays"
           value={form.originalDurationDays}
           onChange={handleChange}
-          className="input input-bordered w-full bg-gray-100 text-black"
-          min="1"
-          placeholder="e.g. 30"
-        />
-      </div>
-      <div className="form-control">
-        <label className="label font-semibold text-black">Total Pills</label>
-        <input
+          required
           type="number"
-          name="totalPills"
-          value={form.totalPills}
-          onChange={handleChange}
-          className="input input-bordered w-full bg-gray-100 text-black"
           min="1"
-          placeholder="e.g. 60"
+          placeholder="How long will you take this medicine for in total? (days)"
+          className="input input-bordered w-full text-black bg-gray-100"
         />
       </div>
-      <div className="form-control">
-        <label className="label font-semibold text-black">
-          Original Total Pills
+
+      <div className="space-y-2">
+        <label className="text-sm font-medium text-gray-700">
+          Current Duration (days)<span className="text-red-500">*</span>
         </label>
         <input
-          type="number"
-          name="originalTotalPills"
-          value={form.originalTotalPills}
+          name="durationDays"
+          value={form.durationDays}
           onChange={handleChange}
-          className="input input-bordered w-full bg-gray-100 text-black"
+          required
+          type="number"
           min="1"
-          placeholder="e.g. 60"
+          placeholder="How long can you take the medicine you have now? (days)"
+          className="input input-bordered w-full text-black bg-gray-100"
         />
       </div>
+
       <input
-        name="pillsPerDose"
-        value={form.pillsPerDose}
+        name="originalTotalPills"
+        value={form.originalTotalPills}
         onChange={handleChange}
         required
         type="number"
         min="1"
-        placeholder="Pills Per Dose"
-        className="input input-bordered w-full text-black bg-gray-100"
+        className="hidden"
       />
+
+      <div className="space-y-2">
+        <label className="text-sm font-medium text-gray-700">
+          Current Total Pills<span className="text-red-500">*</span>
+        </label>
+        <input
+          name="totalPills"
+          value={form.totalPills}
+          onChange={handleChange}
+          required
+          type="number"
+          min="1"
+          placeholder="How many pills do you have now?"
+          className="input input-bordered w-full text-black bg-gray-100"
+        />
+      </div>
+
+      <div className="space-y-2">
+        <label className="text-sm font-medium text-gray-700">
+          Pills Per Dose<span className="text-red-500">*</span>
+        </label>
+        <input
+          name="pillsPerDose"
+          value={form.pillsPerDose}
+          onChange={handleChange}
+          required
+          type="number"
+          min="1"
+          placeholder="How many pills would you take per dose?"
+          className="input input-bordered w-full text-black bg-gray-100"
+        />
+      </div>
+
       <input
         name="dosesPerDay"
         value={form.dosesPerDay}
@@ -262,34 +371,28 @@ const UpdateForm = () => {
         required
         type="number"
         min="1"
-        placeholder="Doses Per Day"
-        className="input input-bordered w-full text-black bg-gray-100"
+        className="hidden"
       />
-      
-      {/* Help Section */}
-      <div className="text-sm text-gray-600 bg-blue-50 p-3 rounded">
-        <p><strong>💡 Frequency Pattern Examples:</strong></p>
-        <ul className="list-disc list-inside mt-1">
-          <li><strong>1-0-0:</strong> 8:00 AM (Morning only)</li>
-          <li><strong>0-1-0:</strong> 2:00 PM (Afternoon only)</li>
-          <li><strong>0-0-1:</strong> 8:00 PM (Evening only)</li>
-          <li><strong>1-0-1:</strong> 8:00 AM + 8:00 PM (Morning + Evening)</li>
-          <li><strong>1-1-1:</strong> 8:00 AM + 2:00 PM + 8:00 PM (All three times)</li>
-        </ul>
-      </div>
-      <div className="form-control">
-        <label className="label font-semibold text-black">Instructions</label>
+
+      <div className="space-y-2">
+        <label className="text-sm font-medium text-gray-700">
+          Instructions
+        </label>
         <textarea
           name="instructions"
           value={form.instructions}
           onChange={handleChange}
-          className="textarea textarea-bordered w-full bg-gray-100 text-black"
           placeholder="Any special instructions (optional)"
-          rows={3}
+          className="textarea textarea-bordered w-full text-black bg-gray-100"
         />
       </div>
-      <button type="submit" className="btn btn-primary w-full mt-4">
-        Update
+
+      <button
+        type="submit"
+        className="btn btn-primary w-full"
+        disabled={loading}
+      >
+        {loading ? "Updating..." : "Update Medicine"}
       </button>
     </form>
   );

@@ -1,4 +1,3 @@
-import React from "react";
 import useAuth from "../../hooks/useAuth.tsx";
 import useUserByEmail from "../../hooks/useUserByEmail.tsx";
 import { User } from "../../types/index.ts";
@@ -18,6 +17,23 @@ const Greeting = () => {
     month: "long",
     day: "numeric",
   });
+
+  const getGreeting = () => {
+    const hour = today.getHours();
+    
+    if (hour >= 5 && hour < 12) {
+      return "Good Morning";
+    } else if (hour >= 12 && hour < 17) {
+      return "Good Afternoon";
+    } else if (hour >= 17 && hour < 21) {
+      return "Good Evening";
+    } else {
+      return "Good Night";
+    }
+  };
+
+  const greeting = getGreeting();
+
   return (
     <div className="bg-gradient-to-r from-blue-100 to-blue-200 rounded-xl shadow-lg p-6 md:p-10 flex flex-col md:flex-row justify-between items-center gap-6">
       <div className="flex items-center gap-4 w-full md:w-auto">
@@ -26,7 +42,7 @@ const Greeting = () => {
         </div>
         <div>
           <h1 className="text-xl md:text-2xl font-semibold text-gray-800">
-            Good Morning, <span className="text-blue-600">{firstName}</span>
+            {greeting}, <span className="text-blue-600">{firstName}</span>
           </h1>
           <p className="text-gray-600 text-sm md:text-base">
             Here's your medications overview today!

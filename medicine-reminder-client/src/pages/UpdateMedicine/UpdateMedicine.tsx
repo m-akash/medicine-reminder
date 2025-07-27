@@ -2,7 +2,7 @@ import UpdateForm from "../../components/UpdateForm.tsx";
 
 const UpdateMedicine = () => {
   return (
-    <div className="bg-gray-50 min-h-screen md:py-15">
+    <div className="bg-gray-50 min-h-screen">
       <UpdateForm />
     </div>
   );
