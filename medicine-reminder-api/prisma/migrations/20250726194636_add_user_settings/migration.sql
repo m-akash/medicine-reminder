@@ -5,7 +5,6 @@ CREATE TABLE "UserSettings" (
     "notifications" JSONB NOT NULL,
     "medicineDefaults" JSONB NOT NULL,
     "privacy" JSONB NOT NULL,
-    "appearance" JSONB NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 

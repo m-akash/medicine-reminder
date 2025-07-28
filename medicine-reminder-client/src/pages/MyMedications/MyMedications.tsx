@@ -10,6 +10,7 @@ import {
   showConfirm,
   medicineNotifications,
 } from "../../utils/notifications.ts";
+import useUserSettings from "../../hooks/useUserSettings.tsx";
 
 const getMedicineIcon = (days: number) => {
   if (days <= 3)
@@ -58,28 +59,32 @@ const getFreq = (frequency: string) => {
   }
 };
 
-const getTime = (frequency: string) => {
-  if (frequency === "1-1-1") {
-    return "08:00 AM, 02:00 PM, 08:00 PM";
+// New utility to format time as 'hh:mm AM/PM'
+const formatTime = (time: string | Date) => {
+  const date = typeof time === "string" ? new Date(`1970-01-01T${time}`) : new Date(time);
+  return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: true });
+};
+
+// Get reminder times for a medicine, using reminders[0].times if present, else user settings
+const getReminderTimes = (
+  med: any,
+  defaultReminderTimes: string[]
+) => {
+  // If medicine has reminders[0].times, use those
+  if (med.reminders && med.reminders[0] && med.reminders[0].times && med.reminders[0].times.length > 0) {
+    return med.reminders[0].times
+      .map((t: any) => formatTime(t.time))
+      .join(", ");
   }
-  if (frequency === "1-0-1") {
-    return "08:00 AM, 08:00 PM";
+  // Otherwise, use frequency and defaultReminderTimes
+  const freqArr = med.frequency.split("-").map(Number);
+  const times: string[] = [];
+  for (let i = 0; i < freqArr.length; i++) {
+    if (freqArr[i] === 1 && defaultReminderTimes[i]) {
+      times.push(formatTime(defaultReminderTimes[i]));
+    }
   }
-  if (frequency === "0-1-1") {
-    return "02:00 PM, 08:00 PM";
-  }
-  if (frequency === "1-1-0") {
-    return "08:00 AM, 02:00 PM";
-  }
-  if (frequency === "1-0-0") {
-    return "08:00 AM";
-  }
-  if (frequency === "0-0-1") {
-    return "08:00 PM";
-  }
-  if (frequency === "0-1-0") {
-    return "02:00 PM";
-  }
+  return times.join(", ");
 };
 
 const MyMedications = () => {
@@ -87,8 +92,10 @@ const MyMedications = () => {
   const axiosSecure = useAxiosSecure();
   const email = user?.email || "";
   const { data, refetch } = useMedicinesUser(email);
+  const { settings } = useUserSettings(email);
 
-  const medicines: Medicine[] = data?.findMedicine || [];
+  const medicines: any[] = data?.findMedicine || [];
+  const defaultReminderTimes: string[] = settings?.medicineDefaults?.defaultReminderTimes || ["08:00", "14:00", "20:00"];
 
   const handleDelete = async (id: string, medicineName: string) => {
     const result = await showConfirm.delete(
@@ -186,7 +193,7 @@ const MyMedications = () => {
                       </td>
 
                       <td className="py-4 px-3 md:px-6 font-medium">
-                        {getTime(med.frequency)}
+                        {getReminderTimes(med, defaultReminderTimes)}
                       </td>
                       <td className="py-4 px-3 md:px-6 font-medium">
                         {med.startDate?.slice(0, 10)}
@@ -248,7 +255,7 @@ const MyMedications = () => {
                         </span>
                       </div>
                       <div className="text-xs text-gray-500 font-medium">
-                        {getTime(med.frequency)}
+                        {getReminderTimes(med, defaultReminderTimes)}
                       </div>
                     </div>
                     <div className="flex flex-col gap-2 ml-2">

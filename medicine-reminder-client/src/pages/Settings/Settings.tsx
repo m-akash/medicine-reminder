@@ -11,18 +11,15 @@ import {
   FiUser,
   FiBell,
   FiShield,
-  FiSettings,
   FiEye,
   FiEyeOff,
   FiSave,
   FiEdit3,
   FiTrash2,
   FiDownload,
-  FiUpload,
 } from "react-icons/fi";
 import {
   MdNotifications,
-  MdNotificationsOff,
   MdAccessTime,
   MdSecurity,
   MdPalette,
@@ -35,7 +32,7 @@ import useUserByEmail from "../../hooks/useUserByEmail.tsx";
 import { User } from "../../types/index.ts";
 
 const Settings = () => {
-  const { user } = useAuth();
+  const { user, logoutUser } = useAuth();
   const email = user?.email || "";
   const { data } = useUserByEmail(email);
   const userInfo: User | undefined = data?.findUser;
@@ -139,8 +136,13 @@ const Settings = () => {
         setSaving(true);
         await axiosSecure.delete(`/api/user/${user?.email}`);
         showAlert.success("Account deleted successfully");
-        // Redirect to logout
-        window.location.href = "/";
+        logoutUser()
+          .then(() => {
+            window.location.href = "/";
+          })
+          .catch(() => {
+            alert("Unsuccessfull attempt!");
+          });
       } catch (error: any) {
         showToast.error(
           error.response?.data?.message || "Failed to delete account"
@@ -188,7 +190,6 @@ const Settings = () => {
     { id: "notifications", label: "Notifications", icon: FiBell },
     { id: "medicineDefaults", label: "Medicine Defaults", icon: MdAccessTime },
     { id: "privacy", label: "Privacy & Security", icon: FiShield },
-    { id: "appearance", label: "Appearance", icon: MdPalette },
   ];
 
   if (settingsLoading) {
@@ -538,11 +539,11 @@ const Settings = () => {
                 {/* Medicine Defaults */}
                 {activeTab === "medicineDefaults" && (
                   <div className="space-y-6">
-                    <h2 className="text-2xl font-bold text-gray-900">
-                      Medicine Defaults
+                    <h2 className="text-2xl font-bold text-center text-gray-900">
+                      Default Reminder Times
                     </h2>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
                           Default Doses Per Day
@@ -561,7 +562,6 @@ const Settings = () => {
                           <option value={1}>1 dose per day</option>
                           <option value={2}>2 doses per day</option>
                           <option value={3}>3 doses per day</option>
-                          <option value={4}>4 doses per day</option>
                         </select>
                       </div>
 
@@ -571,7 +571,9 @@ const Settings = () => {
                         </label>
                         <input
                           type="number"
-                          value={settings.medicineDefaults.defaultDurationDays}
+                          value={
+                            settings.medicineDefaults.defaultDurationDays || 0
+                          }
                           onChange={(e) =>
                             handleInputChange(
                               "medicineDefaults",
@@ -584,12 +586,9 @@ const Settings = () => {
                           className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent text-black"
                         />
                       </div>
-                    </div>
+                    </div> */}
 
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Default Reminder Times
-                      </label>
+                    <div className="flex justify-center items-center">
                       <div className="space-y-3">
                         {settings.medicineDefaults.defaultReminderTimes.map(
                           (time, index) => (
@@ -761,86 +760,9 @@ const Settings = () => {
                     </div>
                   </div>
                 )}
-
-                {/* Appearance */}
-                {activeTab === "appearance" && (
-                  <div className="space-y-6">
-                    <h2 className="text-2xl font-bold text-gray-900">
-                      Appearance
-                    </h2>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Theme
-                        </label>
-                        <select
-                          value={settings.appearance.theme}
-                          onChange={(e) =>
-                            handleInputChange(
-                              "appearance",
-                              "theme",
-                              e.target.value
-                            )
-                          }
-                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent text-black"
-                        >
-                          <option value="light">Light</option>
-                          <option value="dark">Dark</option>
-                          <option value="auto">Auto (System)</option>
-                        </select>
-                      </div>
-
-                      <div className="space-y-4">
-                        <div className="flex items-center justify-between">
-                          <span className="text-sm font-medium text-gray-700">
-                            Compact Mode
-                          </span>
-                          <label className="relative inline-flex items-center cursor-pointer">
-                            <input
-                              type="checkbox"
-                              checked={settings.appearance.compactMode}
-                              onChange={(e) =>
-                                handleInputChange(
-                                  "appearance",
-                                  "compactMode",
-                                  e.target.checked
-                                )
-                              }
-                              className="sr-only peer"
-                            />
-                            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-amber-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-600"></div>
-                          </label>
-                        </div>
-
-                        <div className="flex items-center justify-between">
-                          <span className="text-sm font-medium text-gray-700">
-                            Show Avatars
-                          </span>
-                          <label className="relative inline-flex items-center cursor-pointer">
-                            <input
-                              type="checkbox"
-                              checked={settings.appearance.showAvatars}
-                              onChange={(e) =>
-                                handleInputChange(
-                                  "appearance",
-                                  "showAvatars",
-                                  e.target.checked
-                                )
-                              }
-                              className="sr-only peer"
-                            />
-                            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-amber-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-600"></div>
-                          </label>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
                 {/* Save Button */}
                 <div className="border-t pt-6 mt-8">
-                  <div className="flex justify-end">
+                  <div className="flex justify-center items-center">
                     <button
                       onClick={handleSaveSettings}
                       disabled={saving}

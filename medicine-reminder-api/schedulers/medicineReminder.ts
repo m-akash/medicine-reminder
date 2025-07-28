@@ -9,18 +9,21 @@ import {
 
 console.log("Medicine reminder scheduler module loaded");
 
-function generateTodayTimes(frequency: string, today: Date): Date[] {
+function generateTodayTimes(
+  frequency: string,
+  today: Date,
+  reminderTimes: string[]
+): Date[] {
   const times: Date[] = [];
   const freqArr = frequency.split("-").map(Number);
 
-  const defaultTimes = [
-    { hour: 8, minute: 0 },
-    { hour: 14, minute: 0 },
-    { hour: 20, minute: 0 },
-  ];
+  const defaultTimes = reminderTimes.map((t) => {
+    const [hour, minute] = t.split(":").map(Number);
+    return { hour, minute };
+  });
 
   freqArr.forEach((dose, index) => {
-    if (dose === 1) {
+    if (dose === 1 && defaultTimes[index]) {
       const time = new Date(today);
       time.setHours(defaultTimes[index].hour, defaultTimes[index].minute, 0, 0);
       times.push(time);
@@ -32,9 +35,9 @@ function generateTodayTimes(frequency: string, today: Date): Date[] {
 
 function getDoseTimeName(time: Date): string {
   const hour = time.getHours();
-  if (hour === 8) return "Morning";
-  if (hour === 14) return "Afternoon";
-  if (hour === 20) return "Evening";
+  if (hour >= 5 && hour < 12) return "Morning";
+  if (hour >= 12 && hour < 18) return "Afternoon";
+  if (hour >= 18 || hour < 5) return "Evening";
   return "Dose";
 }
 
@@ -72,6 +75,20 @@ cron.schedule("* * * * *", async () => {
     }
 
     const userSettings = med.user.settings;
+    let reminderTimes: string[] = ["08:00", "14:00", "20:00"];
+    if (
+      userSettings &&
+      typeof userSettings.medicineDefaults === "object" &&
+      userSettings.medicineDefaults
+    ) {
+      const medicineDefaults = userSettings.medicineDefaults as {
+        [key: string]: any;
+      };
+      if (Array.isArray(medicineDefaults.defaultReminderTimes)) {
+        reminderTimes = medicineDefaults.defaultReminderTimes;
+      }
+    }
+
     if (
       userSettings &&
       typeof userSettings.notifications === "object" &&
@@ -95,7 +112,11 @@ cron.schedule("* * * * *", async () => {
     }
 
     const userGroup = userTimeGroups.get(userKey)!;
-    const todayTimes = generateTodayTimes(med.frequency || "0-0-0", now);
+    const todayTimes = generateTodayTimes(
+      med.frequency || "0-0-0",
+      now,
+      reminderTimes
+    );
 
     for (const time of todayTimes) {
       const timeKey = time.toISOString();
@@ -131,9 +152,24 @@ cron.schedule("* * * * *", async () => {
           });
           const takenArr = takenDay?.taken?.split("-") || [];
 
+          const userSettings = medicinesAtTime[0]?.medicine?.user?.settings;
+          let reminderTimes: string[] = ["08:00", "14:00", "20:00"];
+          if (
+            userSettings &&
+            typeof userSettings.medicineDefaults === "object" &&
+            userSettings.medicineDefaults
+          ) {
+            const medicineDefaults = userSettings.medicineDefaults as {
+              [key: string]: any;
+            };
+            if (Array.isArray(medicineDefaults.defaultReminderTimes)) {
+              reminderTimes = medicineDefaults.defaultReminderTimes;
+            }
+          }
           const todayTimes = generateTodayTimes(
             medicine.frequency || "0-0-0",
-            now
+            now,
+            reminderTimes
           );
           const doseIndex = todayTimes.findIndex(
             (t) => Math.abs(t.getTime() - doseTime.getTime()) < 60000
@@ -156,8 +192,9 @@ cron.schedule("* * * * *", async () => {
           };
         })
       );
+
       const userSettings = medicinesAtTime[0]?.medicine?.user?.settings;
-      let reminderAdvance = 0;
+      let reminderAdvance = 30;
 
       if (
         userSettings &&
@@ -165,16 +202,12 @@ cron.schedule("* * * * *", async () => {
         userSettings.notifications
       ) {
         const notifications = userSettings.notifications as any;
-        reminderAdvance = notifications.reminderAdvance || 0;
+        reminderAdvance = notifications.reminderAdvance || 30;
       }
 
       const upcomingTime = addMinutes(doseTime, -reminderAdvance);
       const upcomingDiff = Math.abs(now.getTime() - upcomingTime.getTime());
-      if (
-        reminderAdvance > 0 &&
-        isAfter(doseTime, now) &&
-        upcomingDiff < 60000
-      ) {
+      if (isAfter(doseTime, now) && upcomingDiff < 30000) {
         const doseTimeName = getDoseTimeName(doseTime);
         const medicineNames = medicinesAtTime
           .map(({ medicine }) => `${medicine.name}(${medicine.dosage})`)
@@ -191,7 +224,7 @@ cron.schedule("* * * * *", async () => {
       }
 
       const currentDiff = Math.abs(now.getTime() - doseTime.getTime());
-      if (currentDiff < 60000) {
+      if (currentDiff < 30000) {
         const doseTimeName = getDoseTimeName(doseTime);
         const medicineNames = medicinesAtTime
           .map(({ medicine }) => `${medicine.name}(${medicine.dosage})`)
@@ -225,8 +258,9 @@ cron.schedule("* * * * *", async () => {
       }
 
       const missedTime = addMinutes(doseTime, 60);
+
       const missedDiff = Math.abs(now.getTime() - missedTime.getTime());
-      if (isAfter(now, missedTime) && missedDiff < 60000) {
+      if (isAfter(now, missedTime) && missedDiff < 30000) {
         const untakenMedicines = takenStatuses
           .filter((status) => !status.taken)
           .map((status) => status.medicine);

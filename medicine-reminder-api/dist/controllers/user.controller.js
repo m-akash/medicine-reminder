@@ -1,9 +1,24 @@
-import { Request, Response } from "express";
-import prisma from "../config/db.config";
-
-const getUsers = async (req: Request, res: Response): Promise<Response> => {
+"use strict";
+var __importDefault =
+  (this && this.__importDefault) ||
+  function (mod) {
+    return mod && mod.__esModule ? mod : { default: mod };
+  };
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.saveUserSettings =
+  exports.getUserSettings =
+  exports.saveFcmToken =
+  exports.deleteUser =
+  exports.updateUser =
+  exports.getUsers =
+  exports.socialLogin =
+  exports.createUser =
+  exports.findUserByEmail =
+    void 0;
+const db_config_1 = __importDefault(require("../config/db.config"));
+const getUsers = async (req, res) => {
   try {
-    const users = await prisma.user.findMany();
+    const users = await db_config_1.default.user.findMany();
     return res.json({ status: 200, message: "Finds all the users", users });
   } catch (error) {
     return res
@@ -11,13 +26,10 @@ const getUsers = async (req: Request, res: Response): Promise<Response> => {
       .json({ status: 500, message: "Internal server error", error });
   }
 };
-
-const findUserByEmail = async (
-  req: Request,
-  res: Response
-): Promise<Response> => {
+exports.getUsers = getUsers;
+const findUserByEmail = async (req, res) => {
   try {
-    const findUser = await prisma.user.findUniqueOrThrow({
+    const findUser = await db_config_1.default.user.findUniqueOrThrow({
       where: { email: req.params.email },
     });
     return res
@@ -29,8 +41,8 @@ const findUserByEmail = async (
       .json({ status: 500, message: "Internal server error", error });
   }
 };
-
-const createUser = async (req: Request, res: Response): Promise<Response> => {
+exports.findUserByEmail = findUserByEmail;
+const createUser = async (req, res) => {
   try {
     const { name, email, password } = req.body;
     if (!name || !email || !password) {
@@ -38,7 +50,7 @@ const createUser = async (req: Request, res: Response): Promise<Response> => {
         .status(400)
         .json({ status: 400, message: "All fields are required!" });
     }
-    const findUser = await prisma.user.findUnique({
+    const findUser = await db_config_1.default.user.findUnique({
       where: { email },
     });
     if (findUser) {
@@ -46,7 +58,7 @@ const createUser = async (req: Request, res: Response): Promise<Response> => {
         .status(400)
         .json({ status: 400, message: "User already taken" });
     }
-    const newUser = await prisma.user.create({
+    const newUser = await db_config_1.default.user.create({
       data: {
         name,
         email,
@@ -65,15 +77,15 @@ const createUser = async (req: Request, res: Response): Promise<Response> => {
       .json({ status: 500, message: "Internal server error", error });
   }
 };
-
-const socialLogin = async (req: Request, res: Response): Promise<Response> => {
+exports.createUser = createUser;
+const socialLogin = async (req, res) => {
   try {
-    const { email, name, tokenForNotification } = req.body;
-    const user = await prisma.user.findUnique({
+    const { email, name, password } = req.body;
+    const user = await db_config_1.default.user.findUnique({
       where: { email },
     });
     if (user) {
-      const updatedUser = await prisma.user.update({
+      const updatedUser = await db_config_1.default.user.update({
         where: { email },
         data: { lastLogin: new Date() },
       });
@@ -81,13 +93,12 @@ const socialLogin = async (req: Request, res: Response): Promise<Response> => {
         .status(200)
         .json({ status: 200, message: "Login successful", user: updatedUser });
     } else {
-      const newUser = await prisma.user.create({
+      const newUser = await db_config_1.default.user.create({
         data: {
           name,
           email,
           password: "social-login",
           lastLogin: new Date(),
-          fcmToken: tokenForNotification,
         },
       });
       return res
@@ -100,11 +111,11 @@ const socialLogin = async (req: Request, res: Response): Promise<Response> => {
       .json({ status: 500, message: "Internal server error", error });
   }
 };
-
-const updateUser = async (req: Request, res: Response): Promise<Response> => {
+exports.socialLogin = socialLogin;
+const updateUser = async (req, res) => {
   try {
     const email = req.params.email;
-    const findUser = await prisma.user.findUnique({
+    const findUser = await db_config_1.default.user.findUnique({
       where: { email },
     });
     if (!findUser) {
@@ -112,7 +123,7 @@ const updateUser = async (req: Request, res: Response): Promise<Response> => {
         .status(404)
         .json({ status: 404, message: "User not found!", email });
     }
-    const updatedUser = await prisma.user.update({
+    const updatedUser = await db_config_1.default.user.update({
       where: { email: email },
       data: {
         name: req.body.name,
@@ -131,11 +142,11 @@ const updateUser = async (req: Request, res: Response): Promise<Response> => {
       .json({ status: 500, message: "Internal server error", error });
   }
 };
-
-const deleteUser = async (req: Request, res: Response): Promise<Response> => {
+exports.updateUser = updateUser;
+const deleteUser = async (req, res) => {
   try {
     const email = req.params.email;
-    const findUser = await prisma.user.findUnique({
+    const findUser = await db_config_1.default.user.findUnique({
       where: { email },
     });
     if (!findUser) {
@@ -143,7 +154,7 @@ const deleteUser = async (req: Request, res: Response): Promise<Response> => {
         .status(404)
         .json({ status: 404, message: "User not found!", email });
     }
-    const deletedUser = await prisma.user.delete({
+    const deletedUser = await db_config_1.default.user.delete({
       where: { email: email },
     });
     return res.status(200).json({
@@ -157,37 +168,30 @@ const deleteUser = async (req: Request, res: Response): Promise<Response> => {
       .json({ status: 500, message: "Internal server error", error });
   }
 };
-
-const saveFcmToken = async (req: Request, res: Response) => {
-  const { email, tokenForNotification } = req.body;
-  if (!email || !tokenForNotification)
-    return res
-      .status(400)
-      .json({ error: "Missing email or tokenForNotification" });
-
+exports.deleteUser = deleteUser;
+const saveFcmToken = async (req, res) => {
+  const { email, token } = req.body;
+  if (!email || !token)
+    return res.status(400).json({ error: "Missing email or token" });
   try {
-    await prisma.user.update({
+    await db_config_1.default.user.update({
       where: { email },
-      data: { fcmToken: tokenForNotification },
+      data: { fcmToken: token },
     });
     res.json({ success: true });
   } catch (err) {
-    res.status(500).json({ error: "Failed to save tokenForNotification" });
+    res.status(500).json({ error: "Failed to save token" });
   }
 };
-
-const getUserSettings = async (
-  req: Request,
-  res: Response
-): Promise<Response> => {
+exports.saveFcmToken = saveFcmToken;
+const getUserSettings = async (req, res) => {
   try {
     const { email } = req.params;
-
-    const userSettings = await prisma.userSettings.findUnique({
+    const userSettings = await db_config_1.default.userSettings.findUnique({
       where: { userEmail: email },
     });
-
     if (!userSettings) {
+      // Return default settings if none exist
       const defaultSettings = {
         notifications: {
           enabled: true,
@@ -197,23 +201,26 @@ const getUserSettings = async (
           dailySummary: false,
         },
         medicineDefaults: {
-          defaultDosesPerDay: 1,
-          defaultReminderTimes: ["08:00", "14:00", "20:00"],
-          defaultDurationDays: 0,
+          defaultDosesPerDay: 2,
+          defaultReminderTimes: ["08:00", "20:00"],
+          defaultDurationDays: 30,
         },
         privacy: {
           dataSharing: false,
           analytics: true,
         },
+        appearance: {
+          theme: "auto",
+          compactMode: false,
+          showAvatars: true,
+        },
       };
-
       return res.status(200).json({
         status: 200,
         message: "Default settings returned",
         settings: defaultSettings,
       });
     }
-
     return res.status(200).json({
       status: 200,
       message: "Settings retrieved successfully",
@@ -221,6 +228,7 @@ const getUserSettings = async (
         notifications: userSettings.notifications,
         medicineDefaults: userSettings.medicineDefaults,
         privacy: userSettings.privacy,
+        appearance: userSettings.appearance,
       },
     });
   } catch (error) {
@@ -229,38 +237,35 @@ const getUserSettings = async (
       .json({ status: 500, message: "Internal server error", error });
   }
 };
-
-const saveUserSettings = async (
-  req: Request,
-  res: Response
-): Promise<Response> => {
+exports.getUserSettings = getUserSettings;
+const saveUserSettings = async (req, res) => {
   try {
     const { email } = req.params;
-    const { notifications, medicineDefaults, privacy } = req.body;
-
-    const user = await prisma.user.findUnique({
+    const { notifications, medicineDefaults, privacy, appearance } = req.body;
+    // Validate that user exists
+    const user = await db_config_1.default.user.findUnique({
       where: { email },
     });
-
     if (!user) {
       return res.status(404).json({ status: 404, message: "User not found" });
     }
-
-    const userSettings = await prisma.userSettings.upsert({
+    // Upsert settings (create if doesn't exist, update if exists)
+    const userSettings = await db_config_1.default.userSettings.upsert({
       where: { userEmail: email },
       update: {
         notifications,
         medicineDefaults,
         privacy,
+        appearance,
       },
       create: {
         userEmail: email,
         notifications,
         medicineDefaults,
         privacy,
+        appearance,
       },
     });
-
     return res.status(200).json({
       status: 200,
       message: "Settings saved successfully",
@@ -268,6 +273,7 @@ const saveUserSettings = async (
         notifications: userSettings.notifications,
         medicineDefaults: userSettings.medicineDefaults,
         privacy: userSettings.privacy,
+        appearance: userSettings.appearance,
       },
     });
   } catch (error) {
@@ -276,15 +282,4 @@ const saveUserSettings = async (
       .json({ status: 500, message: "Internal server error", error });
   }
 };
-
-export {
-  findUserByEmail,
-  createUser,
-  socialLogin,
-  getUsers,
-  updateUser,
-  deleteUser,
-  saveFcmToken,
-  getUserSettings,
-  saveUserSettings,
-};
+exports.saveUserSettings = saveUserSettings;

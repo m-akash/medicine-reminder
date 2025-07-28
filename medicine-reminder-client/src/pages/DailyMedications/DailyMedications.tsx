@@ -148,7 +148,7 @@ const DailyMedications = () => {
 
   const { periodMeta, periodTimes } = useMemo(() => {
     const defaultReminderTimes = settings.medicineDefaults
-      ?.defaultReminderTimes || ["08:00", "20:00"];
+      ?.defaultReminderTimes || ["08:00", "14:00", "20:00"];
 
     const meta = defaultReminderTimes.map((time) => {
       const period = getPeriodName(time);

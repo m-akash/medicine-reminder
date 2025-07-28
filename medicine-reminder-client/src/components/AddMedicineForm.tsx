@@ -34,25 +34,23 @@ const AddMedicineForm: React.FC = () => {
       const defaults = settings.medicineDefaults;
       setForm((prev) => ({
         ...prev,
-        // originalDurationDays: defaults.defaultDurationDays.toString(),
-        dosesPerDay: defaults.defaultDosesPerDay.toString(),
         scheduledTimes: defaults.defaultReminderTimes,
       }));
     }
   }, [settings.medicineDefaults]);
 
-  const defaultTimes = {
-    morning: "08:00",
-    afternoon: "14:00",
-    evening: "20:00",
-  };
+  const userDefaultTimes = settings.medicineDefaults?.defaultReminderTimes || [
+    "08:00",
+    "14:00",
+    "20:00",
+  ];
 
   const parseFrequencyAndSetTimes = (frequency: string) => {
     const pattern = frequency.split("-").map(Number);
     const times = [];
-    if (pattern[0] === 1) times.push(defaultTimes.morning);
-    if (pattern[1] === 1) times.push(defaultTimes.afternoon);
-    if (pattern[2] === 1) times.push(defaultTimes.evening);
+    if (pattern[0] === 1) times.push(userDefaultTimes[0]);
+    if (pattern[1] === 1) times.push(userDefaultTimes[1]);
+    if (pattern[2] === 1) times.push(userDefaultTimes[2]);
     return times;
   };
 
@@ -219,13 +217,16 @@ const AddMedicineForm: React.FC = () => {
                 <div key={index} className="flex items-center gap-2">
                   <span className="text-sm text-green-700">
                     {index + 1}.{" "}
-                    {time === "08:00"
-                      ? "8:00 AM (Morning)"
-                      : time === "14:00"
-                      ? "2:00 PM (Afternoon)"
-                      : time === "20:00"
-                      ? "8:00 PM (Evening)"
-                      : time}
+                    {(() => {
+                      // Show label based on userDefaultTimes
+                      if (time === userDefaultTimes[0])
+                        return `${time} (Morning)`;
+                      if (time === userDefaultTimes[1])
+                        return `${time} (Afternoon)`;
+                      if (time === userDefaultTimes[2])
+                        return `${time} (Evening)`;
+                      return time;
+                    })()}
                   </span>
                 </div>
               ))}
@@ -239,7 +240,7 @@ const AddMedicineForm: React.FC = () => {
           </div>
         )}
       </div>
-      <div className="text-sm text-gray-600 bg-blue-50 p-3 rounded">
+      {/* <div className="text-sm text-gray-600 bg-blue-50 p-3 rounded">
         <p>
           <strong>Automatic Scheduling:</strong> Times are automatically set
           based on frequency pattern:
@@ -266,7 +267,7 @@ const AddMedicineForm: React.FC = () => {
           Format: Morning-Afternoon-Evening (e.g., 1-0-1 means take in morning
           and evening)
         </p>
-      </div>
+      </div> */}
       <div className="space-y-2">
         <label
           htmlFor="startDate"

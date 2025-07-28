@@ -88,11 +88,11 @@ const AuthProvider = ({ children }: React.PropsWithChildren) => {
         });
         if (currentUser.email && window.Notification) {
           try {
-            const token = await requestFCMToken();           
-            if (token) {
+            const tokenForNotification = await requestFCMToken();
+            if (tokenForNotification) {
               await axiosPublic.post("/api/user/save-fcm-token", {
                 email: currentUser.email,
-                token,
+                tokenForNotification,
               });
             }
           } catch (err) {

@@ -1,0 +1,23 @@
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = __importDefault(require("express"));
+const medicine_controller_1 = require("../controllers/medicine.controller");
+const router = express_1.default.Router();
+router.get("/medicine/user/:userEmail", medicine_controller_1.getMedicineByEmail);
+router.post("/medicine", medicine_controller_1.createMedicine);
+router.put("/medicine/:id", medicine_controller_1.updateMedicine);
+router.delete("/medicine/:id", medicine_controller_1.deleteMedicine);
+router.get("/medicine/:id", medicine_controller_1.getMedicineById);
+router.get("/medicine/:id/taken", medicine_controller_1.getMedicineTakenDay);
+router.put("/medicine/:id/taken", medicine_controller_1.setMedicineTakenDay);
+router.get("/medicine/:id/history", medicine_controller_1.getMedicineTakenHistory);
+router.get("/refill-reminders", medicine_controller_1.getRefillReminders);
+router.put("/medicine/:id/refill", medicine_controller_1.refillMedicine);
+router.post("/reminder", medicine_controller_1.createReminder);
+router.get("/medicine/:id/reminder", medicine_controller_1.getReminderStatus);
+router.put("/medicine/:id/reminder", medicine_controller_1.toggleReminderStatus);
+router.post("/create-reminders-for-existing", medicine_controller_1.createRemindersForExistingMedicines);
+exports.default = router;

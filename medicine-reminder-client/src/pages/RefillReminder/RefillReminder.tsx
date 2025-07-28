@@ -26,7 +26,13 @@ const RefillReminder: React.FC = () => {
     axiosSecure
       .get(`/api/refill-reminders?userEmail=${encodeURIComponent(user.email)}`)
       .then((res) => setMedications(res.data))
-      .catch((err) => setError(err.message))
+      .catch((err) => {
+        if (err.response && err.response.status === 404) {
+          setError("No refill reminders found.");
+        } else {
+          setError("Something went wrong. Please try again later.");
+        }
+      })
       .finally(() => setLoading(false));
   }, [user, axiosSecure]);
 
@@ -40,7 +46,11 @@ const RefillReminder: React.FC = () => {
       );
       setMedications(res.data);
     } catch (err: any) {
-      setError(err.message || "Failed to refill.");
+      if (err.response && err.response.status === 404) {
+        setError("No refill reminders found.");
+      } else {
+        setError("Failed to refill. Please try again later.");
+      }
     } finally {
       setLoading(false);
     }

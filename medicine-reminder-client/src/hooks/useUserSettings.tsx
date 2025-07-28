@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import useAxiosSecure from './useAxiosSecure.tsx';
+import { useState, useEffect } from "react";
+import useAxiosSecure from "./useAxiosSecure.tsx";
 
 interface UserSettings {
   name: string;
@@ -20,16 +20,11 @@ interface UserSettings {
     dataSharing: boolean;
     analytics: boolean;
   };
-  appearance: {
-    theme: 'light' | 'dark' | 'auto';
-    compactMode: boolean;
-    showAvatars: boolean;
-  };
 }
 
 const defaultSettings: UserSettings = {
-  name: '',
-  email: '',
+  name: "",
+  email: "",
   notifications: {
     enabled: true,
     reminderAdvance: 30,
@@ -38,18 +33,13 @@ const defaultSettings: UserSettings = {
     dailySummary: false,
   },
   medicineDefaults: {
-    defaultDosesPerDay: 2,
-    defaultReminderTimes: ['08:00', '20:00'],
-    defaultDurationDays: 30,
+    defaultDosesPerDay: 1,
+    defaultReminderTimes: ["08:00", "14:00", "20:00"],
+    defaultDurationDays: 0,
   },
   privacy: {
     dataSharing: false,
     analytics: true,
-  },
-  appearance: {
-    theme: 'auto',
-    compactMode: false,
-    showAvatars: true,
   },
 };
 
@@ -58,7 +48,6 @@ const useUserSettings = (userEmail?: string) => {
   const [loading, setLoading] = useState(true);
   const axiosSecure = useAxiosSecure();
 
-  // Load settings from API on mount
   useEffect(() => {
     const loadSettings = async () => {
       if (!userEmail) {
@@ -67,7 +56,9 @@ const useUserSettings = (userEmail?: string) => {
       }
 
       try {
-        const response = await axiosSecure.get(`/api/user/${userEmail}/settings`);
+        const response = await axiosSecure.get(
+          `/api/user/${userEmail}/settings`
+        );
         if (response.data.settings) {
           setSettings({
             ...defaultSettings,
@@ -75,16 +66,15 @@ const useUserSettings = (userEmail?: string) => {
           });
         }
       } catch (error) {
-        console.error('Error loading user settings:', error);
-        // Fallback to localStorage if API fails
+        console.error("Error loading user settings:", error);
         try {
-          const savedSettings = localStorage.getItem('userSettings');
+          const savedSettings = localStorage.getItem("userSettings");
           if (savedSettings) {
             const parsedSettings = JSON.parse(savedSettings);
             setSettings({ ...defaultSettings, ...parsedSettings });
           }
         } catch (localError) {
-          console.error('Error loading from localStorage:', localError);
+          console.error("Error loading from localStorage:", localError);
         }
       } finally {
         setLoading(false);
@@ -94,42 +84,40 @@ const useUserSettings = (userEmail?: string) => {
     loadSettings();
   }, [userEmail, axiosSecure]);
 
-  // Save settings to API
   const saveSettings = async (newSettings: Partial<UserSettings>) => {
     if (!userEmail) return false;
 
     try {
       const updatedSettings = { ...settings, ...newSettings };
       setSettings(updatedSettings);
-      
-      // Save to API
+
       await axiosSecure.put(`/api/user/${userEmail}/settings`, {
         notifications: updatedSettings.notifications,
         medicineDefaults: updatedSettings.medicineDefaults,
         privacy: updatedSettings.privacy,
-        appearance: updatedSettings.appearance,
       });
 
-      // Also save to localStorage as backup
-      localStorage.setItem('userSettings', JSON.stringify(updatedSettings));
+      localStorage.setItem("userSettings", JSON.stringify(updatedSettings));
       return true;
     } catch (error) {
-      console.error('Error saving user settings:', error);
-      // Fallback to localStorage only
+      console.error("Error saving user settings:", error);
       try {
         const updatedSettings = { ...settings, ...newSettings };
         setSettings(updatedSettings);
-        localStorage.setItem('userSettings', JSON.stringify(updatedSettings));
+        localStorage.setItem("userSettings", JSON.stringify(updatedSettings));
         return true;
       } catch (localError) {
-        console.error('Error saving to localStorage:', localError);
+        console.error("Error saving to localStorage:", localError);
         return false;
       }
     }
   };
 
-  // Update a specific setting
-  const updateSetting = (section: keyof UserSettings, field: string, value: any) => {
+  const updateSetting = (
+    section: keyof UserSettings,
+    field: string,
+    value: any
+  ) => {
     const updatedSettings = {
       ...settings,
       [section]: {
@@ -138,16 +126,13 @@ const useUserSettings = (userEmail?: string) => {
       },
     };
     setSettings(updatedSettings);
-    localStorage.setItem('userSettings', JSON.stringify(updatedSettings));
+    localStorage.setItem("userSettings", JSON.stringify(updatedSettings));
   };
 
-  // Reset settings to defaults
   const resetSettings = () => {
     setSettings(defaultSettings);
-    localStorage.removeItem('userSettings');
+    localStorage.removeItem("userSettings");
   };
-
-  // Get a specific setting value
   const getSetting = (section: keyof UserSettings, field: string) => {
     return (settings[section] as Record<string, any>)[field];
   };
@@ -163,4 +148,4 @@ const useUserSettings = (userEmail?: string) => {
 };
 
 export default useUserSettings;
-export type { UserSettings }; 
+export type { UserSettings };
