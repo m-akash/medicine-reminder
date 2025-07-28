@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import prisma from "../config/db.config";
 import bcrypt from "bcrypt";
+import admin from "../firebaseAdmin";
 
 const saltRounds = 10;
 
@@ -136,29 +137,56 @@ const updateUser = async (req: Request, res: Response): Promise<Response> => {
   }
 };
 
-const deleteUser = async (req: Request, res: Response): Promise<Response> => {
+const deleteUserAccount = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
   try {
-    const email = req.params.email;
-    const findUser = await prisma.user.findUnique({
+    const { email } = req.params;
+    console.log(`Starting account deletion for: ${email}`);
+    const user = await prisma.user.findUnique({
+      where: { email },
+      include: {
+        medicines: true,
+        settings: true,
+        notifications: true,
+      },
+    });
+    if (!user) {
+      return res.status(404).json({
+        status: 404,
+        message: "User not found",
+      });
+    }
+    await prisma.user.delete({
       where: { email },
     });
-    if (!findUser) {
-      return res
-        .status(404)
-        .json({ status: 404, message: "User not found!", email });
+    let firebaseResult;
+    try {
+      const firebaseUser = await admin.auth().getUserByEmail(email);
+      await admin.auth().deleteUser(firebaseUser.uid);
+    } catch (firebaseError: any) {
+      firebaseResult = `error: ${firebaseError.code}`;
     }
-    const deletedUser = await prisma.user.delete({
-      where: { email: email },
-    });
+
     return res.status(200).json({
       status: 200,
-      message: "User delete successfully!",
-      deletedUser,
+      message: "Account deleted successfully",
+      details: {
+        email: user.email,
+        databaseDeleted: true,
+        medicinesCount: user.medicines.length,
+        notificationsCount: user.notifications.length,
+        firebaseResult,
+      },
     });
-  } catch (error) {
-    return res
-      .status(500)
-      .json({ status: 500, message: "Internal server error", error });
+  } catch (error: any) {
+    console.error("Account deletion error:", error);
+    return res.status(500).json({
+      status: 500,
+      message: "Failed to delete account",
+      error: error.message,
+    });
   }
 };
 
@@ -287,8 +315,8 @@ export {
   socialLogin,
   getUsers,
   updateUser,
-  deleteUser,
   saveFcmToken,
   getUserSettings,
   saveUserSettings,
+  deleteUserAccount,
 };

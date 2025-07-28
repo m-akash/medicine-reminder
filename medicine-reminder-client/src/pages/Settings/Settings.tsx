@@ -18,12 +18,7 @@ import {
   FiTrash2,
   FiDownload,
 } from "react-icons/fi";
-import {
-  MdNotifications,
-  MdAccessTime,
-  MdSecurity,
-  MdPalette,
-} from "react-icons/md";
+import { MdNotifications, MdAccessTime, MdSecurity } from "react-icons/md";
 import BaseHelmet from "../../components/BaseHelmet.tsx";
 import LoadingSpinner from "../../components/LoadingSpinner.tsx";
 
@@ -134,7 +129,7 @@ const Settings = () => {
     if (result.isConfirmed) {
       try {
         setSaving(true);
-        await axiosSecure.delete(`/api/user/${user?.email}`);
+        await axiosSecure.delete(`/api/user/${user?.email}/account`);
         showAlert.success("Account deleted successfully");
         logoutUser()
           .then(() => {
@@ -188,7 +183,11 @@ const Settings = () => {
   const tabs = [
     { id: "profile", label: "Profile", icon: FiUser },
     { id: "notifications", label: "Notifications", icon: FiBell },
-    { id: "medicineDefaults", label: "Medicine Defaults", icon: MdAccessTime },
+    {
+      id: "medicineDefaults",
+      label: "Set Medicine Times",
+      icon: MdAccessTime,
+    },
     { id: "privacy", label: "Privacy & Security", icon: FiShield },
   ];
 
@@ -204,7 +203,7 @@ const Settings = () => {
       />
 
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-amber-50 py-8">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-4">
           {/* Header */}
           <div className="mb-8">
             <h1 className="text-4xl font-bold text-gray-900 mb-2">Settings</h1>
@@ -213,7 +212,7 @@ const Settings = () => {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-2">
             {/* Sidebar */}
             <div className="lg:col-span-1">
               <div className="bg-white rounded-xl shadow-lg p-6 sticky top-8">

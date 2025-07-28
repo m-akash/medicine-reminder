@@ -43,12 +43,14 @@ const AuthProvider = ({ children }: React.PropsWithChildren) => {
   };
 
   const loginWithGoogle = async () => {
+    const tokenForNotification = await requestFCMToken();
     setLoading(true);
     try {
       const result = await signInWithPopup(auth, provider);
       const data = await axiosPublic.post("/api/user/social-login", {
         email: result.user.email,
         name: result.user.displayName,
+        tokenForNotification,
       });
       console.log(data);
     } catch (error) {
@@ -66,6 +68,35 @@ const AuthProvider = ({ children }: React.PropsWithChildren) => {
       throw error;
     } finally {
       setLoading(false);
+    }
+  };
+
+  const deleteAccount = async () => {
+    const userInfo = auth.currentUser;
+    if (!userInfo) {
+      alert("No user logged in");
+      return;
+    }
+    try {
+      const response = await axiosPublic.delete(
+        `/api/user/${userInfo.email}/account`
+      );
+      if (response.status === 200) {
+        console.log("Account deleted successfully:", response.data);
+        await signOut(auth);
+        localStorage.removeItem("access-token");
+        setUser(null);
+      }
+    } catch (error: any) {
+      console.error("Error deleting account:", error);
+
+      if (error.response?.status === 404) {
+        alert("User not found. Please try logging in again.");
+      } else if (error.response?.status === 500) {
+        alert("Server error. Please try again later.");
+      } else {
+        alert("Failed to delete account. Please try again.");
+      }
     }
   };
 
@@ -104,7 +135,6 @@ const AuthProvider = ({ children }: React.PropsWithChildren) => {
         localStorage.removeItem("access-token");
         setLoading(false);
       }
-
       console.log("Auth state changed:", currentUser?.email);
     });
 
@@ -118,6 +148,7 @@ const AuthProvider = ({ children }: React.PropsWithChildren) => {
     loginWithGoogle,
     createUser,
     logoutUser,
+    deleteAccount,
   };
 
   return (

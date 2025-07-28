@@ -12,6 +12,8 @@ router.post("/user/register", user_controller_1.createUser);
 router.post("/user/social-login", user_controller_1.socialLogin);
 router.put("/user/:email", user_controller_1.updateUser);
 router.delete("/user/:email", user_controller_1.deleteUser);
+router.delete("/user/:email/account", user_controller_1.deleteUserAccount);
+router.get("/user/:email/test-firebase", user_controller_1.testFirebaseAdmin);
 router.post("/user/save-fcm-token", user_controller_1.saveFcmToken);
 router.get("/user/:email/settings", user_controller_1.getUserSettings);
 router.put("/user/:email/settings", user_controller_1.saveUserSettings);

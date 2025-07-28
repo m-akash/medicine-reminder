@@ -61,17 +61,24 @@ const getFreq = (frequency: string) => {
 
 // New utility to format time as 'hh:mm AM/PM'
 const formatTime = (time: string | Date) => {
-  const date = typeof time === "string" ? new Date(`1970-01-01T${time}`) : new Date(time);
-  return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: true });
+  const date =
+    typeof time === "string" ? new Date(`1970-01-01T${time}`) : new Date(time);
+  return date.toLocaleTimeString([], {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true,
+  });
 };
 
 // Get reminder times for a medicine, using reminders[0].times if present, else user settings
-const getReminderTimes = (
-  med: any,
-  defaultReminderTimes: string[]
-) => {
+const getReminderTimes = (med: any, defaultReminderTimes: string[]) => {
   // If medicine has reminders[0].times, use those
-  if (med.reminders && med.reminders[0] && med.reminders[0].times && med.reminders[0].times.length > 0) {
+  if (
+    med.reminders &&
+    med.reminders[0] &&
+    med.reminders[0].times &&
+    med.reminders[0].times.length > 0
+  ) {
     return med.reminders[0].times
       .map((t: any) => formatTime(t.time))
       .join(", ");
@@ -95,7 +102,8 @@ const MyMedications = () => {
   const { settings } = useUserSettings(email);
 
   const medicines: any[] = data?.findMedicine || [];
-  const defaultReminderTimes: string[] = settings?.medicineDefaults?.defaultReminderTimes || ["08:00", "14:00", "20:00"];
+  const defaultReminderTimes: string[] = settings?.medicineDefaults
+    ?.defaultReminderTimes || ["08:00", "14:00", "20:00"];
 
   const handleDelete = async (id: string, medicineName: string) => {
     const result = await showConfirm.delete(
@@ -137,8 +145,14 @@ const MyMedications = () => {
         {medicines.length === 0 ? (
           <div className="flex flex-col items-center py-10">
             <FaPills className="text-5xl text-gray-300 mb-4" />
-            <h2 className="text-lg text-gray-500 mb-2">
+            <h2 className="text-lg text-center text-gray-500 mb-2">
               You have no medicines to take now.
+              <br />
+              <span className="text-primary font-semibold">
+                {" "}
+                Just one step now, add your meds, and you'll never miss a dose
+                again.
+              </span>
             </h2>
             <Link
               to="/add-medicine"

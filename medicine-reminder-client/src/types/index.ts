@@ -17,6 +17,7 @@ export interface AuthContextType {
   loginUser: (email: string, password: string) => Promise<void>;
   logoutUser: () => Promise<void>;
   loginWithGoogle: () => Promise<void>;
+  deleteAccount: () => Promise<void>;
 }
 
 export interface FirebaseUser {

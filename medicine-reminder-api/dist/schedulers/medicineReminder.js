@@ -12,7 +12,6 @@ console.log("Medicine reminder scheduler module loaded");
 function generateTodayTimes(frequency, today, reminderTimes) {
     const times = [];
     const freqArr = frequency.split("-").map(Number);
-    // Parse reminderTimes (e.g., ["08:00", "14:00", "20:00"]) to [{hour, minute}]
     const defaultTimes = reminderTimes.map((t) => {
         const [hour, minute] = t.split(":").map(Number);
         return { hour, minute };
@@ -28,11 +27,11 @@ function generateTodayTimes(frequency, today, reminderTimes) {
 }
 function getDoseTimeName(time) {
     const hour = time.getHours();
-    if (hour === 8)
+    if (hour >= 5 && hour < 12)
         return "Morning";
-    if (hour === 14)
+    if (hour >= 12 && hour < 18)
         return "Afternoon";
-    if (hour === 20)
+    if (hour >= 18 || hour < 5)
         return "Evening";
     return "Dose";
 }
@@ -133,18 +132,16 @@ node_cron_1.default.schedule("* * * * *", async () => {
                 };
             }));
             const userSettings = medicinesAtTime[0]?.medicine?.user?.settings;
-            let reminderAdvance = 0;
+            let reminderAdvance = 30;
             if (userSettings &&
                 typeof userSettings.notifications === "object" &&
                 userSettings.notifications) {
                 const notifications = userSettings.notifications;
-                reminderAdvance = notifications.reminderAdvance || 0;
+                reminderAdvance = notifications.reminderAdvance || 30;
             }
             const upcomingTime = (0, date_fns_1.addMinutes)(doseTime, -reminderAdvance);
             const upcomingDiff = Math.abs(now.getTime() - upcomingTime.getTime());
-            if (reminderAdvance > 0 &&
-                (0, date_fns_1.isAfter)(doseTime, now) &&
-                upcomingDiff < 60000) {
+            if ((0, date_fns_1.isAfter)(doseTime, now) && upcomingDiff < 30000) {
                 const doseTimeName = getDoseTimeName(doseTime);
                 const medicineNames = medicinesAtTime
                     .map(({ medicine }) => `${medicine.name}(${medicine.dosage})`)
@@ -153,7 +150,7 @@ node_cron_1.default.schedule("* * * * *", async () => {
                 await (0, fcmUtils_1.sendFCMNotification)(fcmToken, "Upcoming Medicine Reminder", `Take your (${doseTimeName.toLowerCase()} dose) medicines: ${medicineNames} at ${doseTime.toLocaleTimeString()}`);
             }
             const currentDiff = Math.abs(now.getTime() - doseTime.getTime());
-            if (currentDiff < 60000) {
+            if (currentDiff < 30000) {
                 const doseTimeName = getDoseTimeName(doseTime);
                 const medicineNames = medicinesAtTime
                     .map(({ medicine }) => `${medicine.name}(${medicine.dosage})`)
@@ -171,7 +168,7 @@ node_cron_1.default.schedule("* * * * *", async () => {
             }
             const missedTime = (0, date_fns_1.addMinutes)(doseTime, 60);
             const missedDiff = Math.abs(now.getTime() - missedTime.getTime());
-            if ((0, date_fns_1.isAfter)(now, missedTime) && missedDiff < 60000) {
+            if ((0, date_fns_1.isAfter)(now, missedTime) && missedDiff < 30000) {
                 const untakenMedicines = takenStatuses
                     .filter((status) => !status.taken)
                     .map((status) => status.medicine);

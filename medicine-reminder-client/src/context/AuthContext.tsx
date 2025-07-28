@@ -8,6 +8,7 @@ const defaultAuthContext: AuthContextType = {
   loginUser: async () => {},
   logoutUser: async () => {},
   loginWithGoogle: async () => {},
+  deleteAccount: async () => {},
 };
 
 const AuthContext = createContext<AuthContextType>(defaultAuthContext);
