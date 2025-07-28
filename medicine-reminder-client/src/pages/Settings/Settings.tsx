@@ -284,7 +284,7 @@ const Settings = () => {
                           onChange={(e) =>
                             handleFormChange("email", e.target.value)
                           }
-                          disabled={!editingProfile}
+                          disabled
                           className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent disabled:bg-gray-100 text-black"
                         />
                       </div>
@@ -305,6 +305,7 @@ const Settings = () => {
                                     e.target.value
                                   )
                                 }
+                                disabled
                                 className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent text-black"
                                 placeholder="Enter current password"
                               />
@@ -332,6 +333,7 @@ const Settings = () => {
                               onChange={(e) =>
                                 handleFormChange("newPassword", e.target.value)
                               }
+                              disabled
                               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent text-black"
                               placeholder="Enter new password"
                             />
@@ -350,6 +352,7 @@ const Settings = () => {
                                   e.target.value
                                 )
                               }
+                              disabled
                               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent text-black"
                               placeholder="Confirm new password"
                             />

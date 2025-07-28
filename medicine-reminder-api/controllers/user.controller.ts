@@ -1,5 +1,8 @@
 import { Request, Response } from "express";
 import prisma from "../config/db.config";
+import bcrypt from "bcrypt";
+
+const saltRounds = 10;
 
 const getUsers = async (req: Request, res: Response): Promise<Response> => {
   try {
@@ -33,6 +36,7 @@ const findUserByEmail = async (
 const createUser = async (req: Request, res: Response): Promise<Response> => {
   try {
     const { name, email, password } = req.body;
+    const hashedPassword = await bcrypt.hash(password, saltRounds);
     if (!name || !email || !password) {
       return res
         .status(400)
@@ -50,7 +54,7 @@ const createUser = async (req: Request, res: Response): Promise<Response> => {
       data: {
         name,
         email,
-        password,
+        password: hashedPassword,
         lastLogin: new Date(),
       },
     });
@@ -117,7 +121,7 @@ const updateUser = async (req: Request, res: Response): Promise<Response> => {
       data: {
         name: req.body.name,
         email: req.body.email,
-        password: req.body.password,
+        // password: req.body.password,
       },
     });
     return res.status(200).json({

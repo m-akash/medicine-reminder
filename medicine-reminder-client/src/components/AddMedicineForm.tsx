@@ -162,7 +162,7 @@ const AddMedicineForm: React.FC = () => {
       </h2>
       <div className="space-y-2">
         <label htmlFor="name" className="text-sm font-medium text-gray-700">
-          Medicine Name
+          Medicine Name<span className="text-red-500">*</span>
         </label>
         <input
           id="name"
@@ -189,7 +189,7 @@ const AddMedicineForm: React.FC = () => {
       </div>
       <div className="space-y-2">
         <label className="text-sm font-medium text-gray-700">
-          Frequency Pattern (Key Field)
+          Frequency Pattern (Key Field) <span className="text-red-500">*</span>
         </label>
         <input
           name="frequency"
@@ -273,7 +273,7 @@ const AddMedicineForm: React.FC = () => {
           htmlFor="startDate"
           className="text-sm font-medium text-gray-700"
         >
-          Start Date
+          Start Date <span className="text-red-500">*</span>
         </label>
         <input
           id="startDate"
@@ -290,7 +290,7 @@ const AddMedicineForm: React.FC = () => {
           htmlFor="originalDurationDays"
           className="text-sm font-medium text-gray-700"
         >
-          Total Treatment Duration (days)
+          Total Treatment Duration (days)<span className="text-red-500">*</span>
         </label>
         <input
           id="originalDurationDays"
@@ -309,7 +309,7 @@ const AddMedicineForm: React.FC = () => {
           htmlFor="durationDays"
           className="text-sm font-medium text-gray-700"
         >
-          Current Supply Duration (days)
+          Current Supply Duration (days)<span className="text-red-500">*</span>
         </label>
         <input
           id="durationDays"
@@ -338,7 +338,7 @@ const AddMedicineForm: React.FC = () => {
           htmlFor="totalPills"
           className="text-sm font-medium text-gray-700"
         >
-          Total Pills in Current Supply
+          Total Pills in Current Supply<span className="text-red-500">*</span>
         </label>
         <input
           id="totalPills"
@@ -357,7 +357,7 @@ const AddMedicineForm: React.FC = () => {
           htmlFor="pillsPerDose"
           className="text-sm font-medium text-gray-700"
         >
-          Pills Per Dose
+          Pills Per Dose<span className="text-red-500">*</span>
         </label>
         <input
           id="pillsPerDose"
