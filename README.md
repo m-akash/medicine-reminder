@@ -10,8 +10,6 @@ A full-stack application for managing medicine reminders, tracking medicine inta
 - [Tech Stack](#tech-stack)
 - [Project Structure](#project-structure)
 - [Getting Started](#getting-started)
-  - [Backend Setup](#backend-setup)
-  - [Frontend Setup](#frontend-setup)
 - [API Overview](#api-overview)
 - [PWA Features](#pwa-features)
 - [Firebase Integration](#firebase-integration)
@@ -68,6 +66,15 @@ medicine-reminder/
 │   └── ...
 └── README.md                  # Project documentation
 ```
+
+## API Overview
+
+- **User Routes:** Register, login, profile and settings setup preference
+- **Medicine Routes:** CRUD, mark as taken, get taken days
+- **Notification Routes:** Subscribe, send, manage tokens
+- **Scheduler:** Automated reminders for medicines
+
+See `medicine-reminder-api/controllers/` and `routers/` for detailed route handlers.
 
 ## API Endpoints
 
@@ -143,15 +150,6 @@ medicine-reminder/
    ```
 4. **Access the app:**
    - Open [http://localhost:5173](http://localhost:5173) in your browser.
-
-## API Overview
-
-- **User Routes:** Register, login, profile and settings setup preference
-- **Medicine Routes:** CRUD, mark as taken, get taken days
-- **Notification Routes:** Subscribe, send, manage tokens
-- **Scheduler:** Automated reminders for medicines
-
-See `medicine-reminder-api/controllers/` and `routers/` for detailed route handlers.
 
 ## PWA Features
 
