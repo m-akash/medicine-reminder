@@ -110,6 +110,13 @@ yarn preview
 - Update icons and manifest in `public/`
 - Modify theme and styles in `src/index.css` or your preferred CSS framework
 
+## Author
+
+**Mehedi Hasan Akash**
+
+- GitHub: [@m-akash](https://github.com/m-akash)
+- LinkedIn: [Mehedi Hasan Akash](https://www.linkedin.com/in/mehedi-hasan-akash/)
+
 ---
 
 For backend/API setup, see the `medicine-reminder-api` directory.
