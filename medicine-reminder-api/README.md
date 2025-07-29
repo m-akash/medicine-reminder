@@ -1,6 +1,6 @@
 # Medicine Reminder API
 
-A robust backend service for the Medicine Reminder application, built with Node.js, Express, TypeScript, and Prisma ORM. This API provides comprehensive functionality for managing medications, reminders, notifications, and user preferences.
+A robust backend service for the Medicine Reminder application, built with TypeScript, Node.js, Express, Postgres and Prisma ORM. This API provides comprehensive functionality for managing medications, reminders, notifications, and user preferences.
 
 ## Features
 
@@ -30,7 +30,8 @@ A robust backend service for the Medicine Reminder application, built with Node.
   - Real-time push notifications via Firebase Cloud Messaging (FCM)
   - Customizable notification preferences
   - Multiple notification types:
-    - Medicine reminders
+    - Upcoming Medicine reminders
+    - Time to take medicine alerts
     - Missed dose alerts
     - Refill reminders
     - System notifications
@@ -42,10 +43,10 @@ A robust backend service for the Medicine Reminder application, built with Node.
 
 ## Tech Stack
 
+- **Language**: TypeScript
 - **Runtime Environment**: Node.js
 - **Framework**: Express.js
-- **Language**: TypeScript
-- **Database ORM**: Prisma
+- **Database & ORM**: Postgres and Prisma
 - **Authentication**: JWT (JSON Web Tokens)
 - **Push Notifications**: Firebase Cloud Messaging (FCM)
 
