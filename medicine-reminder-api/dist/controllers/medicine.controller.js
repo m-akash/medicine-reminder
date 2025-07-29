@@ -160,7 +160,6 @@ const updateMedicine = async (req, res) => {
                 message: "Medicine not found",
             });
         }
-        console.log("Found existing medicine:", existingMedicine);
         const dateOnly = req.body.startDate
             ? new Date(req.body.startDate)
             : undefined;
@@ -184,7 +183,6 @@ const updateMedicine = async (req, res) => {
             pillsPerDose: req.body.pillsPerDose,
             dosesPerDay: req.body.dosesPerDay,
         };
-        // Only include fields that are not undefined or null
         Object.keys(updateData).forEach((key) => (updateData[key] === undefined || updateData[key] === null) &&
             delete updateData[key]);
         if (dateOnly)
@@ -202,7 +200,6 @@ const updateMedicine = async (req, res) => {
         console.log("Medicine updated successfully:", updatedMedicine);
         if (scheduledTimes.length > 0) {
             console.log("Updating reminders with times:", scheduledTimes);
-            // Delete existing reminder times first
             await db_config_1.default.reminderTime.deleteMany({
                 where: {
                     reminder: {
@@ -210,11 +207,9 @@ const updateMedicine = async (req, res) => {
                     },
                 },
             });
-            // Delete existing reminders
             await db_config_1.default.reminder.deleteMany({
                 where: { medicineId: req.params.id },
             });
-            // Create new reminder with times
             await db_config_1.default.reminder.create({
                 data: {
                     medicineId: req.params.id,

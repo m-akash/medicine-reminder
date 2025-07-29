@@ -59,7 +59,9 @@ const router = createBrowserRouter([
           </PrivateRoute>
         ),
         loader: ({ params }) =>
-          fetch(`http://localhost:8000/api/medicine/${params.id}`),
+          fetch(
+            `https://medicine-reminder-api.vercel.app/api/medicine/${params.id}`
+          ),
       },
       {
         path: "/settings",

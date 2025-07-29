@@ -5,7 +5,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.deleteNotification = exports.markAllNotificationsAsRead = exports.markNotificationAsRead = exports.getNotifications = void 0;
 const db_config_1 = __importDefault(require("../config/db.config"));
-// Get all notifications for a user
 const getNotifications = async (req, res) => {
     try {
         const { userEmail } = req.params;
@@ -31,7 +30,6 @@ const getNotifications = async (req, res) => {
     }
 };
 exports.getNotifications = getNotifications;
-// Mark a notification as read
 const markNotificationAsRead = async (req, res) => {
     try {
         const { notificationId } = req.params;
@@ -57,7 +55,6 @@ const markNotificationAsRead = async (req, res) => {
     }
 };
 exports.markNotificationAsRead = markNotificationAsRead;
-// Mark all notifications as read for a user
 const markAllNotificationsAsRead = async (req, res) => {
     try {
         const { userEmail } = req.params;
@@ -84,7 +81,6 @@ const markAllNotificationsAsRead = async (req, res) => {
     }
 };
 exports.markAllNotificationsAsRead = markAllNotificationsAsRead;
-// Delete a notification
 const deleteNotification = async (req, res) => {
     try {
         const { notificationId } = req.params;

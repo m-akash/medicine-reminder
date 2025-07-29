@@ -9,12 +9,12 @@ datasource db {
 }
 
 model User {
-  id            String        @id @default(uuid())
+  id            String         @id @default(uuid())
   name          String
-  email         String        @unique
+  email         String         @unique
   password      String
-  createdAt     DateTime      @default(now())
-  lastLogin     DateTime      @default(now())
+  createdAt     DateTime       @default(now())
+  lastLogin     DateTime       @default(now())
   fcmToken      String?
   medicines     Medicine[]
   settings      UserSettings?
@@ -84,7 +84,7 @@ model Notification {
   userEmail    String
   title        String
   message      String
-  type         String   // 'reminder', 'missed_dose', 'refill', 'system', 'success'
+  type         String // 'reminder', 'missed_dose', 'refill', 'system', 'success'
   isRead       Boolean  @default(false)
   createdAt    DateTime @default(now())
   medicineId   String?

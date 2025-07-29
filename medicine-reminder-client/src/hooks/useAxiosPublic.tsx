@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const axiosPublic = axios.create({
-  baseURL: "http://localhost:8000",
+  baseURL: "https://medicine-reminder-api.vercel.app",
 });
 
 const useAxiosPublic = () => {
