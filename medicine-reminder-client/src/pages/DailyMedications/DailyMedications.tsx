@@ -338,7 +338,6 @@ const DailyMedications = () => {
                       ? takenMap[med.id!].split("-")
                       : defaultTakenArr;
 
-                    // Ensure the array has the right length
                     while (takenArr.length < periodMeta.length) {
                       takenArr.push("0");
                     }

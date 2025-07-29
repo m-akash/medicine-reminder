@@ -31,8 +31,6 @@ export const createNotification = async (data: CreateNotificationData) => {
   }
 };
 
-
-
 export const createMedicineReminderNotification = async (
   userEmail: string,
   medicineName: string,

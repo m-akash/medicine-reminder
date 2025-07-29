@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import useAuth from "../../hooks/useAuth.tsx";
 import useAxiosSecure from "../../hooks/useAxiosSecure.tsx";
 import useUserSettings from "../../hooks/useUserSettings.tsx";

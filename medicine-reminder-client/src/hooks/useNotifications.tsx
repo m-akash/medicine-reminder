@@ -8,13 +8,11 @@ const useNotifications = (userEmail?: string) => {
   const [unreadCount, setUnreadCount] = useState(0);
   const axiosSecure = useAxiosSecure();
 
-  // Fetch notifications from API
   const fetchNotifications = async () => {
     if (!userEmail) {
       setLoading(false);
       return;
     }
-
     try {
       const response = await axiosSecure.get(`/api/notifications/${userEmail}`);
       const fetchedNotifications = response.data.notifications || [];
@@ -29,7 +27,6 @@ const useNotifications = (userEmail?: string) => {
     }
   };
 
-  // Mark notification as read
   const markAsRead = async (notificationId: string) => {
     try {
       await axiosSecure.patch(`/api/notifications/${notificationId}/read`);
@@ -39,7 +36,6 @@ const useNotifications = (userEmail?: string) => {
       setUnreadCount((prev) => Math.max(0, prev - 1));
     } catch (error) {
       console.error("Error marking notification as read:", error);
-      // Update locally even if API fails
       setNotifications((prev) =>
         prev.map((n) => (n.id === notificationId ? { ...n, isRead: true } : n))
       );
@@ -47,7 +43,6 @@ const useNotifications = (userEmail?: string) => {
     }
   };
 
-  // Mark all notifications as read
   const markAllAsRead = async () => {
     try {
       await axiosSecure.patch(`/api/notifications/${userEmail}/read-all`);
@@ -55,13 +50,11 @@ const useNotifications = (userEmail?: string) => {
       setUnreadCount(0);
     } catch (error) {
       console.error("Error marking all notifications as read:", error);
-      // Update locally even if API fails
       setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
       setUnreadCount(0);
     }
   };
 
-  // Delete notification
   const deleteNotification = async (notificationId: string) => {
     try {
       await axiosSecure.delete(`/api/notifications/${notificationId}`);
@@ -72,7 +65,6 @@ const useNotifications = (userEmail?: string) => {
       }
     } catch (error) {
       console.error("Error deleting notification:", error);
-      // Remove locally even if API fails
       const notification = notifications.find((n) => n.id === notificationId);
       setNotifications((prev) => prev.filter((n) => n.id !== notificationId));
       if (notification && !notification.isRead) {

@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useMemo } from "react";
 import type { JSX } from "react";
-import {FaPills, FaCheckCircle, FaClock } from "react-icons/fa";
+import { FaPills, FaCheckCircle, FaClock } from "react-icons/fa";
 import useAuth from "../../hooks/useAuth.tsx";
 import useMedicinesUser from "../../hooks/useMedicinesUser.tsx";
 import useAxiosSecure from "../../hooks/useAxiosSecure.tsx";
@@ -162,7 +162,9 @@ const Schedule = () => {
       }));
       medicineNotifications.markedAsTaken(med.name);
     } catch (err) {
-      medicineNotifications.markedAsTaken("Failed to mark as taken. Please try again.");
+      medicineNotifications.markedAsTaken(
+        "Failed to mark as taken. Please try again."
+      );
     } finally {
       setLoadingTaken(false);
     }
@@ -170,7 +172,7 @@ const Schedule = () => {
 
   return (
     <>
-      <BaseHelmet 
+      <BaseHelmet
         title="Medication Schedule - Medicine Reminder"
         description="View your daily medication schedule, track taken doses, and manage your medication routine with our comprehensive scheduling system."
       />
@@ -273,13 +275,6 @@ const Schedule = () => {
             )}
           </div>
         </div>
-        {/* <button
-          className="fixed bottom-6 right-6 z-50 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full shadow-lg w-16 h-16 flex items-center justify-center text-3xl transition-all duration-200"
-          aria-label="Add Schedule"
-          onClick={() => alert("Add Schedule (not implemented)")}
-        >
-          <FaPlus />
-        </button> */}
       </div>
     </>
   );

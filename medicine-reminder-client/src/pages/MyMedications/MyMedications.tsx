@@ -59,7 +59,6 @@ const getFreq = (frequency: string) => {
   }
 };
 
-// New utility to format time as 'hh:mm AM/PM'
 const formatTime = (time: string | Date) => {
   const date =
     typeof time === "string" ? new Date(`1970-01-01T${time}`) : new Date(time);
@@ -70,9 +69,7 @@ const formatTime = (time: string | Date) => {
   });
 };
 
-// Get reminder times for a medicine, using reminders[0].times if present, else user settings
 const getReminderTimes = (med: any, defaultReminderTimes: string[]) => {
-  // If medicine has reminders[0].times, use those
   if (
     med.reminders &&
     med.reminders[0] &&
@@ -83,7 +80,7 @@ const getReminderTimes = (med: any, defaultReminderTimes: string[]) => {
       .map((t: any) => formatTime(t.time))
       .join(", ");
   }
-  // Otherwise, use frequency and defaultReminderTimes
+
   const freqArr = med.frequency.split("-").map(Number);
   const times: string[] = [];
   for (let i = 0; i < freqArr.length; i++) {

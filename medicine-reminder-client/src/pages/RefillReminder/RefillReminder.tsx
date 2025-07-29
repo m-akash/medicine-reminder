@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import { FaPills, FaExclamationTriangle } from "react-icons/fa";
 import useAuth from "../../hooks/useAuth.tsx";
 import useAxiosSecure from "../../hooks/useAxiosSecure.tsx";
-import Reports from "../Reports/Reports.tsx";
 import Report from "../../components/Report.tsx";
 
 interface Medication {

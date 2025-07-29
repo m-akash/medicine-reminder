@@ -31,8 +31,8 @@ export default defineConfig([
       },
     },
     rules: {
-      "no-unused-vars": "off", // Disable for TypeScript files
-      "no-undef": "off", // Disable for TypeScript files
+      "no-unused-vars": "off",
+      "no-undef": "off",
       "no-unused-expressions": "off",
       "no-constant-condition": "off",
       "no-cond-assign": "off",

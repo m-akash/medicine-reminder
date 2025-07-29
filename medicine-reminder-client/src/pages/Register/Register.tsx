@@ -1,7 +1,7 @@
 import React, { useContext, useState } from "react";
 import useAxiosPublic from "../../hooks/useAxiosPublic.tsx";
 import AuthContext from "../../context/AuthContext.tsx";
-import { data, Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import SocialLogin from "../shared/SocialLogin.tsx";
 import BaseHelmet from "../../components/BaseHelmet.tsx";
 import { authNotifications } from "../../utils/notifications.ts";
@@ -41,7 +41,7 @@ const Register = () => {
 
   return (
     <>
-      <BaseHelmet 
+      <BaseHelmet
         title="Register - Medicine Reminder"
         description="Create your Medicine Reminder account to start managing your medications and health schedule effectively."
       />
@@ -78,7 +78,9 @@ const Register = () => {
             />
           </div>
           <div className="mb-8">
-            <label className="block mb-2 text-black font-medium">Password</label>
+            <label className="block mb-2 text-black font-medium">
+              Password
+            </label>
             <input
               type="password"
               name="password"

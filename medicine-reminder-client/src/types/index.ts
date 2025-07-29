@@ -7,7 +7,6 @@ export interface User {
   photoURL?: string;
   createdAt: Date;
   lastLogin?: Date;
-  // role: "user" | "admin";
 }
 
 export interface AuthContextType {

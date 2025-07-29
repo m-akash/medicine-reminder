@@ -8,22 +8,19 @@ const SocialLogin = () => {
   const { loginWithGoogle } = useContext(AuthContext);
   const axiosPublic = useAxiosPublic();
   const navigate = useNavigate();
-  
+
   const handleLoginWithGoogle = async () => {
     try {
-      const result: any = await loginWithGoogle();
-      // const userData = {
-      //   email: result.user?.email,
-      //   name: result.user?.displayName,
-      // };
-      // await axiosPublic.post("/api/user/social-login", userData);
+      await loginWithGoogle();
       authNotifications.loginSuccess();
       navigate("/");
     } catch (error) {
-      authNotifications.loginError("Failed to sign in with Google. Please try again.");
+      authNotifications.loginError(
+        "Failed to sign in with Google. Please try again."
+      );
     }
   };
-  
+
   return (
     <div className="flex justify-center items-center  md:mt-10 ">
       <button

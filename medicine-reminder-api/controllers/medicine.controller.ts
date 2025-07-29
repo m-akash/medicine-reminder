@@ -181,9 +181,6 @@ const updateMedicine = async (
         message: "Medicine not found",
       });
     }
-
-    console.log("Found existing medicine:", existingMedicine);
-
     const dateOnly = req.body.startDate
       ? new Date(req.body.startDate)
       : undefined;
@@ -212,7 +209,6 @@ const updateMedicine = async (
       dosesPerDay: req.body.dosesPerDay,
     };
 
-    // Only include fields that are not undefined or null
     Object.keys(updateData).forEach(
       (key) =>
         (updateData[key] === undefined || updateData[key] === null) &&
@@ -236,8 +232,6 @@ const updateMedicine = async (
 
     if (scheduledTimes.length > 0) {
       console.log("Updating reminders with times:", scheduledTimes);
-
-      // Delete existing reminder times first
       await prisma.reminderTime.deleteMany({
         where: {
           reminder: {
@@ -246,12 +240,10 @@ const updateMedicine = async (
         },
       });
 
-      // Delete existing reminders
       await prisma.reminder.deleteMany({
         where: { medicineId: req.params.id },
       });
 
-      // Create new reminder with times
       await prisma.reminder.create({
         data: {
           medicineId: req.params.id,

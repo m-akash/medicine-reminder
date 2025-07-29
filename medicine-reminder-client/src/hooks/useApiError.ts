@@ -10,8 +10,6 @@ interface ApiError {
 export const useApiError = () => {
   const handleError = useCallback((error: ApiError | any) => {
     console.error("API Error:", error);
-
-    // Handle different types of errors
     if (error?.status === 401) {
       apiNotifications.unauthorized();
     } else if (error?.status === 403) {
@@ -31,7 +29,6 @@ export const useApiError = () => {
     ) {
       apiNotifications.timeout();
     } else {
-      // Default error message
       const message =
         error?.message || error?.statusText || "An unexpected error occurred";
       apiNotifications.genericError(message);
