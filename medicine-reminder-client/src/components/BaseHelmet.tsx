@@ -37,7 +37,6 @@ const BaseHelmet = ({
       <meta name="apple-mobile-web-app-capable" content="yes" />
       <meta name="apple-mobile-web-app-status-bar-style" content="default" />
       <meta name="apple-mobile-web-app-title" content="Medicine Reminder" />
-      <link rel="icon" type="image/svg+xml" href="/vite.svg" />
       <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
       <link rel="preconnect" href="https://fonts.googleapis.com" />
       <link

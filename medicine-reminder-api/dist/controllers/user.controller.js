@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.testFirebaseAdmin = exports.deleteUserAccount = exports.saveUserSettings = exports.getUserSettings = exports.saveFcmToken = exports.deleteUser = exports.updateUser = exports.getUsers = exports.socialLogin = exports.createUser = exports.findUserByEmail = void 0;
+exports.deleteUserAccount = exports.saveUserSettings = exports.getUserSettings = exports.saveFcmToken = exports.updateUser = exports.getUsers = exports.socialLogin = exports.createUser = exports.findUserByEmail = void 0;
 const db_config_1 = __importDefault(require("../config/db.config"));
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const firebaseAdmin_1 = __importDefault(require("../firebaseAdmin"));
@@ -143,33 +143,57 @@ const updateUser = async (req, res) => {
     }
 };
 exports.updateUser = updateUser;
-const deleteUser = async (req, res) => {
+const deleteUserAccount = async (req, res) => {
     try {
-        const email = req.params.email;
-        const findUser = await db_config_1.default.user.findUnique({
+        const { email } = req.params;
+        console.log(`Starting account deletion for: ${email}`);
+        const user = await db_config_1.default.user.findUnique({
+            where: { email },
+            include: {
+                medicines: true,
+                settings: true,
+                notifications: true,
+            },
+        });
+        if (!user) {
+            return res.status(404).json({
+                status: 404,
+                message: "User not found",
+            });
+        }
+        await db_config_1.default.user.delete({
             where: { email },
         });
-        if (!findUser) {
-            return res
-                .status(404)
-                .json({ status: 404, message: "User not found!", email });
+        let firebaseResult;
+        try {
+            const firebaseUser = await firebaseAdmin_1.default.auth().getUserByEmail(email);
+            await firebaseAdmin_1.default.auth().deleteUser(firebaseUser.uid);
         }
-        const deletedUser = await db_config_1.default.user.delete({
-            where: { email: email },
-        });
+        catch (firebaseError) {
+            firebaseResult = `error: ${firebaseError.code}`;
+        }
         return res.status(200).json({
             status: 200,
-            message: "User delete successfully!",
-            deletedUser,
+            message: "Account deleted successfully",
+            details: {
+                email: user.email,
+                databaseDeleted: true,
+                medicinesCount: user.medicines.length,
+                notificationsCount: user.notifications.length,
+                firebaseResult,
+            },
         });
     }
     catch (error) {
-        return res
-            .status(500)
-            .json({ status: 500, message: "Internal server error", error });
+        console.error("Account deletion error:", error);
+        return res.status(500).json({
+            status: 500,
+            message: "Failed to delete account",
+            error: error.message,
+        });
     }
 };
-exports.deleteUser = deleteUser;
+exports.deleteUserAccount = deleteUserAccount;
 const saveFcmToken = async (req, res) => {
     const { email, tokenForNotification } = req.body;
     if (!email || !tokenForNotification)
@@ -277,102 +301,3 @@ const saveUserSettings = async (req, res) => {
     }
 };
 exports.saveUserSettings = saveUserSettings;
-const deleteUserAccount = async (req, res) => {
-    try {
-        const { email } = req.params;
-        console.log(`Starting account deletion for: ${email}`);
-        // First, find and delete from database
-        const user = await db_config_1.default.user.findUnique({
-            where: { email },
-            include: {
-                medicines: true,
-                settings: true,
-                notifications: true,
-            },
-        });
-        if (!user) {
-            return res.status(404).json({
-                status: 404,
-                message: "User not found",
-            });
-        }
-        // Delete from database first (this is the most important part)
-        await db_config_1.default.user.delete({
-            where: { email },
-        });
-        console.log(`Database user deleted: ${email}`);
-        // Try to delete from Firebase (but don't fail if it doesn't work)
-        let firebaseResult = "not_attempted";
-        try {
-            const firebaseUser = await firebaseAdmin_1.default.auth().getUserByEmail(email);
-            await firebaseAdmin_1.default.auth().deleteUser(firebaseUser.uid);
-            firebaseResult = "deleted";
-            console.log(`Firebase user deleted: ${email}`);
-        }
-        catch (firebaseError) {
-            firebaseResult = `error: ${firebaseError.code}`;
-            console.log(`Firebase deletion failed for ${email}: ${firebaseError.code}`);
-        }
-        return res.status(200).json({
-            status: 200,
-            message: "Account deleted successfully",
-            details: {
-                email: user.email,
-                databaseDeleted: true,
-                firebaseResult: firebaseResult,
-                medicinesCount: user.medicines.length,
-                notificationsCount: user.notifications.length,
-            },
-        });
-    }
-    catch (error) {
-        console.error("Account deletion error:", error);
-        return res.status(500).json({
-            status: 500,
-            message: "Failed to delete account",
-            error: error.message,
-        });
-    }
-};
-exports.deleteUserAccount = deleteUserAccount;
-// Test endpoint to verify Firebase Admin is working
-const testFirebaseAdmin = async (req, res) => {
-    try {
-        const { email } = req.params;
-        console.log(`Testing Firebase Admin for email: ${email}`);
-        try {
-            const firebaseUser = await firebaseAdmin_1.default.auth().getUserByEmail(email);
-            console.log(`Firebase user found: ${firebaseUser.uid}`);
-            return res.status(200).json({
-                status: 200,
-                message: "Firebase Admin is working correctly",
-                firebaseUser: {
-                    uid: firebaseUser.uid,
-                    email: firebaseUser.email,
-                    displayName: firebaseUser.displayName,
-                    emailVerified: firebaseUser.emailVerified,
-                },
-            });
-        }
-        catch (error) {
-            console.error("Firebase Admin test error:", error);
-            return res.status(404).json({
-                status: 404,
-                message: "Firebase user not found or error occurred",
-                error: {
-                    code: error.code,
-                    message: error.message,
-                },
-            });
-        }
-    }
-    catch (error) {
-        console.error("Test Firebase Admin error:", error);
-        return res.status(500).json({
-            status: 500,
-            message: "Internal server error",
-            error: error.message,
-        });
-    }
-};
-exports.testFirebaseAdmin = testFirebaseAdmin;

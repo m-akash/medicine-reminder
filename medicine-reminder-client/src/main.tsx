@@ -8,6 +8,9 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { HelmetProvider } from "react-helmet-async";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import PWARegistration from "./components/PWARegistration.tsx";
+import OfflinePage from "./components/OfflinePage.tsx";
+import InstallPrompt from "./components/InstallPrompt.tsx";
 
 const queryClient = new QueryClient();
 
@@ -29,6 +32,9 @@ createRoot(document.getElementById("root") as HTMLElement).render(
             pauseOnHover
             theme="light"
           />
+          <PWARegistration />
+          <OfflinePage />
+          <InstallPrompt />
         </QueryClientProvider>
       </AuthProvider>
     </HelmetProvider>

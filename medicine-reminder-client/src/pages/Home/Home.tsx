@@ -1,4 +1,3 @@
-import React from "react";
 import Greeting from "../Greeting/Greeting.tsx";
 import DailyMedications from "../DailyMedications/DailyMedications.tsx";
 import MyMedications from "../MyMedications/MyMedications.tsx";
