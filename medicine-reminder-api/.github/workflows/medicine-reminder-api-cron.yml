@@ -1,18 +1,16 @@
-name: Trigger Medicine Reminder Cron
+name: Medicine Reminder Cron
 
 on:
   schedule:
-    - cron: '* * * * *'
+    - cron: "* * * * *"
+  workflow_dispatch:
 
 jobs:
   trigger-cron:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Trigger Vercel API for medicine reminders
-        uses: actions/http-client@v1
-        with:
-          url: 'https://your-vercel-app.vercel.app/api/sendMedicineReminders'
-          method: POST
-          headers: |
-            Authorization: Bearer ${{ secrets.CRON_SECRET }}
+      - name: Call Vercel Cron Endpoint
+        run: |
+          curl -X POST "https://medicine-reminder-api.vercel.app/api/sendMedicineReminders" \
+          -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+          -H "Content-Type: application/json"

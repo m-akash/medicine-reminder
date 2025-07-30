@@ -3,19 +3,15 @@ import { processMedicineReminders } from "../utils/processMedicineReminders";
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   const authHeader = req.headers.authorization || "";
+  const token = authHeader.startsWith("Bearer ")
+    ? authHeader.split(" ")[1]
+    : null;
 
-  if (!authHeader.startsWith("Bearer ")) {
-    return res
-      .status(401)
-      .json({ error: "Missing or invalid authorization header" });
+  if (!token || token !== process.env.CRON_SECRET) {
+    return res.status(401).json({ error: "Unauthorized" });
   }
 
-  const token = authHeader.split(" ")[1];
-  if (token !== process.env.CRON_SECRET) {
-    return res.status(403).json({ error: "Forbidden: Invalid token" });
-  }
-
-  console.log(`Vercel Cron Triggered at ${new Date().toLocaleTimeString()}`);
+  console.log(`Cron Triggered at ${new Date().toLocaleTimeString()}`);
 
   try {
     await processMedicineReminders();
