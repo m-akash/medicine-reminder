@@ -3,14 +3,15 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = handler;
 const processMedicineReminders_1 = require("../utils/processMedicineReminders");
 async function handler(req, res) {
+    if (req.method !== "POST") {
+        return res.status(405).json({ error: "Method Not Allowed" });
+    }
     const authHeader = req.headers.authorization || "";
-    const token = authHeader.startsWith("Bearer ")
-        ? authHeader.split(" ")[1]
-        : null;
-    if (!token || token !== process.env.CRON_SECRET) {
+    const token = authHeader.split(" ")[1];
+    if (token !== process.env.CRON_SECRET) {
         return res.status(401).json({ error: "Unauthorized" });
     }
-    console.log(`Cron Triggered at ${new Date().toLocaleTimeString()}`);
+    console.log(`Cron Triggered at ${new Date().toISOString()}`);
     try {
         await (0, processMedicineReminders_1.processMedicineReminders)();
         res.status(200).json({ message: "Reminders processed successfully" });

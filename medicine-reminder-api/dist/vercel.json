@@ -1,12 +1,21 @@
 {
     "version": 2,
-    "builds": [
-        {
-            "src": "index.ts",
-            "use": "@vercel/node"
-        }
-    ],
     "routes": [
+        {
+            "src": "/api/sendMedicineReminders",
+            "methods": [
+                "POST"
+            ],
+            "dest": "/api/sendMedicineReminders.ts",
+            "headers": {
+                "Access-Control-Allow-Origin": "https://mediping.netlify.app",
+                "Access-Control-Allow-Methods": "POST, OPTIONS",
+                "Access-Control-Allow-Headers": "Content-Type, Authorization",
+                "Access-Control-Allow-Credentials": "true",
+                "Cross-Origin-Opener-Policy": "same-origin-allow-popups",
+                "Cross-Origin-Embedder-Policy": "require-corp"
+            }
+        },
         {
             "src": "/(.*)",
             "dest": "/index.ts",
