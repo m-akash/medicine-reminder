@@ -8,7 +8,4 @@ const dotenv_1 = __importDefault(require("dotenv"));
 require("./schedulers/medicineReminder");
 dotenv_1.default.config();
 const port = process.env["PORT"] || 3001;
-app_1.default.listen(port, async () => {
-    console.log(`Server running at http://localhost:${port}`);
-    console.log(`✅ Medicine reminder scheduler started`);
-});
+exports.default = app_1.default;
