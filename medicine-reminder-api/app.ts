@@ -9,12 +9,14 @@ app.use(
     origin: [
       "http://localhost:5173",
       "https://mediping.netlify.app",
-      // "http://medirem-ad076.firebaseapp.com",
-      // "http://medirem-ad076.web.app",
+      "http://medirem-ad076.firebaseapp.com",
+      "http://medirem-ad076.web.app",
     ],
+    credentials: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
   })
 );
+app.options("*", cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
