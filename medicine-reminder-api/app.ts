@@ -8,9 +8,9 @@ app.use(
   cors({
     origin: [
       "http://localhost:5173",
-      "http://medirem-ad076.firebaseapp.com",
-      "http://medirem-ad076.web.app",
       "https://mediping.netlify.app",
+      // "http://medirem-ad076.firebaseapp.com",
+      // "http://medirem-ad076.web.app",
     ],
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
   })

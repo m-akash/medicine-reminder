@@ -1,3 +1,4 @@
+// This file is auto-generated during the build process. Do not edit directly.
 importScripts(
   "https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"
 );
@@ -6,12 +7,12 @@ importScripts(
 );
 
 firebase.initializeApp({
-  apiKey: "AIzaSyBlVWI9Ip-nfGjqMFjrdHI-AgvdwkEvi3g",
-  authDomain: "medirem-ad076.firebaseapp.com",
-  projectId: "medirem-ad076",
-  storageBucket: "medirem-ad076.firebasestorage.app",
-  messagingSenderId: "550317740158",
-  appId: "1:550317740158:web:c818c9d38bf86ca8c0082f",
+  "apiKey": "AIzaSyBlVWI9Ip-nfGjqMFjrdHI-AgvdwkEvi3g",
+  "authDomain": "medirem-ad076.firebaseapp.com",
+  "projectId": "medirem-ad076",
+  "storageBucket": "medirem-ad076.firebasestorage.app",
+  "messagingSenderId": "550317740158",
+  "appId": "1:550317740158:web:c818c9d38bf86ca8c0082f"
 });
 
 const messaging = firebase.messaging();

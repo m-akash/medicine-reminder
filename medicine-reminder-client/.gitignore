@@ -22,4 +22,7 @@ dist-ssr
 *.sln
 *.sw?
 dev-dist
+.env
+.env.production
+firebase-messaging-sw.js
 
