@@ -2,7 +2,7 @@ import React, { useContext, useState } from "react";
 import useAxiosPublic from "../../hooks/useAxiosPublic.tsx";
 import AuthContext from "../../context/AuthContext.tsx";
 import { Link, useNavigate } from "react-router-dom";
-import SocialLogin from "../shared/SocialLogin.tsx";
+// import SocialLogin from "../shared/SocialLogin.tsx";
 import BaseHelmet from "../../components/BaseHelmet.tsx";
 import { authNotifications } from "../../utils/notifications.ts";
 
@@ -102,13 +102,13 @@ const Register = () => {
             <div className="absolute inset-0 flex items-center">
               <div className="w-full border-t border-white/20"></div>
             </div>
-            <div className="relative flex justify-center text-sm">
+            {/* <div className="relative flex justify-center text-sm">
               <span className="px-4 bg-transparent text-gray-300 font-medium">
                 Or continue with
               </span>
-            </div>
+            </div> */}
           </div>
-          <SocialLogin></SocialLogin>
+          {/* <SocialLogin></SocialLogin> */}
           <div className="text-center">
             <p className="text-gray-300">
               Already have an account?{" "}

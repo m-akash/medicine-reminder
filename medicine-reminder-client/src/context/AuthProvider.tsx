@@ -42,23 +42,23 @@ const AuthProvider = ({ children }: React.PropsWithChildren) => {
     }
   };
 
-  const loginWithGoogle = async () => {
-    const tokenForNotification = await requestFCMToken();
-    setLoading(true);
-    try {
-      const result = await signInWithPopup(auth, provider);
-      const data = await axiosPublic.post("/api/user/social-login", {
-        email: result.user.email,
-        name: result.user.displayName,
-        tokenForNotification,
-      });
-      console.log(data);
-    } catch (error) {
-      throw error;
-    } finally {
-      setLoading(false);
-    }
-  };
+  // const loginWithGoogle = async () => {
+  //   const tokenForNotification = await requestFCMToken();
+  //   setLoading(true);
+  //   try {
+  //     const result = await signInWithPopup(auth, provider);
+  //     const data = await axiosPublic.post("/api/user/social-login", {
+  //       email: result.user.email,
+  //       name: result.user.displayName,
+  //       tokenForNotification,
+  //     });
+  //     console.log(data);
+  //   } catch (error) {
+  //     throw error;
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
 
   const logoutUser = async () => {
     setLoading(true);
@@ -145,7 +145,7 @@ const AuthProvider = ({ children }: React.PropsWithChildren) => {
     user,
     loading,
     loginUser,
-    loginWithGoogle,
+    // loginWithGoogle,
     createUser,
     logoutUser,
     deleteAccount,

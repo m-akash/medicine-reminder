@@ -8,7 +8,7 @@ interface JwtConfig {
 
 const JWT: JwtConfig = {
   jwtSecret: process.env.ACCESS_TOKEN_SECRET,
-  jswExpire: "30d",
+  jswExpire: "24h",
 };
 
 export default JWT;

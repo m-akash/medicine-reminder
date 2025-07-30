@@ -1,8 +1,21 @@
 import admin from "firebase-admin";
-import serviceAccount from "./utils/firebaseAdminSDK.json";
+import fs from "fs";
 
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount as admin.ServiceAccount),
-});
+let serviceAccount: admin.ServiceAccount;
+
+if (process.env.FIREBASE_SERVICE_ACCOUNT) {
+  serviceAccount = JSON.parse(
+    process.env.FIREBASE_SERVICE_ACCOUNT
+  ) as admin.ServiceAccount;
+} else {
+  serviceAccount = JSON.parse(
+    fs.readFileSync("src/utils/firebaseAdminSDK.json", "utf-8")
+  ) as admin.ServiceAccount;
+}
+if (!admin.apps.length) {
+  admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount),
+  });
+}
 
 export default admin;

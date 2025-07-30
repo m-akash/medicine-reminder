@@ -1,7 +1,7 @@
 import React, { useContext, useState } from "react";
 import AuthContext from "../../context/AuthContext.tsx";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import SocialLogin from "../shared/SocialLogin.tsx";
+// import SocialLogin from "../shared/SocialLogin.tsx";
 import BaseHelmet from "../../components/BaseHelmet.tsx";
 import { authNotifications } from "../../utils/notifications.ts";
 
@@ -35,7 +35,7 @@ const Login = () => {
 
   return (
     <>
-      <BaseHelmet 
+      <BaseHelmet
         title="Login - Medicine Reminder"
         description="Sign in to your Medicine Reminder account to manage your medications and health schedule."
       />
@@ -60,7 +60,9 @@ const Login = () => {
             />
           </div>
           <div className="mb-8">
-            <label className="block mb-2 text-black font-medium">Password</label>
+            <label className="block mb-2 text-black font-medium">
+              Password
+            </label>
             <input
               type="password"
               name="password"
@@ -82,13 +84,13 @@ const Login = () => {
             <div className="absolute inset-0 flex items-center">
               <div className="w-full border-t border-white/20"></div>
             </div>
-            <div className="relative flex justify-center text-sm">
+            {/* <div className="relative flex justify-center text-sm">
               <span className="px-4 bg-transparent text-gray-300 font-medium">
                 Or continue with
               </span>
-            </div>
+            </div> */}
           </div>
-          <SocialLogin />
+          {/* <SocialLogin /> */}
           <div className="text-center">
             <p className="text-gray-300">
               New to here?{" "}

@@ -7,6 +7,6 @@ const dotenv_1 = __importDefault(require("dotenv"));
 dotenv_1.default.config();
 const JWT = {
     jwtSecret: process.env.ACCESS_TOKEN_SECRET,
-    jswExpire: "30d",
+    jswExpire: "24h",
 };
 exports.default = JWT;

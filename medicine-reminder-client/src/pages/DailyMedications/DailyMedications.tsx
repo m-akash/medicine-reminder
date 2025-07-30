@@ -297,7 +297,7 @@ const DailyMedications = () => {
         <div className="flex flex-col md:flex-row md:gap-6 gap-4 w-full">
           {periodMeta.map((meta, idx) => (
             <div
-              key={meta.period}
+              key={meta.time}
               className={`w-full md:flex-1 rounded-xl p-4 md:p-6 ${meta.bg} text-black flex flex-col relative mb-4 md:mb-0`}
             >
               {(() => {
