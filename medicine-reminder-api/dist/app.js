@@ -9,15 +9,11 @@ const jwt_config_1 = __importDefault(require("./config/jwt.config"));
 const cors_1 = __importDefault(require("cors"));
 const app = (0, express_1.default)();
 app.use((0, cors_1.default)({
-    origin: [
-        "https://mediping.netlify.app",
-        "http://localhost:5173",
-        "http://medirem-ad076.firebaseapp.com",
-        "http://medirem-ad076.web.app",
-    ],
+    origin: "https://mediping.netlify.app",
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true,
+    preflightContinue: false,
 }));
 app.use(express_1.default.json());
 app.use(express_1.default.urlencoded({ extended: false }));
