@@ -6,13 +6,8 @@ const app = express();
 
 app.use(
   cors({
-    origin: [
-      "http://localhost:5173",
-      "https://mediping.netlify.app",
-      "http://medirem-ad076.firebaseapp.com",
-      "https://medirem-ad076.web.app",
-    ],
-    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    origin: ["https://mediping.netlify.app", "http://localhost:5173"],
+    // methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     credentials: true,
   })
 );
