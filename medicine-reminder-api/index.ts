@@ -5,4 +5,7 @@ dotenv.config();
 
 const port: number | string = process.env["PORT"] || 3001;
 
-export default app;
+app.listen(port, async () => {
+  console.log(`Server running at http://localhost:${port}`);
+  console.log(`✅ Medicine reminder scheduler started`);
+});
