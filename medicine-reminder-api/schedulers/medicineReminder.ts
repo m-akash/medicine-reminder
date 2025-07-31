@@ -1,6 +1,6 @@
 // cron-local.ts
 import cron from "node-cron";
-import { processMedicineReminders } from "../utils/processMedicineReminders";
+import { processMedicineReminders } from "./processMedicineReminders";
 
 console.log("Local cron started...");
 

@@ -1,5 +1,5 @@
 import { Router, Request, Response } from "express";
-import { processMedicineReminders } from "../utils/processMedicineReminders";
+import { processMedicineReminders } from "../schedulers/processMedicineReminders";
 
 const router = Router();
 
@@ -18,12 +18,19 @@ router.post("/sendMedicineReminders", async (req: Request, res: Response) => {
 
   // 2. Execute the main reminder processing logic
   try {
-    console.log("CRON job: Endpoint triggered successfully. Starting reminder processing...");
+    console.log(
+      "CRON job: Endpoint triggered successfully. Starting reminder processing..."
+    );
     await processMedicineReminders();
     console.log("CRON job: Reminder processing finished successfully.");
-    return res.status(200).json({ message: "Medicine reminders processed successfully." });
+    return res
+      .status(200)
+      .json({ message: "Medicine reminders processed successfully." });
   } catch (error) {
-    console.error("CRON job: An error occurred while processing reminders:", error);
+    console.error(
+      "CRON job: An error occurred while processing reminders:",
+      error
+    );
     return res.status(500).json({ message: "Internal Server Error" });
   }
 });

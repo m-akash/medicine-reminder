@@ -90,13 +90,17 @@ export async function processMedicineReminders() {
   for (const medicine of medicines) {
     const { user, frequency } = medicine;
     if (!user?.fcmToken) {
-      console.log(`[Scheduler] Skipping ${medicine.name}: User has no FCM token.`);
+      console.log(
+        `[Scheduler] Skipping ${medicine.name}: User has no FCM token.`
+      );
       continue;
     }
 
     const userSettings: UserSettings = (user.settings as UserSettings) || {};
     if (userSettings.notifications?.enabled === false) {
-      console.log(`[Scheduler] Skipping ${medicine.name}: Notifications disabled for ${user.email}.`);
+      console.log(
+        `[Scheduler] Skipping ${medicine.name}: Notifications disabled for ${user.email}.`
+      );
       continue;
     }
 
@@ -129,7 +133,9 @@ export async function processMedicineReminders() {
       // --- 1. Check for current reminders that are due ---
       const isDue = doseTime >= windowStart && doseTime <= now;
       if (isDue && remindersSentArr[doseIndex] === "0") {
-        console.log(`[NOTIFY-CURRENT] Sending reminder for ${medicine.name} at ${doseTime}`);
+        console.log(
+          `[NOTIFY-CURRENT] Sending reminder for ${medicine.name} at ${doseTime}`
+        );
         const doseTimeName = getDoseTimeName(doseTime);
         await sendFCMNotification(
           user.fcmToken,
@@ -137,14 +143,26 @@ export async function processMedicineReminders() {
           `It's time to take ${medicine.name} (${medicine.dosage}).`
         );
         await createMedicineReminderNotification(
-          user.email, medicine.name, medicine.dosage || "", doseTimeName, medicine.id
+          user.email,
+          medicine.name,
+          medicine.dosage || "",
+          doseTimeName,
+          medicine.id
         );
-        remindersSentArr = updateStateString(remindersSentArr.join('-'), doseIndex, "1", todayTimes.length).split('-');
+        remindersSentArr = updateStateString(
+          remindersSentArr.join("-"),
+          doseIndex,
+          "1",
+          todayTimes.length
+        ).split("-");
         needsDbUpdate = true;
       }
 
       // --- 2. Check for missed doses ---
-      const missedDoseTime = addMinutes(doseTime, MISSED_DOSE_THRESHOLD_MINUTES);
+      const missedDoseTime = addMinutes(
+        doseTime,
+        MISSED_DOSE_THRESHOLD_MINUTES
+      );
       const isMissed = missedDoseTime >= windowStart && missedDoseTime <= now;
       if (
         isMissed &&
@@ -152,12 +170,16 @@ export async function processMedicineReminders() {
         remindersSentArr[doseIndex] !== "M" &&
         userSettings.notifications?.missedDoseAlerts !== false
       ) {
-        console.log(`[NOTIFY-MISSED] Sending missed dose alert for ${medicine.name} at ${doseTime}`);
+        console.log(
+          `[NOTIFY-MISSED] Sending missed dose alert for ${medicine.name} at ${doseTime}`
+        );
         const doseTimeName = getDoseTimeName(doseTime);
         await sendFCMNotification(
           user.fcmToken,
           `Missed Dose`,
-          `You missed your ${doseTimeName.toLowerCase()} dose of ${medicine.name}.`
+          `You missed your ${doseTimeName.toLowerCase()} dose of ${
+            medicine.name
+          }.`
         );
         await createMissedDoseNotification(
           user.email,
@@ -166,7 +188,12 @@ export async function processMedicineReminders() {
           doseTimeName,
           medicine.id
         );
-        remindersSentArr = updateStateString(remindersSentArr.join('-'), doseIndex, "M", todayTimes.length).split('-');
+        remindersSentArr = updateStateString(
+          remindersSentArr.join("-"),
+          doseIndex,
+          "M",
+          todayTimes.length
+        ).split("-");
         needsDbUpdate = true;
       }
     }
