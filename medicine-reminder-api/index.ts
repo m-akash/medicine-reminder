@@ -23,14 +23,11 @@ if (!allowedOriginsEnv) {
   process.exit(1);
 }
 
-// --- Scheduler ---
-// This import runs the scheduler setup code. A comment explains its purpose.
-import "./schedulers/medicineReminder";
-
 // --- Routers ---
 import userRouter from "./routers/user.route";
 import medicineRouter from "./routers/medicine.route";
 import notificationRouter from "./routers/notification.route";
+import cronRouter from "./routers/cron.route";
 
 const app = express();
 
@@ -61,6 +58,7 @@ app.use(express.urlencoded({ extended: false }));
 app.use("/api", userRouter);
 app.use("/api", medicineRouter);
 app.use("/api", notificationRouter);
+app.use("/api", cronRouter); // Add the cron router
 
 // --- JWT Token Generation Route ---
 app.post("/jwt", async (req: Request, res: Response) => {
@@ -80,8 +78,4 @@ app.get("/", (_: Request, res: Response) => {
   res.send("Medicine Reminder API is running!");
 });
 
-app.listen(port, () => {
-  console.log(`Server running at http://localhost:${port}`);
-  console.log(`Allowed origins: ${allowedOrigins.join(", ")}`);
-  console.log(`✅ Medicine reminder scheduler started`);
-});
+export default app;

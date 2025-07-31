@@ -20,13 +20,11 @@ if (!allowedOriginsEnv) {
     console.error("FATAL ERROR: ALLOWED_ORIGINS is not defined in environment variables. e.g., 'https://mediping.netlify.app,http://localhost:3000'");
     process.exit(1);
 }
-// --- Scheduler ---
-// This import runs the scheduler setup code. A comment explains its purpose.
-require("./schedulers/medicineReminder");
 // --- Routers ---
 const user_route_1 = __importDefault(require("./routers/user.route"));
 const medicine_route_1 = __importDefault(require("./routers/medicine.route"));
 const notification_route_1 = __importDefault(require("./routers/notification.route"));
+const cron_route_1 = __importDefault(require("./routers/cron.route"));
 const app = (0, express_1.default)();
 // --- CORS Configuration ---
 const allowedOrigins = allowedOriginsEnv.split(",");
@@ -54,6 +52,7 @@ app.use(express_1.default.urlencoded({ extended: false }));
 app.use("/api", user_route_1.default);
 app.use("/api", medicine_route_1.default);
 app.use("/api", notification_route_1.default);
+app.use("/api", cron_route_1.default); // Add the cron router
 // --- JWT Token Generation Route ---
 app.post("/jwt", async (req, res) => {
     const user = req.body;
@@ -66,8 +65,4 @@ app.post("/jwt", async (req, res) => {
 app.get("/", (_, res) => {
     res.send("Medicine Reminder API is running!");
 });
-app.listen(port, () => {
-    console.log(`Server running at http://localhost:${port}`);
-    console.log(`Allowed origins: ${allowedOrigins.join(", ")}`);
-    console.log(`✅ Medicine reminder scheduler started`);
-});
+exports.default = app;

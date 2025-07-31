@@ -1,11 +1,9 @@
-import type { VercelRequest, VercelResponse } from "@vercel/node";
+import { Router, Request, Response } from "express";
 import { processMedicineReminders } from "../utils/processMedicineReminders";
 
-export default async function handler(req: VercelRequest, res: VercelResponse) {
-  if (req.method !== "POST") {
-    return res.status(405).json({ error: "Method Not Allowed" });
-  }
+const router = Router();
 
+router.post("/sendMedicineReminders", async (req: Request, res: Response) => {
   const authHeader = req.headers.authorization || "";
   const token = authHeader.split(" ")[1];
 
@@ -14,12 +12,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   console.log(`Cron Triggered at ${new Date().toISOString()}`);
-
   try {
     await processMedicineReminders();
     res.status(200).json({ message: "Reminders processed successfully" });
   } catch (err: any) {
     console.error("Cron job error:", err);
-    res.status(500).json({ error: err.message });
+    res
+      .status(500)
+      .json({ error: "Failed to process reminders", details: err.message });
   }
-}
+});
+
+export default router;
+
+
+
+
+

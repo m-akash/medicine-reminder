@@ -9,8 +9,12 @@ let serviceAccount;
 if (process.env.FIREBASE_SERVICE_ACCOUNT) {
     serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
 }
+else if (process.env.NODE_ENV !== 'production') {
+    // Fallback for local development ONLY. This will fail on Vercel.
+    serviceAccount = JSON.parse(fs_1.default.readFileSync("firebaseAdminSDK.json", "utf-8"));
+}
 else {
-    serviceAccount = JSON.parse(fs_1.default.readFileSync("src/utils/firebaseAdminSDK.json", "utf-8"));
+    throw new Error("FATAL ERROR: FIREBASE_SERVICE_ACCOUNT environment variable not set in production.");
 }
 if (!firebase_admin_1.default.apps.length) {
     firebase_admin_1.default.initializeApp({
