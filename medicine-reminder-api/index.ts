@@ -23,6 +23,8 @@ if (!allowedOriginsEnv) {
   process.exit(1);
 }
 
+import "./schedulers/medicineReminder";
+
 // --- Routers ---
 import userRouter from "./routers/user.route";
 import medicineRouter from "./routers/medicine.route";
@@ -32,8 +34,9 @@ import cronRouter from "./routers/cron.route";
 const app = express();
 
 // --- CORS Configuration ---
-// Split the string and trim each origin to remove potential whitespace.
-const allowedOrigins = allowedOriginsEnv.split(",").map(origin => origin.trim());
+const allowedOrigins = allowedOriginsEnv
+  .split(",")
+  .map((origin) => origin.trim());
 
 const corsOptions: cors.CorsOptions = {
   origin: (origin, callback) => {
@@ -43,9 +46,6 @@ const corsOptions: cors.CorsOptions = {
     if (allowedOrigins.indexOf(origin) !== -1) {
       callback(null, true);
     } else {
-      // If the origin is not in the whitelist, we create a specific error.
-      // This provides a more descriptive message in your server logs
-      // than simply passing `false`.
       const msg = `The CORS policy for this site does not allow access from the specified Origin: ${origin}`;
       callback(new Error(msg));
     }
@@ -64,12 +64,11 @@ app.use(express.urlencoded({ extended: false }));
 app.use("/api", userRouter);
 app.use("/api", medicineRouter);
 app.use("/api", notificationRouter);
-app.use("/api", cronRouter); // Add the cron router
+app.use("/api", cronRouter);
 
 interface JwtRequestBody {
   email: string;
 }
-// --- JWT Token Generation Route ---
 app.post("/jwt", (req: Request, res: Response) => {
   const userPayload: JwtRequestBody = {
     email: req.body.email,
