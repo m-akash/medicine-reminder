@@ -1,17 +1,17 @@
 import express, { Request, Response } from "express";
 import dotenv from "dotenv";
 import cors from "cors";
-import jwt from "jsonwebtoken";
-import JWT from "./config/jwt.config";
+import jwt, { SignOptions } from "jsonwebtoken";
 dotenv.config();
 
 const port = process.env.PORT || 3001;
 const jwtSecret = process.env.JWT_SECRET_KEY;
+const jwtExpiresInSeconds = Number(process.env.JWT_EXPIRE_SECONDS) || 604800;
 const allowedOriginsEnv = process.env.ALLOWED_ORIGINS;
 
 if (!jwtSecret) {
   console.error(
-    "FATAL ERROR: JWT_SECRET is not defined in environment variables."
+    "FATAL ERROR: JWT_SECRET_KEY is not defined in environment variables."
   );
   process.exit(1);
 }
@@ -32,7 +32,9 @@ import cronRouter from "./routers/cron.route";
 const app = express();
 
 // --- CORS Configuration ---
-const allowedOrigins = allowedOriginsEnv.split(",");
+// Split the string and trim each origin to remove potential whitespace.
+const allowedOrigins = allowedOriginsEnv.split(",").map(origin => origin.trim());
+
 const corsOptions: cors.CorsOptions = {
   origin: (origin, callback) => {
     if (!origin) {
@@ -41,7 +43,11 @@ const corsOptions: cors.CorsOptions = {
     if (allowedOrigins.indexOf(origin) !== -1) {
       callback(null, true);
     } else {
-      callback(new Error("Not allowed by CORS"));
+      // If the origin is not in the whitelist, we create a specific error.
+      // This provides a more descriptive message in your server logs
+      // than simply passing `false`.
+      const msg = `The CORS policy for this site does not allow access from the specified Origin: ${origin}`;
+      callback(new Error(msg));
     }
   },
   methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
@@ -60,17 +66,24 @@ app.use("/api", medicineRouter);
 app.use("/api", notificationRouter);
 app.use("/api", cronRouter); // Add the cron router
 
+interface JwtRequestBody {
+  email: string;
+}
 // --- JWT Token Generation Route ---
-app.post("/jwt", async (req: Request, res: Response) => {
-  const user = req.body;
-  if (!JWT.jwtSecret) {
-    return res.status(500).json({ error: "JWT secret not configured" });
+app.post("/jwt", (req: Request, res: Response) => {
+  const userPayload: JwtRequestBody = {
+    email: req.body.email,
+  };
+
+  if (!userPayload.email) {
+    return res
+      .status(400)
+      .send({ error: "Email is required to generate a token." });
   }
-  const token = jwt.sign(
-    user,
-    JWT.jwtSecret as string,
-    { expiresIn: JWT.jwtExpire } as jwt.SignOptions
-  );
+  const token = jwt.sign(userPayload, jwtSecret as string, {
+    expiresIn: jwtExpiresInSeconds,
+  });
+
   res.send({ token });
 });
 
@@ -78,4 +91,5 @@ app.get("/", (_: Request, res: Response) => {
   res.send("Medicine Reminder API is running!");
 });
 
+console.log("Server is running");
 export default app;

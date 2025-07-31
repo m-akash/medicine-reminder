@@ -351,8 +351,9 @@ import { processMedicineReminders } from "../utils/processMedicineReminders";
 
 console.log("Local cron started...");
 
-cron.schedule("* * * * *", async () => {
+export const localCron = cron.schedule("* * * * *", async () => {
   console.log(`Scheduler running at ${new Date().toLocaleTimeString()}`);
   await processMedicineReminders();
 });
+
 
