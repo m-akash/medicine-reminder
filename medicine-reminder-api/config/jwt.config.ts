@@ -3,12 +3,12 @@ dotenv.config();
 
 interface JwtConfig {
   jwtSecret: string | undefined;
-  jswExpire: string;
+  jwtExpire: string;
 }
 
 const JWT: JwtConfig = {
-  jwtSecret: process.env.ACCESS_TOKEN_SECRET,
-  jswExpire: "24h",
+  jwtSecret: process.env.JWT_SECRET_KEY,
+  jwtExpire: "24h",
 };
 
 export default JWT;

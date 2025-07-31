@@ -6,7 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const dotenv_1 = __importDefault(require("dotenv"));
 dotenv_1.default.config();
 const JWT = {
-    jwtSecret: process.env.ACCESS_TOKEN_SECRET,
-    jswExpire: "24h",
+    jwtSecret: process.env.JWT_SECRET_KEY,
+    jwtExpire: "24h",
 };
 exports.default = JWT;

@@ -3,7 +3,7 @@ import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import { VitePWA } from "vite-plugin-pwa";
 
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
   plugins: [
     tailwindcss(),
     react(),
@@ -66,7 +66,14 @@ export default defineConfig({
         prefer_related_applications: false,
       },
       workbox: {
-        globPatterns: ["**/*.{js,css,html,ico,png,svg,woff2}"],
+        // Add a fallback for SPA navigation.
+        navigateFallback: "index.html",
+        // Ensure that requests for assets (like images, css, js) are not redirected to index.html
+        navigateFallbackDenylist: [/.*\.(js|css|svg|png|jpg|jpeg|ico|woff2)$/],
+        globPatterns:
+          mode === "development"
+            ? []
+            : ["**/*.{js,css,html,ico,png,svg,woff2}"],
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
@@ -75,7 +82,7 @@ export default defineConfig({
               cacheName: "google-fonts-cache",
               expiration: {
                 maxEntries: 10,
-                maxAgeSeconds: 60 * 60 * 24 * 365,
+                maxAgeSeconds: 60 * 60 * 24 * 365, // 1 year
               },
             },
           },
@@ -86,7 +93,7 @@ export default defineConfig({
               cacheName: "gstatic-fonts-cache",
               expiration: {
                 maxEntries: 10,
-                maxAgeSeconds: 60 * 60 * 24 * 365,
+                maxAgeSeconds: 60 * 60 * 24 * 365, // 1 year
               },
             },
           },
@@ -97,11 +104,23 @@ export default defineConfig({
               cacheName: "api-cache",
               expiration: {
                 maxEntries: 50,
-                maxAgeSeconds: 60 * 60 * 24 * 30,
+                maxAgeSeconds: 60 * 60 * 24 * 30, // 30 days
               },
               networkTimeoutSeconds: 10,
             },
           },
+          // Optional: Add a caching strategy for images
+          // {
+          //   urlPattern: /\.(?:png|gif|jpg|jpeg|svg)$/,
+          //   handler: 'CacheFirst',
+          //   options: {
+          //     cacheName: 'images',
+          //     expiration: {
+          //       maxEntries: 60,
+          //       maxAgeSeconds: 30 * 24 * 60 * 60, // 30 Days
+          //     },
+          //   },
+          // },
         ],
       },
       devOptions: {
@@ -112,7 +131,7 @@ export default defineConfig({
   build: {
     outDir: "dist",
   },
-});
+}));
 
 // import { defineConfig } from "vite";
 // import react from "@vitejs/plugin-react";
