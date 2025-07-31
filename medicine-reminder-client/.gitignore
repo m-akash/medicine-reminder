@@ -25,4 +25,5 @@ dev-dist
 .env
 .env.production
 firebase-messaging-sw.js
+dist/
 
