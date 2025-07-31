@@ -73,7 +73,7 @@ function updateStateString(
 export async function processMedicineReminders() {
   const now = new Date();
   const todayStart = startOfDay(now);
-  const CRON_WINDOW_MINUTES = 1; // Should match the GitHub Actions schedule
+  const CRON_WINDOW_MINUTES = 5; // Should match the GitHub Actions schedule
   const MISSED_DOSE_THRESHOLD_MINUTES = 60;
   const windowStart = subMinutes(now, CRON_WINDOW_MINUTES);
 
