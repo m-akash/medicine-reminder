@@ -1,27 +1,30 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { RegisterSWOptions, registerSW } from 'virtual:pwa-register';
 
 const PWARegistration = () => {
   const [needRefresh, setNeedRefresh] = useState(false);
   const [offlineReady, setOfflineReady] = useState(false);
-  const [updateSWRef, setUpdateSWRef] = useState<(() => Promise<void>) | undefined>();
+
+  // Store the update function in a ref to avoid re-renders
+  const updateSW = useRef<((reloadPage?: boolean) => Promise<void>) | null>(null);
 
   useEffect(() => {
-    const updateSW = registerSW({
+    // The registerSW function returns a function to trigger the update.
+    // We store it in our ref.
+    updateSW.current = registerSW({
       onNeedRefresh() {
         setNeedRefresh(true);
       },
       onOfflineReady() {
         setOfflineReady(true);
       },
-      onRegistered(swRegistration: ServiceWorkerRegistration) {
+      onRegistered(swRegistration) {
         console.log('SW registered: ', swRegistration);
       },
-      onRegisterError(error: Error) {
+      onRegisterError(error) {
         console.log('SW registration error', error);
       },
     } as RegisterSWOptions);
-    setUpdateSWRef(() => updateSW);
   }, []);
 
   const close = () => {
@@ -30,7 +33,9 @@ const PWARegistration = () => {
   };
 
   const updateServiceWorker = () => {
-    updateSWRef?.();
+    // Call the update function stored in the ref.
+    // Passing true forces a page reload.
+    updateSW.current?.(true);
     close();
   };
 
@@ -42,12 +47,12 @@ const PWARegistration = () => {
         <div className="flex items-start">
           <div className="flex-shrink-0">
             {offlineReady && (
-              <svg className="h-6 w-6 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg aria-hidden="true" className="h-6 w-6 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
             )}
             {needRefresh && (
-              <svg className="h-6 w-6 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg aria-hidden="true" className="h-6 w-6 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
               </svg>
             )}
@@ -68,7 +73,7 @@ const PWARegistration = () => {
               className="bg-white rounded-md inline-flex text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
             >
               <span className="sr-only">Close</span>
-              <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+              <svg aria-hidden="true" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                 <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
               </svg>
             </button>

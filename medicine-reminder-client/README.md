@@ -22,13 +22,13 @@ A modern, responsive Progressive Web App (PWA) for managing and reminding users 
 
 ## Project Structure
 
-```
+```plaintext
 medicine-reminder-client/
-├── public/                  # Static assets (icons, manifest, sw, etc.)
+├── public/                  # Static assets (icons, manifest.webmanifest)
 ├── src/
 │   ├── assets/              # Images and static resources
 │   ├── components/          # Reusable UI components
-│   ├── context/             # React context providers (auth, etc.)
+│   ├── context/             # React context providers
 │   ├── firebase/            # Firebase config and messaging logic
 │   ├── hooks/               # Custom React hooks
 │   ├── layouts/             # Layout components
@@ -36,6 +36,7 @@ medicine-reminder-client/
 │   ├── routes/              # App routing
 │   ├── types/               # TypeScript type definitions
 │   ├── utils/               # Utility functions
+│   ├── sw.ts                # The unified Service Worker source file
 │   ├── App.tsx              # Main app component
 │   ├── main.tsx             # Entry point
 │   └── index.css            # Global styles
@@ -65,13 +66,9 @@ medicine-reminder-client/
    # or
    yarn install
    ```
-3. **Configure Firebase:**
-
-   - Add your Firebase config to `src/firebase/` (see `firebase-messaging-sw.js` and related files).
-   - Update `public/firebase-messaging-sw.js` with your Firebase messaging sender ID.
-
-4. **Environment Variables:**
+3. **Environment Variables:**
    - Create a `.env` file for any required environment variables (API base URL, Firebase keys, etc.).
+   - Ensure your Firebase configuration variables (e.g., `VITE_FIREBASE_API_KEY`) are present in this file. These are used by both the client app and the service worker.
 
 ### Running the App
 

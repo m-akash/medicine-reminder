@@ -6,8 +6,6 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "build:pwa": "vite build && npm run generate-firebase-sw",
-    "generate-firebase-sw": "node scripts/generate-firebase-sw.js",
     "lint": "eslint .",
     "preview": "vite preview"
   },
