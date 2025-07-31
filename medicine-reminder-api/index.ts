@@ -23,7 +23,12 @@ if (!allowedOriginsEnv) {
   process.exit(1);
 }
 
-import "./schedulers/medicineReminder";
+// Conditionally start the local scheduler for development environments.
+// This will run when you use `npm run dev` but not when deployed to Vercel.
+if (process.env.NODE_ENV !== 'production') {
+  console.log("Development environment detected, starting local cron scheduler...");
+  import("./schedulers/medicineReminder");
+}
 
 // --- Routers ---
 import userRouter from "./routers/user.route";
