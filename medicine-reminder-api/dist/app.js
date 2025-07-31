@@ -8,13 +8,10 @@ const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const jwt_config_1 = __importDefault(require("./config/jwt.config"));
 const cors_1 = __importDefault(require("cors"));
 const app = (0, express_1.default)();
-app.use((0, cors_1.default)({
-    origin: "https://mediping.netlify.app",
-    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-    credentials: true,
-    preflightContinue: false,
-}));
+let corsOptions = {
+    origin: "*",
+};
+app.use((0, cors_1.default)(corsOptions));
 app.use(express_1.default.json());
 app.use(express_1.default.urlencoded({ extended: false }));
 const user_route_1 = __importDefault(require("./routers/user.route"));
