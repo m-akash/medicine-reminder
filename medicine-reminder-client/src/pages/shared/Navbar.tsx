@@ -116,7 +116,7 @@ const Navbar = () => {
             <span className="bg-clip-text text-transparent bg-gradient-to-r from-amber-400 to-amber-700">
               Medi
               <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-indigo-500">
-                Rem
+                Ping
               </span>
             </span>
           </Link>

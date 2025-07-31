@@ -240,34 +240,7 @@ const AddMedicineForm: React.FC = () => {
           </div>
         )}
       </div>
-      {/* <div className="text-sm text-gray-600 bg-blue-50 p-3 rounded">
-        <p>
-          <strong>Automatic Scheduling:</strong> Times are automatically set
-          based on frequency pattern:
-        </p>
-        <ul className="list-disc list-inside mt-1">
-          <li>
-            <strong>1-0-0:</strong> 8:00 AM (Morning only)
-          </li>
-          <li>
-            <strong>0-1-0:</strong> 2:00 PM (Afternoon only)
-          </li>
-          <li>
-            <strong>0-0-1:</strong> 8:00 PM (Evening only)
-          </li>
-          <li>
-            <strong>1-0-1:</strong> 8:00 AM + 8:00 PM (Morning + Evening)
-          </li>
-          <li>
-            <strong>1-1-1:</strong> 8:00 AM + 2:00 PM + 8:00 PM (All three
-            times)
-          </li>
-        </ul>
-        <p className="mt-2 text-xs text-gray-500">
-          Format: Morning-Afternoon-Evening (e.g., 1-0-1 means take in morning
-          and evening)
-        </p>
-      </div> */}
+
       <div className="space-y-2">
         <label
           htmlFor="startDate"

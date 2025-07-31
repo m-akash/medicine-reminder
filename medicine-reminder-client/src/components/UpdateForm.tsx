@@ -5,12 +5,16 @@ import {
   medicineNotifications,
   formNotifications,
 } from "../utils/notifications.ts";
+import useUserSettings from "../hooks/useUserSettings.tsx";
+import useAuth from "../hooks/useAuth.tsx";
 
 const UpdateForm = () => {
+  const { user } = useAuth();
   const loaderData = useLoaderData();
   const med = loaderData?.findMedi || {};
   const axiosSecure = useAxiosSecure();
   const navigate = useNavigate();
+  const { settings } = useUserSettings(user?.email);
 
   const existingTimes =
     med?.reminders?.[0]?.times?.map((t: any) =>
@@ -37,34 +41,19 @@ const UpdateForm = () => {
 
   const [loading, setLoading] = useState(false);
 
-  const defaultTimes = {
-    morning: "08:00",
-    afternoon: "14:00",
-    evening: "20:00",
-  };
+  const userDefaultTimes = settings.medicineDefaults?.defaultReminderTimes || [
+    "08:00",
+    "14:00",
+    "20:00",
+  ];
 
   const parseFrequencyAndSetTimes = (frequency: string) => {
     const pattern = frequency.split("-").map(Number);
     const times = [];
-
-    if (pattern[0] === 1) times.push(defaultTimes.morning);
-    if (pattern[1] === 1) times.push(defaultTimes.afternoon);
-    if (pattern[2] === 1) times.push(defaultTimes.evening);
-
+    if (pattern[0] === 1) times.push(userDefaultTimes[0]);
+    if (pattern[1] === 1) times.push(userDefaultTimes[1]);
+    if (pattern[2] === 1) times.push(userDefaultTimes[2]);
     return times;
-  };
-
-  const calculateOriginalTotalPills = (
-    frequency: string,
-    originalDurationDays: string
-  ) => {
-    if (!frequency || !originalDurationDays) return "";
-
-    const pattern = frequency.split("-").map(Number);
-    const dosesPerDay = pattern.reduce((sum, dose) => sum + dose, 0);
-    const totalPills = dosesPerDay * Number(originalDurationDays);
-
-    return totalPills.toString();
   };
 
   const handleChange = (
@@ -75,28 +64,11 @@ const UpdateForm = () => {
 
     if (name === "frequency") {
       const times = parseFrequencyAndSetTimes(value);
-      const originalTotalPills = calculateOriginalTotalPills(
-        value,
-        form.originalDurationDays
-      );
       setForm((prev) => ({
         ...prev,
         [name]: value,
         scheduledTimes: times,
         dosesPerDay: times.length.toString(),
-        originalTotalPills: originalTotalPills,
-      }));
-    }
-
-    if (name === "originalDurationDays") {
-      const originalTotalPills = calculateOriginalTotalPills(
-        form.frequency,
-        value
-      );
-      setForm((prev) => ({
-        ...prev,
-        [name]: value,
-        originalTotalPills: originalTotalPills,
       }));
     }
   };
@@ -212,7 +184,7 @@ const UpdateForm = () => {
         </p>
       </div>
 
-      <div className="space-y-2">
+      {/* <div className="space-y-2">
         <label className="text-sm font-medium text-gray-700">
           Scheduled Times (Auto-set based on frequency pattern)
         </label>
@@ -222,17 +194,20 @@ const UpdateForm = () => {
               ✅ Scheduled times:
             </p>
             <div className="space-y-1">
-              {form.scheduledTimes.map((time: string, index: number) => (
+              {form.scheduledTimes.map((time: any, index: number) => (
                 <div key={index} className="flex items-center gap-2">
                   <span className="text-sm text-green-700">
                     {index + 1}.{" "}
-                    {time === "08:00"
-                      ? "8:00 AM (Morning)"
-                      : time === "14:00"
-                      ? "2:00 PM (Afternoon)"
-                      : time === "20:00"
-                      ? "8:00 PM (Evening)"
-                      : time}
+                    {(() => {
+                      // Show label based on userDefaultTimes
+                      if (time === userDefaultTimes[0])
+                        return `${time} (Morning)`;
+                      if (time === userDefaultTimes[1])
+                        return `${time} (Afternoon)`;
+                      if (time === userDefaultTimes[2])
+                        return `${time} (Evening)`;
+                      return time;
+                    })()}
                   </span>
                 </div>
               ))}
@@ -241,40 +216,11 @@ const UpdateForm = () => {
         ) : (
           <div className="bg-blue-50 p-3 rounded border border-blue-200">
             <p className="text-sm text-blue-800">
-              💡 Set frequency pattern above to automatically schedule times
+              Set "Doses Per Day" below to automatically schedule times
             </p>
           </div>
         )}
-      </div>
-
-      <div className="text-sm text-gray-600 bg-blue-50 p-3 rounded">
-        <p>
-          <strong>💡 Automatic Scheduling:</strong> Times are automatically set
-          based on frequency pattern:
-        </p>
-        <ul className="list-disc list-inside mt-1">
-          <li>
-            <strong>1-0-0:</strong> 8:00 AM (Morning only)
-          </li>
-          <li>
-            <strong>0-1-0:</strong> 2:00 PM (Afternoon only)
-          </li>
-          <li>
-            <strong>0-0-1:</strong> 8:00 PM (Evening only)
-          </li>
-          <li>
-            <strong>1-0-1:</strong> 8:00 AM + 8:00 PM (Morning + Evening)
-          </li>
-          <li>
-            <strong>1-1-1:</strong> 8:00 AM + 2:00 PM + 8:00 PM (All three
-            times)
-          </li>
-        </ul>
-        <p className="mt-2 text-xs text-gray-500">
-          Format: Morning-Afternoon-Evening (e.g., 1-0-1 means take in morning
-          and evening)
-        </p>
-      </div>
+      </div> */}
 
       <div className="space-y-2">
         <label className="text-sm font-medium text-gray-700">
