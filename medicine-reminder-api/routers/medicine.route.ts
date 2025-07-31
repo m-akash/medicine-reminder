@@ -15,13 +15,14 @@ import {
   getReminderStatus,
   toggleReminderStatus,
 } from "../controllers/medicine.controller";
+import verifyToken from "../middlewares/jwtMiddleware";
 const router = express.Router();
 
-router.get("/medicine/user/:userEmail", getMedicineByEmail);
-router.post("/medicine", createMedicine);
-router.put("/medicine/:id", updateMedicine);
-router.delete("/medicine/:id", deleteMedicine);
-router.get("/medicine/:id", getMedicineById);
+router.get("/medicine/user/:userEmail", verifyToken, getMedicineByEmail);
+router.post("/medicine", verifyToken, createMedicine);
+router.put("/medicine/:id", verifyToken, updateMedicine);
+router.delete("/medicine/:id", verifyToken, deleteMedicine);
+router.get("/medicine/:id", verifyToken, getMedicineById);
 router.get("/medicine/:id/taken", getMedicineTakenDay);
 router.put("/medicine/:id/taken", setMedicineTakenDay);
 router.get("/medicine/:id/history", getMedicineTakenHistory);

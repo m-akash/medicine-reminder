@@ -62,7 +62,8 @@ model MedicineTakenDay {
   id         String   @id @default(uuid())
   medicineId String
   date       DateTime @db.Date
-  taken      String
+  taken      String   // e.g., "0-1-0" for morning, afternoon, evening (dose taken)
+  remindersSent String   @default("0-0-0") // Tracks sent reminders: 0=pending, 1=sent(current), M=sent(missed)
   medicine   Medicine @relation(fields: [medicineId], references: [id], onDelete: Cascade)
 
   @@unique([medicineId, date])

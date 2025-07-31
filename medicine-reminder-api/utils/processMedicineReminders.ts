@@ -1,6 +1,6 @@
 import prisma from "../config/db.config";
 import { sendFCMNotification } from "../utils/fcmUtils";
-import { addMinutes, isAfter, startOfDay } from "date-fns";
+import { addMinutes, subMinutes, startOfDay } from "date-fns";
 import {
   createMedicineReminderNotification,
   createMissedDoseNotification,
@@ -46,199 +46,136 @@ function getDoseTimeName(time: Date): string {
   return "Dose";
 }
 
+/**
+ * Updates a flag in a state string (e.g., "0-0-0") at a specific index.
+ * @param originalString The original state string.
+ * @param index The index to update.
+ * @param flag The new flag ('1' for sent, 'M' for missed).
+ * @param doseCount The total number of doses to ensure array length.
+ * @returns The updated state string.
+ */
+function updateStateString(
+  originalString: string,
+  index: number,
+  flag: string,
+  doseCount: number
+): string {
+  const arr = originalString.split("-");
+  while (arr.length < doseCount) {
+    arr.push("0");
+  }
+  if (index < arr.length) {
+    arr[index] = flag;
+  }
+  return arr.join("-");
+}
+
 export async function processMedicineReminders() {
   const now = new Date();
   const todayStart = startOfDay(now);
+  const CRON_WINDOW_MINUTES = 5; // Should match the GitHub Actions schedule
+  const MISSED_DOSE_THRESHOLD_MINUTES = 60;
+  const windowStart = subMinutes(now, CRON_WINDOW_MINUTES);
 
   const medicines = await prisma.medicine.findMany({
     include: {
       user: {
         include: { settings: true },
       },
-      reminders: {
-        where: { isActive: true },
-        include: { times: true },
-      },
     },
   });
 
   console.log(`[Scheduler] Found ${medicines.length} medicines to process`);
 
-  const userTimeGroups = new Map<string, Map<string, any[]>>();
-
-  for (const med of medicines) {
-    if (!med.user?.fcmToken) continue;
-    const userSettings: UserSettings =
-      (med.user.settings as UserSettings) || {};
-
-    let reminderTimes: string[] = userSettings.medicineDefaults
-      ?.defaultReminderTimes ?? ["08:00", "14:00", "20:00"];
-
-    if (userSettings.notifications?.enabled === false) {
-      console.log(`Notifications disabled for ${med.userEmail}`);
+  for (const medicine of medicines) {
+    const { user, frequency } = medicine;
+    if (!user?.fcmToken) {
+      console.log(`[Scheduler] Skipping ${medicine.name}: User has no FCM token.`);
       continue;
     }
 
-    const userKey = med.user.fcmToken;
-    if (!userTimeGroups.has(userKey)) {
-      userTimeGroups.set(userKey, new Map());
+    const userSettings: UserSettings = (user.settings as UserSettings) || {};
+    if (userSettings.notifications?.enabled === false) {
+      console.log(`[Scheduler] Skipping ${medicine.name}: Notifications disabled for ${user.email}.`);
+      continue;
     }
 
-    const userGroup = userTimeGroups.get(userKey)!;
+    const reminderTimes: string[] = userSettings.medicineDefaults
+      ?.defaultReminderTimes ?? ["08:00", "14:00", "20:00"];
     const todayTimes = generateTodayTimes(
-      med.frequency || "0-0-0",
+      frequency || "0-0-0",
       now,
       reminderTimes
     );
 
-    for (const time of todayTimes) {
-      const timeKey = time.toISOString();
-      if (!userGroup.has(timeKey)) {
-        userGroup.set(timeKey, []);
-      }
-      userGroup.get(timeKey)!.push({ medicine: med, time });
-    }
-  }
+    if (todayTimes.length === 0) continue;
 
-  console.log(`Processing ${userTimeGroups.size} users`);
+    const takenDay = await prisma.medicineTakenDay.upsert({
+      where: { medicineId_date: { medicineId: medicine.id, date: todayStart } },
+      update: {},
+      create: {
+        medicineId: medicine.id,
+        date: todayStart,
+        taken: "0".repeat(todayTimes.length).split("").join("-"),
+        remindersSent: "0".repeat(todayTimes.length).split("").join("-"),
+      },
+    });
 
-  // Process each user's reminders
-  for (const [fcmToken, timeGroups] of userTimeGroups) {
-    const allMissedMedicines: { medicine: any; doseTime: Date }[] = [];
+    let remindersSentArr = takenDay.remindersSent.split("-");
+    let takenArr = takenDay.taken.split("-");
+    let needsDbUpdate = false;
 
-    for (const [timeKey, medicinesAtTime] of timeGroups) {
-      const doseTime = new Date(timeKey);
-
-      // Check each medicine's taken status
-      const takenStatuses = await Promise.all(
-        medicinesAtTime.map(async ({ medicine }) => {
-          const takenDay = await prisma.medicineTakenDay.findFirst({
-            where: { medicineId: medicine.id, date: todayStart },
-          });
-          const takenArr = takenDay?.taken?.split("-") || [];
-
-          const userSettings: UserSettings =
-            (medicine.user.settings as UserSettings) || {};
-          const reminderTimes = userSettings.medicineDefaults
-            ?.defaultReminderTimes ?? ["08:00", "14:00", "20:00"];
-          const todayTimes = generateTodayTimes(
-            medicine.frequency || "0-0-0",
-            now,
-            reminderTimes
-          );
-          const doseIndex = todayTimes.findIndex(
-            (t) => Math.abs(t.getTime() - doseTime.getTime()) < 60000
-          );
-          const taken = takenArr[doseIndex] === "1";
-          return { medicine, doseIndex, taken };
-        })
-      );
-
-      // Notification timings
-      const userSettings: UserSettings =
-        (medicinesAtTime[0]?.medicine?.user?.settings as UserSettings) || {};
-      const reminderAdvance = userSettings.notifications?.reminderAdvance ?? 30;
-
-      const upcomingTime = addMinutes(doseTime, -reminderAdvance);
-      const upcomingDiff = Math.abs(now.getTime() - upcomingTime.getTime());
-
-      // ✅ Upcoming reminder
-      if (isAfter(doseTime, now) && upcomingDiff < 30000) {
+    for (const [doseIndex, doseTime] of todayTimes.entries()) {
+      // --- 1. Check for current reminders that are due ---
+      const isDue = doseTime >= windowStart && doseTime <= now;
+      if (isDue && remindersSentArr[doseIndex] === "0") {
+        console.log(`[NOTIFY-CURRENT] Sending reminder for ${medicine.name} at ${doseTime}`);
         const doseTimeName = getDoseTimeName(doseTime);
-        const medicineNames = medicinesAtTime
-          .map(({ medicine }) => `${medicine.name}(${medicine.dosage})`)
-          .join(", ");
-
         await sendFCMNotification(
-          fcmToken,
-          "Upcoming Medicine Reminder",
-          `Take your ${doseTimeName.toLowerCase()} dose: ${medicineNames} at ${doseTime.toLocaleTimeString()}`
+          user.fcmToken,
+          `Time for your ${doseTimeName} dose`,
+          `It's time to take ${medicine.name} (${medicine.dosage}).`
         );
+        await createMedicineReminderNotification(
+          user.email, medicine.name, medicine.dosage || "", doseTimeName, medicine.id
+        );
+        remindersSentArr = updateStateString(remindersSentArr.join('-'), doseIndex, "1", todayTimes.length).split('-');
+        needsDbUpdate = true;
       }
 
-      // ✅ Current dose notification
-      const currentDiff = Math.abs(now.getTime() - doseTime.getTime());
-      if (currentDiff < 30000) {
+      // --- 2. Check for missed doses ---
+      const missedDoseTime = addMinutes(doseTime, MISSED_DOSE_THRESHOLD_MINUTES);
+      const isMissed = missedDoseTime >= windowStart && missedDoseTime <= now;
+      if (
+        isMissed &&
+        takenArr[doseIndex] === "0" &&
+        remindersSentArr[doseIndex] !== "M" &&
+        userSettings.notifications?.missedDoseAlerts !== false
+      ) {
+        console.log(`[NOTIFY-MISSED] Sending missed dose alert for ${medicine.name} at ${doseTime}`);
         const doseTimeName = getDoseTimeName(doseTime);
-        const medicineNames = medicinesAtTime
-          .map(({ medicine }) => `${medicine.name}(${medicine.dosage})`)
-          .join(", ");
-
         await sendFCMNotification(
-          fcmToken,
-          "Time to Take Medicine",
-          `It's time to take your ${doseTimeName.toLowerCase()} dose: ${medicineNames}!`
+          user.fcmToken,
+          `Missed Dose`,
+          `You missed your ${doseTimeName.toLowerCase()} dose of ${medicine.name}.`
         );
-
-        //Save notifications in DB
-        for (const { medicine } of medicinesAtTime) {
-          await createMedicineReminderNotification(
-            medicine.userEmail,
-            medicine.name,
-            medicine.dosage || "",
-            doseTimeName,
-            medicine.id
-          );
-        }
-      }
-
-      //Missed dose check
-      const missedTime = addMinutes(doseTime, 60);
-      const missedDiff = Math.abs(now.getTime() - missedTime.getTime());
-      if (isAfter(now, missedTime) && missedDiff < 30000) {
-        const untakenMedicines = takenStatuses
-          .filter((status) => !status.taken)
-          .map((status) => status.medicine);
-
-        untakenMedicines.forEach((medicine) => {
-          allMissedMedicines.push({ medicine, doseTime });
-        });
-      }
-    }
-
-    // ✅ Send missed dose summary
-    if (allMissedMedicines.length > 0) {
-      const userSettings: UserSettings =
-        (allMissedMedicines[0]?.medicine?.user?.settings as UserSettings) || {};
-
-      if (userSettings.notifications?.missedDoseAlerts !== false) {
-        const medicinesByDoseTime = new Map<string, any[]>();
-        allMissedMedicines.forEach(({ medicine, doseTime }) => {
-          const doseTimeName = getDoseTimeName(doseTime);
-          if (!medicinesByDoseTime.has(doseTimeName)) {
-            medicinesByDoseTime.set(doseTimeName, []);
-          }
-          medicinesByDoseTime.get(doseTimeName)!.push(medicine);
-        });
-
-        const message =
-          Array.from(medicinesByDoseTime.entries())
-            .map(([doseTimeName, medicines]) => {
-              const medicineNames = medicines
-                .map((medicine) => `${medicine.name}(${medicine.dosage})`)
-                .join(", ");
-              return `You missed your ${doseTimeName.toLowerCase()} dose: ${medicineNames}`;
-            })
-            .join(". ") + ". Please take them as soon as possible!";
-
-        await sendFCMNotification(
-          fcmToken,
-          "Missed Medicine Reminder",
-          message
-        );
-
-        const userEmail = allMissedMedicines[0]?.medicine?.userEmail;
-        const medicineNames = allMissedMedicines
-          .map(({ medicine }) => `${medicine.name}(${medicine.dosage})`)
-          .join(", ");
         await createMissedDoseNotification(
-          userEmail,
-          medicineNames,
-          "",
-          "Missed Dose",
-          undefined
+          user.email,
+          medicine.name,
+          medicine.dosage || "",
+          doseTimeName,
+          medicine.id
         );
+        remindersSentArr = updateStateString(remindersSentArr.join('-'), doseIndex, "M", todayTimes.length).split('-');
+        needsDbUpdate = true;
       }
+    }
+
+    if (needsDbUpdate) {
+      await prisma.medicineTakenDay.update({
+        where: { id: takenDay.id },
+        data: { remindersSent: remindersSentArr.join("-") },
+      });
     }
   }
 }
