@@ -23,6 +23,11 @@ if (!allowedOriginsEnv) {
   process.exit(1);
 }
 
+// --- Initialize Schedulers ---
+// This will start the node-cron jobs within the main web server process.
+console.log("Initializing cron schedulers...");
+import "./schedulers/medicineReminder";
+
 // --- Routers ---
 import userRouter from "./routers/user.route";
 import medicineRouter from "./routers/medicine.route";
@@ -36,17 +41,7 @@ const allowedOrigins = allowedOriginsEnv
   .map((origin) => origin.trim());
 
 const corsOptions: cors.CorsOptions = {
-  origin: (origin, callback) => {
-    if (!origin) {
-      return callback(null, true);
-    }
-    if (allowedOrigins.indexOf(origin) !== -1) {
-      callback(null, true);
-    } else {
-      const msg = `The CORS policy for this site does not allow access from the specified Origin: ${origin}`;
-      callback(new Error(msg));
-    }
-  },
+  origin: allowedOrigins,
   methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true,
