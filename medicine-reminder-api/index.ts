@@ -69,7 +69,7 @@ app.post("/jwt", (req: Request, res: Response) => {
     if (!email || typeof email !== "string") {
       return res
         .status(400)
-        .send({ error: "A valid email is required to generate a token." });
+        .send({ error: "A valid email is required to generate token." });
     }
 
     const userPayload: JwtRequestBody = { email };
@@ -90,7 +90,7 @@ app.get("/", (_: Request, res: Response) => {
 });
 
 app.listen(port, () => {
-  console.log(`Server is listening on port ${port}`);
+  console.log(`Server is listening on ${port}`);
 });
 
 export default app;
