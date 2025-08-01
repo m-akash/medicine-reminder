@@ -130,7 +130,6 @@ export async function processMedicineReminders() {
     let needsDbUpdate = false;
 
     for (const [doseIndex, doseTime] of todayTimes.entries()) {
-      // --- 1. Check for current reminders that are due ---
       const isDue = doseTime >= windowStart && doseTime <= now;
       if (isDue && remindersSentArr[doseIndex] === "0") {
         console.log(

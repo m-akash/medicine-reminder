@@ -1,0 +1,36 @@
+# Define an environment group for shared secrets in the Render dashboard.
+envVarGroups:
+  - name: medicine-reminder-secrets
+    envVars:
+      - key: DATABASE_URL # For Prisma
+        sync: false # Set this in the dashboard
+      - key: JWT_SECRET_KEY # For JWT, matching your index.ts
+        sync: false # Set this in the dashboard
+      - key: ALLOWED_ORIGINS # For CORS, matching your index.ts
+        sync: false # Set this in the dashboard
+      - key: FIREBASE_SERVICE_ACCOUNT # For firebaseAdmin.ts
+        sync: false # Set this in the dashboard
+
+services:
+  # 1. The API Web Service
+  - type: web
+    name: medicine-reminder-api
+    env: node
+    rootDir: ./medicine-reminder-api
+    plan: free # or your preferred plan
+    buildCommand: "npm install && npm run build"
+    startCommand: "npm start" # runs node dist/index.js
+    healthCheckPath: /
+    envVarGroup: medicine-reminder-secrets
+    autoDeploy: false # Optional: set to false to prevent auto-deploys on every push
+
+  # 2. The Cron Job Background Worker
+  - type: worker
+    name: medicine-reminder-cron
+    env: node
+    rootDir: ./medicine-reminder-api
+    plan: free # or your preferred plan
+    buildCommand: "npm install && npm run build"
+    startCommand: "npm run start:cron" # runs node dist/cron.js
+    envVarGroup: medicine-reminder-secrets
+    autoDeploy: false # Optional: set to false to prevent auto-deploys on every push
