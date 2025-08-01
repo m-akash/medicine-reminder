@@ -27,7 +27,6 @@ if (!allowedOriginsEnv) {
 import userRouter from "./routers/user.route";
 import medicineRouter from "./routers/medicine.route";
 import notificationRouter from "./routers/notification.route";
-import cronRouter from "./routers/cron.route";
 
 const app = express();
 
@@ -62,7 +61,6 @@ app.use(express.urlencoded({ extended: false }));
 app.use("/api", userRouter);
 app.use("/api", medicineRouter);
 app.use("/api", notificationRouter);
-app.use("/api", cronRouter);
 
 interface JwtRequestBody {
   email: string;

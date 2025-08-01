@@ -1,15 +1,11 @@
+import cron from "node-cron";
 import { processMedicineReminders } from "./processMedicineReminders";
 
-/**
- * A wrapper function to execute the medicine reminder processing logic.
- * This function is intended to be called by a script that is run by a scheduler (e.g., Render Cron Job).
- */
-export async function sendMedicineReminders() {
-  console.log(
-    `[Task Start] Executing medicine reminder processing at ${new Date().toISOString()}`
-  );
+console.log("Medicine reminder scheduler initialized.");
+
+// This schedule runs every 5 minutes.
+// The job will be managed by node-cron within the long-running worker process.
+cron.schedule("*/5 * * * *", async () => {
+  console.log(`[node-cron] Running medicine reminder job at ${new Date().toISOString()}`);
   await processMedicineReminders();
-  console.log(
-    `[Task End] Finished medicine reminder processing at ${new Date().toISOString()}`
-  );
-}
+});
