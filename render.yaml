@@ -30,6 +30,7 @@ services:
     name: medicine-reminder-job
     env: node
     rootDir: ./medicine-reminder-api
+    plan: free
     schedule: "*/5 * * * *" # IMPORTANT: Runs every 5 minutes. Adjust as needed.
     buildCommand: "npm install && npm run build"
     startCommand: "npm run run:reminders"
