@@ -21,8 +21,9 @@ services:
     buildCommand: "npm install && npm run build"
     startCommand: "npm start" # runs node dist/index.js
     healthCheckPath: /
-    envVarGroup: medicine-reminder-secrets
     autoDeploy: false # Optional: set to false to prevent auto-deploys on every push
+    envVars:
+      - fromGroup: medicine-reminder-secrets
 
   # 2. The Cron Job Background Worker
   - type: worker
@@ -32,5 +33,6 @@ services:
     plan: free # or your preferred plan
     buildCommand: "npm install && npm run build"
     startCommand: "npm run start:cron" # runs node dist/cron.js
-    envVarGroup: medicine-reminder-secrets
     autoDeploy: false # Optional: set to false to prevent auto-deploys on every push
+    envVars:
+      - fromGroup: medicine-reminder-secrets
