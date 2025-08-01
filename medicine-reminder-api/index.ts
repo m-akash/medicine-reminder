@@ -70,11 +70,6 @@ app.post("/jwt", (req: Request, res: Response) => {
       .status(400)
       .send({ error: "Email is required to generate a token." });
   }
-  const token = jwt.sign(userPayload, jwtSecret as string, {
-    expiresIn: jwtExpiresInSeconds,
-  });
-
-  res.send({ token });
 });
 
 app.get("/", (_: Request, res: Response) => {
