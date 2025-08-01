@@ -25,14 +25,15 @@ services:
     envVars:
       - fromGroup: medicine-reminder-secrets
 
-  # 2. The Cron Job Background Worker
-  - type: worker
-    name: medicine-reminder-cron
+  # 2. The Render Cron Job
+  - type: cron
+    name: medicine-reminder-job
     env: node
     rootDir: ./medicine-reminder-api
     plan: free # or your preferred plan
+    schedule: "*/5 * * * *" # IMPORTANT: Runs every 5 minutes. Adjust as needed.
     buildCommand: "npm install && npm run build"
-    startCommand: "npm run start:cron" # runs node dist/cron.js
+    startCommand: "npm run run:reminders"
     autoDeploy: false # Optional: set to false to prevent auto-deploys on every push
     envVars:
       - fromGroup: medicine-reminder-secrets

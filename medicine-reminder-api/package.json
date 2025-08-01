@@ -8,7 +8,7 @@
     "postinstall": "prisma generate",
     "build": "prisma generate && tsc",
     "start": "node dist/index.js",
-    "start:cron": "node dist/cron.js"
+    "run:reminders": "node dist/run-reminders.js"
   },
   "author": "",
   "license": "ISC",
