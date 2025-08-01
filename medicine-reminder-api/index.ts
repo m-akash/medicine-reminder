@@ -4,24 +4,26 @@ import cors from "cors";
 import jwt from "jsonwebtoken";
 dotenv.config();
 
+const validateEnvironmentVariables = () => {
+  const requiredEnvVars = ["JWT_SECRET_KEY", "ALLOWED_ORIGINS"];
+  const missingVars = requiredEnvVars.filter((key) => !process.env[key]);
+
+  if (missingVars.length > 0) {
+    console.error(
+      `FATAL ERROR: Missing required environment variables: ${missingVars.join(
+        ", "
+      )}`
+    );
+    process.exit(1);
+  }
+};
+
+validateEnvironmentVariables();
+
 const port = process.env.PORT || 3001;
-const jwtSecret = process.env.JWT_SECRET_KEY;
+const jwtSecret = process.env.JWT_SECRET_KEY as string;
 const jwtExpiresInSeconds = Number(process.env.JWT_EXPIRE_SECONDS) || 604800;
-const allowedOriginsEnv = process.env.ALLOWED_ORIGINS;
-
-if (!jwtSecret) {
-  console.error(
-    "FATAL ERROR: JWT_SECRET_KEY is not defined in environment variables."
-  );
-  process.exit(1);
-}
-
-if (!allowedOriginsEnv) {
-  console.error(
-    "FATAL ERROR: ALLOWED_ORIGINS is not defined in environment variables. e.g., 'https://mediping.netlify.app,http://localhost:3000'"
-  );
-  process.exit(1);
-}
+const allowedOriginsEnv = process.env.ALLOWED_ORIGINS as string;
 
 // --- Initialize Schedulers ---
 // This will start the node-cron jobs within the main web server process.
