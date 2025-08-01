@@ -61,14 +61,25 @@ interface JwtRequestBody {
   email: string;
 }
 app.post("/jwt", (req: Request, res: Response) => {
-  const userPayload: JwtRequestBody = {
-    email: req.body.email,
-  };
+  try {
+    const { email } = req.body;
 
-  if (!userPayload.email) {
-    return res
-      .status(400)
-      .send({ error: "Email is required to generate a token." });
+    if (!email || typeof email !== "string") {
+      return res
+        .status(400)
+        .send({ error: "A valid email is required to generate a token." });
+    }
+
+    const userPayload: JwtRequestBody = { email };
+
+    const token = jwt.sign(userPayload, jwtSecret as string, {
+      expiresIn: jwtExpiresInSeconds,
+    });
+
+    res.send({ token });
+  } catch (error) {
+    console.error("Error generating JWT:", error);
+    res.status(500).send({ error: "An internal server error occurred." });
   }
 });
 
