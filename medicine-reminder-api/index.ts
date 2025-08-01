@@ -89,5 +89,8 @@ app.get("/", (_: Request, res: Response) => {
   res.send("Medicine Reminder API is running!");
 });
 
-console.log("Server is running");
+app.listen(port, () => {
+  console.log(`Server is listening on port ${port}`);
+});
+
 export default app;
