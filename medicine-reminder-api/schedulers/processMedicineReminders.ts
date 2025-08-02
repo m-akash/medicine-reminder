@@ -1,3 +1,4 @@
+import { toZonedTime } from "date-fns-tz";
 import prisma from "../config/db.config";
 import { sendFCMNotification } from "../utils/fcmUtils";
 import { addMinutes, subMinutes, startOfDay } from "date-fns";
@@ -71,9 +72,11 @@ function updateStateString(
 }
 
 export async function processMedicineReminders() {
-  const now = new Date();
+  // Convert server UTC time to local timezone (Bangladesh UTC+6)
+  const serverNow = new Date();
+  const now = toZonedTime(serverNow, "Asia/Dhaka");
   const todayStart = startOfDay(now);
-  const CRON_WINDOW_MINUTES = 5; // Should match the GitHub Actions schedule
+  const CRON_WINDOW_MINUTES = 5;
   const MISSED_DOSE_THRESHOLD_MINUTES = 60;
   const windowStart = subMinutes(now, CRON_WINDOW_MINUTES);
 
