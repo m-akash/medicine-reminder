@@ -82,7 +82,7 @@ app.post("/jwt", (req: Request, res: Response) => {
 });
 
 app.get("/", (_: Request, res: Response) => {
-  res.send("Medicine Reminder API is running!");
+  res.status(200).send("Medicine Reminder API is running");
 });
 
 // --- Start Server ---

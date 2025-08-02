@@ -16,7 +16,7 @@ export function startMedicineReminderCron() {
 
   cron.schedule("*/5 * * * *", async () => {
     console.log(
-      `[node-cron] Running medicine reminder job at ${new Date().toISOString()}`
+      `[node-cron] Scheduler Running medicine reminder job at ${new Date().toLocaleTimeString()}`
     );
     try {
       await processMedicineReminders();
