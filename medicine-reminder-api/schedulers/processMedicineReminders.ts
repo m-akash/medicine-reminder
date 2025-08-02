@@ -90,6 +90,24 @@ export async function processMedicineReminders() {
 
   console.log(`[Scheduler] Found ${medicines.length} medicines to process`);
 
+  const notificationsMap = new Map<
+    string,
+    {
+      user: (typeof medicines)[0]["user"];
+      doseTimeName: string;
+      medicines: { name: string; dosage: string }[];
+    }
+  >();
+
+  const missedNotificationsMap = new Map<
+    string,
+    {
+      user: (typeof medicines)[0]["user"];
+      doseTimeName: string;
+      medicines: { name: string; dosage: string }[];
+    }
+  >();
+
   for (const medicine of medicines) {
     const { user, frequency } = medicine;
     if (!user?.fcmToken) {
@@ -135,22 +153,15 @@ export async function processMedicineReminders() {
     for (const [doseIndex, doseTime] of todayTimes.entries()) {
       const isDue = doseTime >= windowStart && doseTime <= now;
       if (isDue && remindersSentArr[doseIndex] === "0") {
-        console.log(
-          `[NOTIFY-CURRENT] Sending reminder for ${medicine.name} at ${doseTime}`
-        );
         const doseTimeName = getDoseTimeName(doseTime);
-        await sendFCMNotification(
-          user.fcmToken,
-          `Time for your ${doseTimeName} dose`,
-          `It's time to take ${medicine.name} (${medicine.dosage}).`
-        );
-        await createMedicineReminderNotification(
-          user.email,
-          medicine.name,
-          medicine.dosage || "",
-          doseTimeName,
-          medicine.id
-        );
+        const key = `${user.email}-${doseTimeName}`;
+        if (!notificationsMap.has(key)) {
+          notificationsMap.set(key, { user, doseTimeName, medicines: [] });
+        }
+        notificationsMap.get(key)!.medicines.push({
+          name: medicine.name,
+          dosage: medicine.dosage || "",
+        });
         remindersSentArr = updateStateString(
           remindersSentArr.join("-"),
           doseIndex,
@@ -172,24 +183,19 @@ export async function processMedicineReminders() {
         remindersSentArr[doseIndex] !== "M" &&
         userSettings.notifications?.missedDoseAlerts !== false
       ) {
-        console.log(
-          `[NOTIFY-MISSED] Sending missed dose alert for ${medicine.name} at ${doseTime}`
-        );
         const doseTimeName = getDoseTimeName(doseTime);
-        await sendFCMNotification(
-          user.fcmToken,
-          `Missed Dose`,
-          `You missed your ${doseTimeName.toLowerCase()} dose of ${
-            medicine.name
-          }.`
-        );
-        await createMissedDoseNotification(
-          user.email,
-          medicine.name,
-          medicine.dosage || "",
-          doseTimeName,
-          medicine.id
-        );
+        const missedKey = `${user.email}-${doseTimeName}`;
+        if (!missedNotificationsMap.has(missedKey)) {
+          missedNotificationsMap.set(missedKey, {
+            user,
+            doseTimeName,
+            medicines: [],
+          });
+        }
+        missedNotificationsMap.get(missedKey)!.medicines.push({
+          name: medicine.name,
+          dosage: medicine.dosage || "",
+        });
         remindersSentArr = updateStateString(
           remindersSentArr.join("-"),
           doseIndex,
@@ -206,5 +212,61 @@ export async function processMedicineReminders() {
         data: { remindersSent: remindersSentArr.join("-") },
       });
     }
+  }
+
+  for (const [key, group] of notificationsMap.entries()) {
+    const { user, doseTimeName, medicines } = group;
+    const body = medicines
+      .map((m) => `${m.name}${m.dosage ? ` (${m.dosage})` : ""}`)
+      .join(", ");
+
+    console.log(
+      `[NOTIFY-COMBINED] Sending combined reminder for ${user.email}: ${body}`
+    );
+
+    await sendFCMNotification(
+      user.fcmToken!,
+      `Time for your ${doseTimeName} dose`,
+      `It's time to take: ${body}`
+    );
+
+    // Create a single combined notification entry in DB with all medicine names and dosages
+    const combinedMedicineNames = medicines
+      .map((m) => `${m.name}${m.dosage ? ` (${m.dosage})` : ""}`)
+      .join(", ");
+
+    await createMedicineReminderNotification(
+      user.email,
+      combinedMedicineNames,
+      "",
+      doseTimeName,
+      undefined as any
+    );
+  }
+
+  for (const [key, group] of missedNotificationsMap.entries()) {
+    const { user, doseTimeName, medicines } = group;
+    const body = medicines
+      .map((m) => `${m.name}${m.dosage ? ` (${m.dosage})` : ""}`)
+      .join(", ");
+
+    console.log(
+      `[NOTIFY-MISSED-COMBINED] Sending combined missed dose for ${user.email}: ${body}`
+    );
+
+    await sendFCMNotification(
+      user.fcmToken!,
+      `Missed Dose`,
+      `You missed your ${doseTimeName.toLowerCase()} dose of: ${body}`
+    );
+
+    // Create a single combined missed notification entry in DB
+    await createMissedDoseNotification(
+      user.email,
+      body,
+      "",
+      doseTimeName,
+      undefined as any
+    );
   }
 }
