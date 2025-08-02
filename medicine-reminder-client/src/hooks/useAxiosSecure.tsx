@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const axiosSecure = axios.create({
-  baseURL: "https://medicine-reminder-api.vercel.app",
+  baseURL: "https://medicine-reminder-api-production.up.railway.app",
 });
 
 axiosSecure.interceptors.request.use(

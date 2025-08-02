@@ -60,7 +60,7 @@ const router = createBrowserRouter([
         ),
         loader: ({ params }) =>
           fetch(
-            `https://medicine-reminder-api.vercel.app/api/medicine/${params.id}`
+            `https://medicine-reminder-api-production.up.railway.app/api/medicine/${params.id}`
           ),
       },
       {
