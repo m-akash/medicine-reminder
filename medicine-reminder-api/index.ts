@@ -9,9 +9,9 @@ dotenv.config();
 // --- Validate Environment Variables ---
 const validateEnvironmentVariables = () => {
   const requiredEnvVars = [
+    "DATABASE_URL",
     "JWT_SECRET_KEY",
     "ALLOWED_ORIGINS",
-    "DATABASE_URL",
     "FIREBASE_SERVICE_ACCOUNT",
   ];
   const missingVars = requiredEnvVars.filter((key) => !process.env[key]);
