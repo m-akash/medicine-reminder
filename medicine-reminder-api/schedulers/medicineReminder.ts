@@ -1,11 +1,27 @@
 import cron from "node-cron";
 import { processMedicineReminders } from "./processMedicineReminders";
 
-console.log("Medicine reminder scheduler initialized.");
+let cronStarted = false;
 
-// This schedule runs every 5 minutes.
-// The job will be managed by node-cron within the long-running worker process.
-cron.schedule("*/5 * * * *", async () => {
-  console.log(`[node-cron] Running medicine reminder job at ${new Date().toISOString()}`);
-  await processMedicineReminders();
-});
+export function startMedicineReminderCron() {
+  if (cronStarted) {
+    console.log(
+      "Medicine reminder cron already started, skipping duplicate start."
+    );
+    return;
+  }
+
+  console.log("Medicine reminder scheduler initialized.");
+  cronStarted = true;
+
+  cron.schedule("*/5 * * * *", async () => {
+    console.log(
+      `[node-cron] Running medicine reminder job at ${new Date().toISOString()}`
+    );
+    try {
+      await processMedicineReminders();
+    } catch (err) {
+      console.error("[node-cron] Medicine reminder job failed:", err);
+    }
+  });
+}

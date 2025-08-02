@@ -2,12 +2,19 @@ import express, { Request, Response } from "express";
 import dotenv from "dotenv";
 import cors from "cors";
 import jwt from "jsonwebtoken";
+import { startMedicineReminderCron } from "./schedulers/medicineReminder";
+
 dotenv.config();
 
+// --- Validate Environment Variables ---
 const validateEnvironmentVariables = () => {
-  const requiredEnvVars = ["JWT_SECRET_KEY", "ALLOWED_ORIGINS"];
+  const requiredEnvVars = [
+    "JWT_SECRET_KEY",
+    "ALLOWED_ORIGINS",
+    "DATABASE_URL",
+    "FIREBASE_SERVICE_ACCOUNT",
+  ];
   const missingVars = requiredEnvVars.filter((key) => !process.env[key]);
-
   if (missingVars.length > 0) {
     console.error(
       `FATAL ERROR: Missing required environment variables: ${missingVars.join(
@@ -17,7 +24,6 @@ const validateEnvironmentVariables = () => {
     process.exit(1);
   }
 };
-
 validateEnvironmentVariables();
 
 const port = process.env.PORT || 3001;
@@ -25,23 +31,12 @@ const jwtSecret = process.env.JWT_SECRET_KEY as string;
 const jwtExpiresInSeconds = Number(process.env.JWT_EXPIRE_SECONDS) || 604800;
 const allowedOriginsEnv = process.env.ALLOWED_ORIGINS as string;
 
-// --- Initialize Schedulers ---
-// This will start the node-cron jobs within the main web server process.
-console.log("Initializing cron schedulers...");
-import "./schedulers/medicineReminder";
-
-// --- Routers ---
-import userRouter from "./routers/user.route";
-import medicineRouter from "./routers/medicine.route";
-import notificationRouter from "./routers/notification.route";
-
 const app = express();
 
 // --- CORS Configuration ---
 const allowedOrigins = allowedOriginsEnv
   .split(",")
   .map((origin) => origin.trim());
-
 const corsOptions: cors.CorsOptions = {
   origin: allowedOrigins,
   methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
@@ -54,7 +49,11 @@ app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-// --- API Routes ---
+// --- Routers ---
+import userRouter from "./routers/user.route";
+import medicineRouter from "./routers/medicine.route";
+import notificationRouter from "./routers/notification.route";
+
 app.use("/api", userRouter);
 app.use("/api", medicineRouter);
 app.use("/api", notificationRouter);
@@ -65,16 +64,13 @@ interface JwtRequestBody {
 app.post("/jwt", (req: Request, res: Response) => {
   try {
     const { email } = req.body;
-
     if (!email || typeof email !== "string") {
       return res
         .status(400)
         .send({ error: "A valid email is required to generate token." });
     }
 
-    const userPayload: JwtRequestBody = { email };
-
-    const token = jwt.sign(userPayload, jwtSecret as string, {
+    const token = jwt.sign({ email } as JwtRequestBody, jwtSecret, {
       expiresIn: jwtExpiresInSeconds,
     });
 
@@ -89,8 +85,12 @@ app.get("/", (_: Request, res: Response) => {
   res.send("Medicine Reminder API is running!");
 });
 
+// --- Start Server ---
 app.listen(port, () => {
-  console.log(`Server is listening on ${port}`);
+  console.log(`Server is listening on port ${port}`);
+
+  // ✅ Start cron AFTER server is ready
+  startMedicineReminderCron();
 });
 
 export default app;
