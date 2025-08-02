@@ -15,6 +15,7 @@
   "dependencies": {
     "@prisma/client": "^6.13.0",
     "@prisma/extension-accelerate": "^2.0.2",
+    "@railway/cli": "^4.6.0",
     "bcrypt": "^6.0.0",
     "cors": "^2.8.5",
     "date-fns": "^4.1.0",
