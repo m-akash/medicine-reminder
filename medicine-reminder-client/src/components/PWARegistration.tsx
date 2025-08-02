@@ -4,13 +4,9 @@ import { RegisterSWOptions, registerSW } from 'virtual:pwa-register';
 const PWARegistration = () => {
   const [needRefresh, setNeedRefresh] = useState(false);
   const [offlineReady, setOfflineReady] = useState(false);
-
-  // Store the update function in a ref to avoid re-renders
   const updateSW = useRef<((reloadPage?: boolean) => Promise<void>) | null>(null);
 
   useEffect(() => {
-    // The registerSW function returns a function to trigger the update.
-    // We store it in our ref.
     updateSW.current = registerSW({
       onNeedRefresh() {
         setNeedRefresh(true);

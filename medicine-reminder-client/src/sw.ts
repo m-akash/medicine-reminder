@@ -49,9 +49,6 @@ onBackgroundMessage(messaging, (payload) => {
 self.addEventListener("notificationclick", (event) => {
   console.log("[sw.ts] Notification click received.", event.notification);
   event.notification.close();
-
-  // This looks for an open window/tab with your app and focuses it.
-  // If it's not open, it opens a new one.
   event.waitUntil(
     self.clients
       .matchAll({ type: "window", includeUncontrolled: true })

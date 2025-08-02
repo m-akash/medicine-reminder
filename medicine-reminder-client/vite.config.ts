@@ -16,12 +16,11 @@ export default defineConfig(({ mode }) => ({
         "masked-icon.svg",
       ],
       strategies: "injectManifest",
-      // Specify the path to your custom service worker
       srcDir: "src",
-      filename: "sw.ts", // This must match the file you created in the previous step
+      filename: "sw.ts",
       manifest: {
         name: "Medicine Reminder",
-        short_name: "MedReminder",
+        short_name: "MediPing",
         description:
           "A comprehensive medicine reminder app to help you never miss your medications",
         theme_color: "#3b82f6",
