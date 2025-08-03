@@ -3,12 +3,13 @@ import useAxiosSecure from "../hooks/useAxiosSecure.tsx";
 import { useLoaderData, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { medicineNotifications } from "../utils/notifications.ts";
+import useAxiosPublic from "../hooks/useAxiosPublic.tsx";
 
 const UpdateForm = () => {
   const [loading, setLoading] = useState(false);
   const loaderData = useLoaderData();
   const med = loaderData || {};
-  const axiosSecure = useAxiosSecure();
+  const axiosPublic = useAxiosPublic();
   const navigate = useNavigate();
 
   const { register, handleSubmit } = useForm({
@@ -29,7 +30,7 @@ const UpdateForm = () => {
   const onSubmit = async (data: any) => {
     setLoading(true);
     try {
-      const updateMedi = await axiosSecure.put(`/api/medicine/${med.id}`, {
+      const updateMedi = await axiosPublic.put(`/api/medicine/${med.id}`, {
         name: data.name,
         dosage: data.dosage,
         frequency: data.frequency,
