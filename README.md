@@ -4,23 +4,6 @@ A comprehensive full-stack(backend heavy) application to help users manage and t
 
 ---
 
-## 📋 Table of Contents
-
-- [Overview](#overview)
-- [Features](#features)
-- [Tech Stack](#tech-stack)
-- [Project Structure](#project-structure)
-- [Setup & Installation](#setup--installation)
-  - [Backend Setup](#backend-setup)
-  - [Frontend Setup](#frontend-setup)
-- [API Reference](#api-reference)
-- [PWA & Firebase Features](#pwa--firebase-features)
-- [Prisma & PostgreSQL](#prisma--postgresql)
-- [Development Scripts](#development-scripts)
-- [Author](#author)
-
----
-
 ## 🧠 Overview
 
 Medicine Reminder is a full-stack application built to help users track daily medicine intake, manage prescriptions, receive push notifications for scheduled reminders, and view refill alerts. It supports Progressive Web App (PWA) capabilities for offline use and push notifications.
