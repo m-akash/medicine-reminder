@@ -1,3 +1,19 @@
+interface FormState {
+  userEmail: string;
+  name: string;
+  dosage: string;
+  frequency: string;
+  startDate: string;
+  scheduledTimes: string[];
+  durationDays: string;
+  originalDurationDays: string;
+  instructions: string;
+  totalPills: string;
+  originalTotalPills: string;
+  pillsPerDose: string;
+  dosesPerDay: string;
+}
+
 import React, { useState } from "react";
 import useAxiosSecure from "../hooks/useAxiosSecure.tsx";
 import { data, useLoaderData, useNavigate } from "react-router-dom";
@@ -16,27 +32,29 @@ const UpdateForm = () => {
   const navigate = useNavigate();
   const { settings } = useUserSettings(user?.email);
 
-  const existingTimes =
-    med?.reminders?.[0]?.times?.map((t: any) =>
-      new Date(t.time).toTimeString().slice(0, 5)
-    ) || [];
+  const [form, setForm] = useState<FormState>(() => {
+    const existingTimes =
+      med?.reminders?.[0]?.times?.map((t: any) =>
+        new Date(t.time).toTimeString().slice(0, 5)
+      ) || [];
 
-  const [form, setForm] = useState({
-    userEmail: med?.userEmail || "",
-    name: med?.name || "",
-    dosage: med?.dosage || "",
-    frequency: med?.frequency || "",
-    startDate: med?.startDate
-      ? med.startDate.slice(0, 10)
-      : new Date().toISOString().split("T")[0],
-    scheduledTimes: existingTimes,
-    durationDays: med?.durationDays?.toString() || "",
-    originalDurationDays: med?.originalDurationDays?.toString() || "",
-    instructions: med?.instructions || "",
-    totalPills: med?.totalPills?.toString() || "",
-    originalTotalPills: med?.originalTotalPills?.toString() || "",
-    pillsPerDose: med?.pillsPerDose?.toString() || "",
-    dosesPerDay: med?.dosesPerDay?.toString() || "",
+    return {
+      userEmail: med.userEmail || "",
+      name: med.name || "",
+      dosage: med.dosage || "",
+      frequency: med.frequency || "",
+      startDate: med.startDate
+        ? med.startDate.slice(0, 10)
+        : new Date().toISOString().split("T")[0],
+      scheduledTimes: existingTimes,
+      durationDays: med.durationDays?.toString() || "",
+      originalDurationDays: med.originalDurationDays?.toString() || "",
+      instructions: med.instructions || "",
+      totalPills: med.totalPills?.toString() || "",
+      originalTotalPills: med.originalTotalPills?.toString() || "",
+      pillsPerDose: med.pillsPerDose?.toString() || "",
+      dosesPerDay: med.dosesPerDay?.toString() || "",
+    };
   });
 
   const [loading, setLoading] = useState(false);
@@ -272,7 +290,6 @@ const UpdateForm = () => {
         name="originalTotalPills"
         value={form.originalTotalPills}
         onChange={handleChange}
-        required
         type="number"
         min="1"
         className="hidden"
@@ -314,24 +331,17 @@ const UpdateForm = () => {
         name="dosesPerDay"
         value={form.dosesPerDay}
         onChange={handleChange}
-        required
         type="number"
         min="1"
         className="hidden"
       />
 
-      {/* <div className="space-y-2">
-        <label className="text-sm font-medium text-gray-700">
-          Instructions
-        </label>
-        <textarea
-          name="instructions"
-          value={form.instructions}
-          onChange={handleChange}
-          placeholder="Any special instructions (optional)"
-          className="textarea textarea-bordered w-full text-black bg-gray-100"
-        />
-      </div> */}
+      <input
+        type="hidden"
+        name="instructions"
+        value={form.instructions}
+        onChange={handleChange}
+      />
 
       <button
         type="submit"
