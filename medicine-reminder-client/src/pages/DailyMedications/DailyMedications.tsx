@@ -143,6 +143,8 @@ const DailyMedications = () => {
   const medicines: Medicine[] = data?.findMedicine || [];
 
   const [takenMap, setTakenMap] = useState<Record<string, string>>({});
+  // Tooltip state for marking as taken before scheduled time
+  const [tooltipId, setTooltipId] = useState<string | null>(null);
   const axiosSecure = useAxiosSecure();
   const today = format(new Date(), "yyyy-MM-dd");
 
@@ -357,63 +359,70 @@ const DailyMedications = () => {
                         key={med.id || med.name}
                         className="flex items-center gap-2 md:gap-3"
                       >
-                        <button
-                          type="button"
-                          onClick={() =>
-                            canMarkTaken && handleToggleTaken(med, idx)
+                    <div className="flex flex-col items-start">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (canMarkTaken) {
+                            handleToggleTaken(med, idx);
+                          } else {
+                            setTooltipId(med.id as string);
+                            setTimeout(() => setTooltipId(null), 2000);
                           }
-                          className={`focus:outline-none ${
-                            !canMarkTaken ? "opacity-50 cursor-not-allowed" : ""
-                          }`}
-                          aria-label={
-                            isTaken ? "Mark as not taken" : "Mark as taken"
-                          }
-                          disabled={!canMarkTaken}
-                          title={
-                            canMarkTaken
-                              ? ""
-                              : "You can only mark as taken after the scheduled time"
-                          }
-                        >
-                          {isTaken ? (
-                            <span className="inline-flex items-center justify-center w-7 h-7 md:w-8 md:h-8 rounded-full border-2 border-green-500">
-                              <svg
-                                width="18"
-                                height="18"
-                                fill="none"
-                                viewBox="0 0 24 24"
+                        }}
+                        className={`focus:outline-none ${
+                          !canMarkTaken ? "opacity-50 cursor-not-allowed" : ""
+                        }`}
+                        aria-label={
+                          isTaken ? "Mark as not taken" : "Mark as taken"
+                        }
+                        disabled={!canMarkTaken}
+                      >
+                        {isTaken ? (
+                          <span className="inline-flex items-center justify-center w-7 h-7 md:w-8 md:h-8 rounded-full border-2 border-green-500">
+                            <svg
+                              width="18"
+                              height="18"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                              className="text-green-500"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M5 13l4 4L19 7"
+                              />
+                            </svg>
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center justify-center w-7 h-7 md:w-8 md:h-8 rounded-full border-2 border-gray-300">
+                            <svg
+                              width="14"
+                              height="14"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                              className="text-gray-400"
+                            >
+                              <circle
+                                cx="12"
+                                cy="12"
+                                r="6"
                                 stroke="currentColor"
-                                className="text-green-500"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth={2}
-                                  d="M5 13l4 4L19 7"
-                                />
-                              </svg>
-                            </span>
-                          ) : (
-                            <span className="inline-flex items-center justify-center w-7 h-7 md:w-8 md:h-8 rounded-full border-2 border-gray-300">
-                              <svg
-                                width="14"
-                                height="14"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
-                                className="text-gray-400"
-                              >
-                                <circle
-                                  cx="12"
-                                  cy="12"
-                                  r="6"
-                                  stroke="currentColor"
-                                  strokeWidth="2"
-                                />
-                              </svg>
-                            </span>
-                          )}
-                        </button>
+                                strokeWidth="2"
+                              />
+                            </svg>
+                          </span>
+                        )}
+                      </button>
+                      {tooltipId === med.id && (
+                        <span className="ml-2 text-xs text-gray-500 md:hidden" role="status" aria-live="polite">
+                          Available after scheduled time
+                        </span>
+                      )}
+                    </div>
                         <span className="text-base md:text-lg font-medium text-gray-800">
                           {med.name} ({med.dosage})
                         </span>

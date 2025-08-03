@@ -1,28 +1,41 @@
 # Medicine Reminder Client
 
-A modern, responsive Progressive Web App (PWA) for managing and reminding users to take their medicines on time. This is the frontend for the Medicine Reminder project, built with React, TypeScript, and Vite.
+[![React](https://img.shields.io/badge/React-18-61DAFB?logo=react)](https://reactjs.org/)  
+[![TypeScript](https://img.shields.io/badge/TypeScript-5-blue?logo=typescript)](https://www.typescriptlang.org/)  
+[![Vite](https://img.shields.io/badge/Vite-5-646CFF?logo=vite)](https://vitejs.dev/)  
+[![Tailwind CSS](https://img.shields.io/badge/TailwindCSS-3-38B2AC?logo=tailwind-css)](https://tailwindcss.com/)  
+[![Firebase](https://img.shields.io/badge/Firebase-FCM-FFCA28?logo=firebase)](https://firebase.google.com/)  
+[![PWA](https://img.shields.io/badge/PWA-Ready-purple?logo=pwa)](https://web.dev/progressive-web-apps/)
 
-## Features
+A **modern, responsive Progressive Web App (PWA)** for **medicine tracking and reminders**, designed to help users **manage their medications and receive push notifications**. This is the **frontend** of the **Medicine Reminder** project, built with **React, TypeScript, Vite, and Firebase**.
 
-- **User Authentication**: Secure login and registration (integrated with backend API)
-- **Medicine Management**: Add, edit, and delete medicines with schedules
-- **Reminders & Notifications**: Receive push notifications for medicine reminders (PWA + Firebase Cloud Messaging)
-- **Responsive Design**: Mobile-first UI for seamless experience on all devices
-- **PWA Support**: Installable, offline support, and background sync
-- **History Tracking**: Track taken/untaken medicines by day
+---
 
-## Tech Stack
+## ✨ Features
 
-- **React** (with hooks & context)
-- **TypeScript**
-- **Vite** (for fast development & build)
-- **Firebase** (for push notifications)
-- **Tailwind CSS** (or your preferred CSS framework)
-- **Service Worker** (for PWA features)
+- **👤 User Authentication**: Login and registration integrated with the backend API  
+- **💊 Medicine Management**: Add, edit, and delete medicines with flexible schedules  
+- **🔔 Reminders & Notifications**: Push notifications using **Firebase Cloud Messaging (FCM)**  
+- **📱 PWA Support**: Installable app, offline support, and background sync  
+- **📊 History Tracking**: Track daily medicine intake (taken/missed)  
+- **🎨 Responsive Design**: Mobile-first UI for all screen sizes  
 
-## Project Structure
+---
 
-```plaintext
+## 🛠 Tech Stack
+
+- **Frontend Framework**: React 18 + TypeScript  
+- **Build Tool**: Vite 5  
+- **Styling**: Tailwind CSS (or preferred CSS framework)  
+- **Push Notifications**: Firebase Cloud Messaging (FCM)  
+- **PWA Support**: Custom Service Worker with offline caching and A2HS  
+- **State Management**: React Context API + Hooks  
+
+---
+
+## 📂 Project Structure
+
+```
 medicine-reminder-client/
 ├── public/                  # Static assets (icons, manifest.webmanifest)
 ├── src/
@@ -36,7 +49,7 @@ medicine-reminder-client/
 │   ├── routes/              # App routing
 │   ├── types/               # TypeScript type definitions
 │   ├── utils/               # Utility functions
-│   ├── sw.ts                # The unified Service Worker source file
+│   ├── sw.ts                # Service Worker source
 │   ├── App.tsx              # Main app component
 │   ├── main.tsx             # Entry point
 │   └── index.css            # Global styles
@@ -46,74 +59,88 @@ medicine-reminder-client/
 └── ...
 ```
 
-## Getting Started
+---
 
-### Prerequisites
+## ⚙️ Setup & Installation
 
-- Node.js (v18+ recommended)
-- npm or yarn
+1️⃣ **Clone the repository**
+```bash
+git clone https://github.com/m-akash/medicine-reminder.git
+cd medicine-reminder/medicine-reminder-client
+```
 
-### Installation
+2️⃣ **Install dependencies**
+```bash
+npm install
+# or
+yarn install
+```
 
-1. **Clone the repository:**
-   ```bash
-   git clone https://github.com/m-akash/medicine-reminder.git
-   cd medicine-reminder/medicine-reminder-client
-   ```
-2. **Install dependencies:**
-   ```bash
-   npm install
-   # or
-   yarn install
-   ```
-3. **Environment Variables:**
-   - Create a `.env` file for any required environment variables (API base URL, Firebase keys, etc.).
-   - Ensure your Firebase configuration variables (e.g., `VITE_FIREBASE_API_KEY`) are present in this file. These are used by both the client app and the service worker.
+3️⃣ **Configure environment variables**  
+Create a `.env` file in the root:
+```env
+VITE_API_BASE_URL=https://your-backend-url.com/api
+VITE_FIREBASE_API_KEY=your-firebase-api-key
+VITE_FIREBASE_PROJECT_ID=your-project-id
+VITE_FIREBASE_MESSAGING_SENDER_ID=your-sender-id
+VITE_FIREBASE_APP_ID=your-app-id
+VITE_FIREBASE_VAPID_KEY=your-public-vapid-key
+```
 
-### Running the App
-
+4️⃣ **Start development server**
 ```bash
 npm run dev
 # or
 yarn dev
 ```
 
-The app will be available at `http://localhost:5173` (or as specified by Vite).
-
-### Building for Production
-
-```bash
-npm run build
-# or
-yarn build
-```
-
-### Preview Production Build
-
-```bash
-npm run preview
-# or
-yarn preview
-```
-
-## PWA Features
-
-- Add to Home Screen on mobile
-- Offline support
-- Push notifications (requires HTTPS and proper Firebase setup)
-
-## Customization
-
-- Update icons and manifest in `public/`
-- Modify theme and styles in `src/index.css` or your preferred CSS framework
-
-## Author
-
-**Mehedi Hasan Akash**
-
-- GitHub: [@m-akash](https://github.com/m-akash)
-- LinkedIn: [Mehedi Hasan Akash](https://www.linkedin.com/in/mehedi-hasan-akash/)
+The app will be available at **http://localhost:5173**
 
 ---
 
-For backend/API setup, see the `medicine-reminder-api` directory.
+## 📦 Available Scripts
+
+| Script             | Description                          |
+|--------------------|--------------------------------------|
+| `npm run dev`      | Start development server              |
+| `npm run build`    | Build the app for production          |
+| `npm run preview`  | Preview production build locally      |
+| `npm run lint`     | Run ESLint checks                     |
+
+---
+
+## 📱 PWA Features
+
+- **Add to Home Screen** on mobile devices  
+- **Offline Support** via Service Worker caching  
+- **Push Notifications** with Firebase Cloud Messaging  
+- **Background Sync** for reliable reminders  
+
+> ⚠️ PWA features require **HTTPS** in production.
+
+---
+
+## 🖥 Deployment
+
+- **Netlify**, **Vercel**, or any **static hosting with HTTPS**  
+- Ensure you configure:
+  - Service Worker (`sw.ts`) is built correctly
+  - Firebase credentials for FCM
+  - `.env` for production values
+
+---
+
+## 📊 Future Enhancements
+
+- Dark mode toggle  
+- Improved medicine analytics and adherence reports  
+- Multi-language support (i18n)  
+- Full offline mode with IndexedDB syncing  
+
+---
+
+## 👨‍💻 Author
+
+**Mehedi Hasan Akash**  
+[![GitHub](https://img.shields.io/badge/GitHub-m--akash-black?logo=github)](https://github.com/m-akash)  
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-Mehedi%20Hasan%20Akash-blue?logo=linkedin)](https://www.linkedin.com/in/mehedi-hasan-akash/)  
