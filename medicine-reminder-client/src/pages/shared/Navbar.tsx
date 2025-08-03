@@ -110,7 +110,7 @@ const Navbar = () => {
             {navLinks}
           </ul>
         </div>
-        <button className="btn btn-ghost text-2xl font-extrabold tracking-tight text-white drop-shadow-lg">
+        <button className="btn btn-ghost hover:bg-gradient-to-r from-amber-200 to-indigo-200 text-2xl font-extrabold tracking-tight text-white drop-shadow-lg">
           <Link to="/">
             <span className="bg-clip-text text-transparent bg-gradient-to-r from-amber-400 to-amber-700">
               Medi
