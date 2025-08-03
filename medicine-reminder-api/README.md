@@ -1,181 +1,164 @@
 # Medicine Reminder API
 
-A robust backend service for the Medicine Reminder application, built with TypeScript, Node.js, Express, Postgres and Prisma ORM. This API provides comprehensive functionality for managing medications, reminders, notifications, and user preferences.
+[![Node.js](https://img.shields.io/badge/Node.js-18+-green?logo=node.js)](https://nodejs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5-blue?logo=typescript)](https://www.typescriptlang.org/)
+[![Express.js](https://img.shields.io/badge/Express.js-4-black?logo=express)](https://expressjs.com/)
+[![Prisma](https://img.shields.io/badge/Prisma-ORM-blue?logo=prisma)](https://www.prisma.io/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-DB-336791?logo=postgresql)](https://www.postgresql.org/)
+[![Firebase](https://img.shields.io/badge/Firebase-FCM-FFCA28?logo=firebase)](https://firebase.google.com/)
 
-## Features
+A **robust backend service** for managing **medications, reminders, and notifications**, powering the **Medicine Reminder** application. Built with **TypeScript, Node.js, Express, Postgres, and Prisma ORM**, this API ensures **secure user management, medicine tracking, push notifications, and analytics**.
 
-- **User Management**
+---
 
-  - User registration and authentication
-  - Social login integration
-  - User profile management
-  - Custom user settings and preferences
+## ✨ Features
 
-- **Medicine Management**
+- **👤 User Management:** Registration, JWT authentication, profile management, and settings.
+- **💊 Medicine Management:** CRUD operations, schedules, dosage tracking, and refill reminders.
+- **⏰ Reminder & Notification System:** Push notifications via **FCM**, missed dose alerts, and smart reminders based on users preferences.
+- **📊 Reporting & History:** Medicine intake history and compliance tracking.
+- **🔒 Secure:** JWT-based authentication with privacy-focused settings.
 
-  - Create, read, update, and delete medications
-  - Track medicine intake
-  - Manage medicine schedules
-  - Refill tracking and reminders
+---
 
-- **Reminder System**
+## 🛠 Tech Stack
 
-  - Customizable reminder schedules
-  - Multiple daily reminders
-  - Reminder activation/deactivation
-  - Missed dose tracking
+- **Language:** TypeScript
+- **Backend:** Node.js + Express.js
+- **Database & ORM:** PostgreSQL + Prisma
+- **Auth:** JWT (JSON Web Tokens)
+- **Notifications:** Firebase Cloud Messaging (FCM)
+- **Task Scheduler:** Node-cron
 
-- **Notification System**
+---
 
-  - Real-time push notifications via Firebase Cloud Messaging (FCM)
-  - Customizable notification preferences
-  - Multiple notification types:
-    - Upcoming Medicine reminders
-    - Time to take medicine alerts
-    - Missed dose alerts
-    - Refill reminders
-    - System notifications
-
-- **History and Reports**
-  - Medicine intake history
-  - Compliance tracking
-  - Detailed medicine logs
-
-## Tech Stack
-
-- **Language**: TypeScript
-- **Runtime Environment**: Node.js
-- **Framework**: Express.js
-- **Database & ORM**: Postgres and Prisma
-- **Authentication**: JWT (JSON Web Tokens)
-- **Push Notifications**: Firebase Cloud Messaging (FCM)
-
-## Project Structure
+## 📂 Project Structure
 
 ```
 medicine-reminder-api/
 ├── app.ts                  # Express app configuration
-├── index.ts               # Server entry point
-├── config/                # Configuration files
-│   ├── db.config.ts      # Database configuration
-│   └── jwt.config.ts     # JWT configuration
-├── controllers/           # Request handlers
-│   ├── medicine.controller.ts
-│   ├── notification.controller.ts
-│   └── user.controller.ts
-├── middlewares/          # Custom middleware
-│   └── jwtMiddleware.ts
-├── routers/              # Route definitions
-│   ├── medicine.route.ts
-│   ├── notification.route.ts
-│   └── user.route.ts
-├── schedulers/           # Scheduled tasks
-│   └── medicineReminder.ts
-├── utils/                # Utility functions
-│   ├── fcmUtils.ts
-│   └── notificationUtils.ts
-└── prisma/               # Prisma configuration and migrations
-    └── schema.prisma     # Database schema
+├── index.ts                # Server entry point
+├── config/                 # Configurations (DB, JWT)
+├── controllers/            # Request handlers
+├── middlewares/            # JWT and other middlewares
+├── routers/                # API routes
+├── schedulers/             # Cron jobs for reminders
+├── utils/                  # Helper functions (FCM, notifications)
+└── prisma/                 # Prisma schema and migrations
 ```
 
-## API Endpoints
+---
 
-### User Routes
+## 🔗 API Endpoints
 
-- `GET /api/users` - Get all users
-- `GET /api/user/:email` - Get user by email
-- `POST /api/user/register` - Register new user
-- `POST /api/user/social-login` - Social login
-- `PUT /api/user/:email` - Update user
-- `DELETE /api/user/:email/account` - Delete user account
-- `GET /api/user/:email/settings` - Get user settings
-- `PUT /api/user/:email/settings` - Update user settings
+### 👤 User Routes
 
-### Medicine Routes
+| Method | Endpoint                    | Description          |
+| ------ | --------------------------- | -------------------- |
+| GET    | `/api/users`                | Get all users        |
+| GET    | `/api/user/:email`          | Get user by email    |
+| POST   | `/api/user/register`        | Register new user    |
+| POST   | `/api/user/social-login`    | Social login         |
+| PUT    | `/api/user/:email`          | Update user          |
+| DELETE | `/api/user/:email/account`  | Delete user account  |
+| GET    | `/api/user/:email/settings` | Get user settings    |
+| PUT    | `/api/user/:email/settings` | Update user settings |
 
-- `GET /api/medicine/user/:userEmail` - Get user's medicines
-- `GET /api/medicine/:id` - Get medicine by ID
-- `POST /api/medicine` - Create new medicine
-- `PUT /api/medicine/:id` - Update medicine
-- `DELETE /api/medicine/:id` - Delete medicine
-- `GET /api/medicine/:id/taken` - Get medicine taken status
-- `PUT /api/medicine/:id/taken` - Update medicine taken status
-- `GET /api/medicine/:id/history` - Get medicine history
-- `GET /api/refill-reminders` - Get refill reminders
-- `PUT /api/medicine/:id/refill` - Refill medicine
+### 💊 Medicine Routes
 
-### Notification Routes
+| Method | Endpoint                        | Description               |
+| ------ | ------------------------------- | ------------------------- |
+| GET    | `/api/medicine/user/:userEmail` | Get user's medicines      |
+| GET    | `/api/medicine/:id`             | Get medicine by ID        |
+| POST   | `/api/medicine`                 | Create new medicine       |
+| PUT    | `/api/medicine/:id`             | Update medicine           |
+| DELETE | `/api/medicine/:id`             | Delete medicine           |
+| GET    | `/api/medicine/:id/taken`       | Get medicine taken status |
+| PUT    | `/api/medicine/:id/taken`       | Update taken status       |
+| GET    | `/api/medicine/:id/history`     | Get medicine history      |
+| GET    | `/api/refill-reminders`         | Get refill reminders      |
+| PUT    | `/api/medicine/:id/refill`      | Refill medicine           |
 
-- `GET /api/notifications/:userEmail` - Get user notifications
-- `PATCH /api/notifications/:notificationId/read` - Mark notification as read
-- `PATCH /api/notifications/:userEmail/read-all` - Mark all notifications as read
-- `DELETE /api/notifications/:notificationId` - Delete notification
+### 🔔 Notification Routes
 
-## Setup Instructions
+| Method | Endpoint                                  | Description               |
+| ------ | ----------------------------------------- | ------------------------- |
+| GET    | `/api/notifications/:userEmail`           | Get user notifications    |
+| PATCH  | `/api/notifications/:notificationId/read` | Mark notification as read |
+| PATCH  | `/api/notifications/:userEmail/read-all`  | Mark all as read          |
+| DELETE | `/api/notifications/:notificationId`      | Delete notification       |
 
-1. Clone the repository
-2. Install dependencies:
+---
 
-   ```bash
-   npm install
-   ```
+## ⚙️ Setup & Installation
 
-3. Set up environment variables:
+1️⃣ **Clone the repository**
 
-   ```env
-   DATABASE_URL="your-database-url"
-   JWT_SECRET="your-jwt-secret"
-   FIREBASE_ADMIN_SDK_PATH="path-to-firebase-admin-sdk.json"
-   ```
+```bash
+git clone https://github.com/m-akash/medicine-reminder-api.git
+cd medicine-reminder-api
+```
 
-4. Run database migrations:
+2️⃣ **Install dependencies**
 
-   ```bash
-   npx prisma migrate dev
-   ```
+```bash
+npm install
+```
 
-5. Start the development server:
-   ```bash
-   npm run dev
-   ```
+3️⃣ **Setup environment variables**
+Create `.env` in root:
 
-## Development
+```env
+DATABASE_URL="your-database-url"
+JWT_SECRET="your-jwt-secret"
+FIREBASE_ADMIN_SDK_PATH="./utils/firebaseAdminSDK.json"
+```
 
-- **Build**: `npm run build`
-- **Start**: `npm start`
-- **Development**: `npm run dev`
-- **Type Check**: `npm run type-check`
-- **Lint**: `npm run lint`
+4️⃣ **Run migrations**
 
-## Features in Detail
+```bash
+npx prisma migrate dev
+```
 
-### Medicine Management
+5️⃣ **Start development server**
 
-- Supports various medicine types and schedules
-- Flexible dosage and frequency settings
-- Track remaining pills and duration
-- Automatic refill reminders
-- Medicine intake history and compliance tracking
+```bash
+npm run dev
+```
 
-### Reminder System
+---
 
-- Customizable reminder times
-- Support for multiple daily doses
-- Smart reminder scheduling based on user preferences
-- Missed dose detection and alerts
-- Refill reminders based on remaining medicine
+## 📦 Scripts
 
-### User Settings
+| Script               | Description                      |
+| -------------------- | -------------------------------- |
+| `npm run dev`        | Start dev server with hot reload |
+| `npm start`          | Start production server          |
+| `npm run build`      | Build TypeScript project         |
+| `npm run lint`       | Run ESLint checks                |
+| `npm run type-check` | Check TypeScript types           |
+| `npx prisma studio`  | Open Prisma database studio      |
 
-- Notification preferences
-- Default medicine settings
-- Privacy settings
-- Data sharing preferences
-- Analytics opt-in/out
+---
 
-## Author
+## 🖥 Deployment
 
-**Mehedi Hasan Akash**
+- Deployable to **Render, Railway, Heroku, or any VPS**
+- Required: Node.js 18+, PostgreSQL, Firebase Admin SDK JSON
 
-- GitHub: [@m-akash](https://github.com/m-akash)
-- LinkedIn: [Mehedi Hasan Akash](https://www.linkedin.com/in/mehedi-hasan-akash/)
+---
+
+## 📊 Future Enhancements
+
+- Role-based access control (RBAC)
+- Email reminders & SMS integration
+- Offline-first mobile sync
+- Advanced reporting and analytics
+
+---
+
+## 👨‍💻 Author
+
+**Mehedi Hasan Akash**  
+[![GitHub](https://img.shields.io/badge/GitHub-m--akash-black?logo=github)](https://github.com/m-akash)  
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-Mehedi%20Hasan%20Akash-blue?logo=linkedin)](https://www.linkedin.com/in/mehedi-hasan-akash/)
