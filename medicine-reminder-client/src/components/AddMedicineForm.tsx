@@ -130,7 +130,7 @@ const AddMedicineForm: React.FC = () => {
       if (addedMedi.statusText === "Created") {
         medicineNotifications.added(form.name);
       }
-      navigate("/medication");
+      navigate("/");
       setForm({
         name: "",
         dosage: "",
