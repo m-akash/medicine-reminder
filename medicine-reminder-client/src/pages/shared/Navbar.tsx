@@ -53,7 +53,7 @@ const Navbar = () => {
           Medications
         </NavLink>
       </li>
-      <li>
+      {/* <li>
         <NavLink
           to="/schedule"
           className={({ isActive }) =>
@@ -66,7 +66,7 @@ const Navbar = () => {
         >
           Schedule
         </NavLink>
-      </li>
+      </li> */}
       <li>
         <NavLink
           to="/reports"

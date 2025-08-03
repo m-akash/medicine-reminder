@@ -2,7 +2,7 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import Root from "../layouts/Root.tsx";
 import Home from "../pages/Home/Home.tsx";
 import Medications from "../pages/Medications/Medications.tsx";
-import Schedule from "../pages/Schedule/Schedule.tsx";
+// import Schedule from "../pages/Schedule/Schedule.tsx";
 import Reports from "../pages/Reports/Reports.tsx";
 import AddMedicine from "../pages/AddMedicine/AddMedicine.tsx";
 import UpdateMedicine from "../pages/UpdateMedicine/UpdateMedicine.tsx";
@@ -27,14 +27,14 @@ const router = createBrowserRouter([
           </PrivateRoute>
         ),
       },
-      {
-        path: "/schedule",
-        element: (
-          <PrivateRoute>
-            <Schedule />
-          </PrivateRoute>
-        ),
-      },
+      // {
+      //   path: "/schedule",
+      //   element: (
+      //     <PrivateRoute>
+      //       <Schedule />
+      //     </PrivateRoute>
+      //   ),
+      // },
       {
         path: "/reports",
         element: (
