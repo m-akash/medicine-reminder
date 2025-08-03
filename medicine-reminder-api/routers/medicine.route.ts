@@ -20,7 +20,7 @@ const router = express.Router();
 
 router.get("/medicine/user/:userEmail", verifyToken, getMedicineByEmail);
 router.post("/medicine", verifyToken, createMedicine);
-router.put("/medicine/:id", updateMedicine);
+router.put("/medicine/:id", verifyToken, updateMedicine);
 router.delete("/medicine/:id", verifyToken, deleteMedicine);
 router.get("/medicine/:id", getMedicineById);
 router.get("/medicine/:id/taken", getMedicineTakenDay);
