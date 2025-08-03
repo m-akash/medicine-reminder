@@ -1,12 +1,10 @@
-import express, { Request, Response } from "express";
+import express, { Request, Response, NextFunction } from "express";
 import dotenv from "dotenv";
 import cors from "cors";
 import jwt from "jsonwebtoken";
 import { startMedicineReminderCron } from "./schedulers/medicineReminder";
-
 dotenv.config();
 
-// --- Validate Environment Variables ---
 const validateEnvironmentVariables = () => {
   const requiredEnvVars = [
     "DATABASE_URL",
@@ -85,11 +83,20 @@ app.get("/", (_: Request, res: Response) => {
   res.status(200).send("Medicine Reminder API is running");
 });
 
-// --- Start Server ---
+app.use((req: Request, res: Response, next: NextFunction) => {
+  res.status(404).json({
+    message: "route not found!",
+  });
+});
+
+app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
+  res.status(500).json({
+    message: "something broke!",
+  });
+});
+
 app.listen(port, () => {
   console.log(`Server is listening on port ${port}`);
-
-  // ✅ Start cron AFTER server is ready
   startMedicineReminderCron();
 });
 
