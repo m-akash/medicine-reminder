@@ -281,7 +281,7 @@ const DailyMedications = () => {
   if (settingsLoading) {
     return (
       <div className="flex flex-col items-center justify-center relative">
-        <div className="bg-white rounded-2xl shadow-md p-2 sm:p-4 md:p-8 w-full max-w-md md:max-w-7xl">
+        <div className="bg-gradient-to-r from-emerald-50 via-indigo-100 to-amber-100 shadow-lg rounded-2xl  p-2 sm:p-4 md:p-8 w-full max-w-md md:max-w-7xl">
           <div className="flex items-center justify-center h-64">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-700"></div>
           </div>
@@ -292,8 +292,8 @@ const DailyMedications = () => {
 
   return (
     <div className=" flex flex-col items-center justify-center relative">
-      <div className="bg-white rounded-2xl shadow-md p-2 sm:p-4 md:p-8 w-full max-w-md md:max-w-7xl">
-        <h1 className="text-2xl md:text-3xl font-bold mb-6 text-blue-700 text-center">
+      <div className="bg-gradient-to-r from-emerald-50 via-indigo-100 to-amber-100 rounded-2xl shadow-lg p-2 sm:p-4 md:p-8 w-full max-w-md md:max-w-7xl">
+        <h1 className="text-2xl md:text-3xl font-bold mb-6 text-blue-500 text-center">
           Today's Medications
         </h1>
         <div className="flex flex-col md:flex-row md:gap-6 gap-4 w-full">
@@ -359,70 +359,76 @@ const DailyMedications = () => {
                         key={med.id || med.name}
                         className="flex items-center gap-2 md:gap-3"
                       >
-                    <div className="flex flex-col items-start">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          if (canMarkTaken) {
-                            handleToggleTaken(med, idx);
-                          } else {
-                            setTooltipId(med.id as string);
-                            setTimeout(() => setTooltipId(null), 2000);
-                          }
-                        }}
-                        className={`focus:outline-none ${
-                          !canMarkTaken ? "opacity-50 cursor-not-allowed" : ""
-                        }`}
-                        aria-label={
-                          isTaken ? "Mark as not taken" : "Mark as taken"
-                        }
-                        disabled={!canMarkTaken}
-                      >
-                        {isTaken ? (
-                          <span className="inline-flex items-center justify-center w-7 h-7 md:w-8 md:h-8 rounded-full border-2 border-green-500">
-                            <svg
-                              width="18"
-                              height="18"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              stroke="currentColor"
-                              className="text-green-500"
+                        <div className="flex flex-col items-start">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (canMarkTaken) {
+                                handleToggleTaken(med, idx);
+                              } else {
+                                setTooltipId(med.id as string);
+                                setTimeout(() => setTooltipId(null), 2000);
+                              }
+                            }}
+                            className={`focus:outline-none ${
+                              !canMarkTaken
+                                ? "opacity-50 cursor-not-allowed"
+                                : ""
+                            }`}
+                            aria-label={
+                              isTaken ? "Mark as not taken" : "Mark as taken"
+                            }
+                            disabled={!canMarkTaken}
+                          >
+                            {isTaken ? (
+                              <span className="inline-flex items-center justify-center w-7 h-7 md:w-8 md:h-8 rounded-full border-2 border-green-500">
+                                <svg
+                                  width="18"
+                                  height="18"
+                                  fill="none"
+                                  viewBox="0 0 24 24"
+                                  stroke="currentColor"
+                                  className="text-green-500"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M5 13l4 4L19 7"
+                                  />
+                                </svg>
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center justify-center w-7 h-7 md:w-8 md:h-8 rounded-full border-2 border-gray-300">
+                                <svg
+                                  width="14"
+                                  height="14"
+                                  fill="none"
+                                  viewBox="0 0 24 24"
+                                  stroke="currentColor"
+                                  className="text-gray-400"
+                                >
+                                  <circle
+                                    cx="12"
+                                    cy="12"
+                                    r="6"
+                                    stroke="currentColor"
+                                    strokeWidth="2"
+                                  />
+                                </svg>
+                              </span>
+                            )}
+                          </button>
+                          {tooltipId === med.id && (
+                            <span
+                              className="ml-2 text-xs text-gray-500 md:hidden"
+                              role="status"
+                              aria-live="polite"
                             >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M5 13l4 4L19 7"
-                              />
-                            </svg>
-                          </span>
-                        ) : (
-                          <span className="inline-flex items-center justify-center w-7 h-7 md:w-8 md:h-8 rounded-full border-2 border-gray-300">
-                            <svg
-                              width="14"
-                              height="14"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              stroke="currentColor"
-                              className="text-gray-400"
-                            >
-                              <circle
-                                cx="12"
-                                cy="12"
-                                r="6"
-                                stroke="currentColor"
-                                strokeWidth="2"
-                              />
-                            </svg>
-                          </span>
-                        )}
-                      </button>
-                      {tooltipId === med.id && (
-                        <span className="ml-2 text-xs text-gray-500 md:hidden" role="status" aria-live="polite">
-                          Available after scheduled time
-                        </span>
-                      )}
-                    </div>
+                              Available after scheduled time
+                            </span>
+                          )}
+                        </div>
                         <span className="text-base md:text-lg font-medium text-gray-800">
                           {med.name} ({med.dosage})
                         </span>

@@ -1,4 +1,3 @@
-import React from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import useAuth from "../../hooks/useAuth.tsx";
 import defaultPhoto from "../../assets/others/profile.png";
@@ -32,8 +31,8 @@ const Navbar = () => {
           className={({ isActive }) =>
             `px-4 py-2 rounded-lg transition-all duration-300 font-medium ${
               isActive
-                ? "bg-gradient-to-r from-amber-400 to-amber-600 text-white shadow-md"
-                : "text-white hover:bg-amber-400/20 hover:text-amber-200"
+                ? "bg-gradient-to-r from-amber-200 to-indigo-200 text-black shadow-lg"
+                : "text-black hover:bg-amber-600/20 hover:text-gray-700"
             }`
           }
         >
@@ -46,8 +45,8 @@ const Navbar = () => {
           className={({ isActive }) =>
             `px-4 py-2 rounded-lg transition-all duration-300 font-medium ${
               isActive
-                ? "bg-gradient-to-r from-amber-400 to-amber-600 text-white shadow-md"
-                : "text-white hover:bg-amber-400/20 hover:text-amber-200"
+                ? "bg-gradient-to-r from-amber-200 to-indigo-200 text-black shadow-lg"
+                : "text-black hover:bg-amber-600/20 hover:text-gray-700"
             }`
           }
         >
@@ -60,8 +59,8 @@ const Navbar = () => {
           className={({ isActive }) =>
             `px-4 py-2 rounded-lg transition-all duration-300 font-medium ${
               isActive
-                ? "bg-gradient-to-r from-amber-400 to-amber-600 text-white shadow-md"
-                : "text-white hover:bg-amber-400/20 hover:text-amber-200"
+                ? "bg-gradient-to-r from-amber-200 to-indigo-200 text-black shadow-lg"
+                : "text-black hover:bg-amber-600/20 hover:text-gray-700"
             }`
           }
         >
@@ -74,8 +73,8 @@ const Navbar = () => {
           className={({ isActive }) =>
             `px-4 py-2 rounded-lg transition-all duration-300 font-medium ${
               isActive
-                ? "bg-gradient-to-r from-amber-400 to-amber-600 text-white shadow-md"
-                : "text-white hover:bg-amber-400/20 hover:text-amber-200"
+                ? "bg-gradient-to-r from-amber-200 to-indigo-200 text-black shadow-lg"
+                : "text-black hover:bg-amber-600/20 hover:text-gray-700"
             }`
           }
         >
@@ -85,13 +84,13 @@ const Navbar = () => {
     </>
   );
   return (
-    <div className="navbar bg-gradient-to-r from-blue-700 via-indigo-800 to-amber-600 shadow-lg py-2 px-4 sticky top-0 z-50">
+    <div className="navbar bg-gradient-to-r from-emerald-50 via-indigo-100 to-amber-100 shadow-lg py-2 px-4 sticky top-0 z-50">
       <div className="navbar-start">
         <div className="dropdown">
           <div tabIndex={0} role="button" className="btn btn-ghost lg:hidden">
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              className="h-6 w-6 text-white"
+              className="h-6 w-6 text-blue-900"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -106,7 +105,7 @@ const Navbar = () => {
           </div>
           <ul
             tabIndex={0}
-            className="menu menu-sm dropdown-content bg-gradient-to-br from-blue-800 via-indigo-900 to-amber-700 rounded-xl z-20 mt-3 w-56 p-3 shadow-xl"
+            className="menu menu-sm dropdown-content bg-gradient-to-r from-emerald-50 via-indigo-100 to-amber-100 shadow-lg rounded-xl z-20 mt-3 w-56 p-3"
           >
             {navLinks}
           </ul>
@@ -134,21 +133,20 @@ const Navbar = () => {
               role="button"
               className="btn btn-ghost btn-circle avatar group relative"
             >
-              <div className="w-14 rounded-full bg-gradient-to-br from-blue-900 to-indigo-800 ring-2 ring-amber-400 ring-offset-2 ring-offset-base-100 transform transition-all duration-300 group-hover:scale-105 group-hover:ring-amber-500 overflow-hidden flex items-center justify-center">
-                <span className="text-2xl font-medium bg-gradient-to-r from-amber-400 to-amber-600 bg-clip-text text-transparent flex items-center justify-center w-full h-full">
+              <div className="w-14 rounded-full bg-amber-100 ring-2 ring-amber-200 ring-offset-base-100 transform transition-all duration-300 group-hover:scale-105 group-hover:ring-amber-200 overflow-hidden flex items-center justify-center">
+                <span className="text-2xl font-medium bg-gradient-to-r from-blue-400 to-indigo-500 bg-clip-text text-transparent flex items-center justify-center w-full h-full">
                   {firstInitial}
                 </span>
               </div>
-              <span className="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white"></span>
             </div>
             <ul
               tabIndex={0}
-              className="menu menu-sm dropdown-content bg-gradient-to-br from-blue-900 via-indigo-900 to-amber-800 rounded-xl z-20 mt-4 w-64 p-4 shadow-2xl border border-amber-400/20 backdrop-blur-sm"
+              className="menu menu-sm dropdown-content bg-gradient-to-r from-emerald-50 via-indigo-100 to-amber-100 shadow-lg rounded-xl z-20 mt-4 w-64 p-4 border border-amber-400/20 backdrop-blur-sm"
             >
               <li className="mb-2">
                 <Link
                   to="/settings"
-                  className="text-white hover:bg-white/10 rounded-lg transition-all duration-300 flex items-center gap-2"
+                  className="text-black hover:bg-white/10 rounded-lg transition-all duration-300 flex items-center gap-2"
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -177,7 +175,7 @@ const Navbar = () => {
                 <Link
                   to="/logout"
                   onClick={handleLogout}
-                  className="text-white hover:bg-white/10 rounded-lg transition-all duration-300 flex items-center gap-2"
+                  className="text-black hover:bg-white/10 rounded-lg transition-all duration-300 flex items-center gap-2"
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -201,7 +199,7 @@ const Navbar = () => {
         ) : (
           <div className="dropdown dropdown-end">
             <Link to="/login">
-              <button className="px-6 py-2.5 bg-gradient-to-r from-amber-400 to-amber-600 text-white font-bold rounded-lg shadow-lg transition-all duration-300 hover:from-amber-500 hover:to-amber-700 hover:scale-105 hover:shadow-amber-400/30 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2 active:scale-95">
+              <button className="px-6 py-2.5 bg-gradient-to-r from-amber-400 to-indigo-400 text-white font-bold rounded-lg shadow-lg transition-all duration-300 hover:from-amber-500 hover:to-amber-700 hover:scale-105 hover:shadow-amber-400/30 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2 active:scale-95">
                 Login
               </button>
             </Link>

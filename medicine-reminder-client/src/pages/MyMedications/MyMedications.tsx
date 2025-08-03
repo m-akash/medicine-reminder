@@ -128,7 +128,7 @@ const MyMedications = () => {
 
   return (
     <div className="w-full">
-      <div className="bg-white text-black rounded-2xl shadow-lg p-4 sm:p-6 md:p-8 w-full">
+      <div className="bg-gradient-to-r from-emerald-50 via-indigo-100 to-amber-100 text-black rounded-2xl shadow-lg p-4 sm:p-6 md:p-8 w-full">
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
           <h1 className="text-2xl sm:text-3xl font-bold break-words text-purple-600">
             My Medications

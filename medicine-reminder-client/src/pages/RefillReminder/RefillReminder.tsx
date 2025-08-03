@@ -58,7 +58,7 @@ const RefillReminder: React.FC = () => {
   return (
     <div className="flex flex-col md:flex-row gap-4 md:gap-8 w-full">
       <div className="w-full md:w-1/2 mb-4 md:mb-0">
-        <div className="bg-white rounded-2xl shadow-lg p-6 flex flex-col gap-6">
+        <div className="bg-gradient-to-r from-emerald-50 via-indigo-100 to-amber-100 rounded-2xl shadow-lg p-6 flex flex-col gap-6">
           <h2 className="text-2xl font-bold text-indigo-700 mb-4 flex items-center gap-2">
             <FaExclamationTriangle className="text-amber-400" /> Refill
             Reminders

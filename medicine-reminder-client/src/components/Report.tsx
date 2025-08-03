@@ -94,7 +94,7 @@ const Report = () => {
         ).length;
         setRefills(upcomingRefills);
       } catch (err: any) {
-        setError(err.message || "Failed to load report data");
+        setError(err.message || "You have no report data now!");
       } finally {
         setLoading(false);
       }
@@ -103,7 +103,7 @@ const Report = () => {
   }, [email, medicines, loadingMeds, axiosSecure]);
 
   return (
-    <div className="max-w-7xl mx-auto bg-white md:rounded-2xl shadow-lg  p-4 sm:p-8">
+    <div className="max-w-7xl mx-auto bg-gradient-to-r from-emerald-50 via-indigo-100 to-amber-100 md:rounded-2xl shadow-lg  p-4 sm:p-8">
       <h1 className="text-2xl sm:text-3xl font-bold text-blue-600 text-center mb-2">
         Reports
       </h1>

@@ -1,7 +1,7 @@
 import React, { useContext, useState } from "react";
 import AuthContext from "../../context/AuthContext.tsx";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-// import SocialLogin from "../shared/SocialLogin.tsx";
+import SocialLogin from "../shared/SocialLogin.tsx";
 import BaseHelmet from "../../components/BaseHelmet.tsx";
 import { authNotifications } from "../../utils/notifications.ts";
 
@@ -39,10 +39,10 @@ const Login = () => {
         title="Login - Medicine Reminder"
         description="Sign in to your Medicine Reminder account to manage your medications and health schedule."
       />
-      <div className="min-h-screen flex items-center justify-center bg-gray-100">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-emerald-50 via-indigo-100 to-amber-100 shadow-lg">
         <form
           onSubmit={handleSubmit}
-          className="bg-white p-10 md:rounded-2xl shadow-lg w-full max-w-xl"
+          className="bg-gradient-to-r from-emerald-50 via-indigo-100 to-amber-100 shadow-lg p-10 md:rounded-4xl rounded-3xl md:w-full md:max-w-xl"
         >
           <h2 className="mb-8 text-3xl font-bold text-center text-black">
             Login
@@ -75,28 +75,20 @@ const Login = () => {
           </div>
           <button
             type="submit"
-            className="w-full py-3 rounded-lg bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-white font-bold text-lg shadow-md transform transition-all duration-200 hover:scale-105 hover:shadow-lg focus:outline-none focus:ring-4 focus:ring-blue-300 disabled:opacity-60"
+            className="w-full py-3 rounded-lg bg-gradient-to-r from-emerald-100 via-indigo-200 to-amber-50 text-gray-600 font-semibold text-lg shadow-md transform transition-all duration-200 hover:scale-105 hover:shadow-lg focus:outline-none focus:ring-4 focus:ring-blue-300 disabled:opacity-60"
             disabled={loading}
           >
             {loading ? "Logging in..." : "Login"}
           </button>
           <div className="relative my-8">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-white/20"></div>
-            </div>
-            {/* <div className="relative flex justify-center text-sm">
-              <span className="px-4 bg-transparent text-gray-300 font-medium">
-                Or continue with
-              </span>
-            </div> */}
+            <SocialLogin></SocialLogin>
           </div>
-          {/* <SocialLogin /> */}
           <div className="text-center">
-            <p className="text-gray-300">
+            <p className="text-gray-500">
               New to here?{" "}
               <Link
                 to="/register"
-                className="text-yellow-400 hover:text-yellow-300 font-semibold transition-colors duration-300 hover:underline"
+                className="text-yellow-700 hover:text-yellow-600 font-semibold transition-colors duration-300 hover:underline"
               >
                 Create an account
               </Link>

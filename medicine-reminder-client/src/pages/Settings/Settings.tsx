@@ -202,7 +202,7 @@ const Settings = () => {
         description="Manage your account settings, notification preferences, and app customization options."
       />
 
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-amber-50 py-8">
+      <div className="min-h-screen bg-gradient-to-r from-emerald-50 via-indigo-100 to-amber-100 shadow-lg pt-5">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-4">
           {/* Header */}
           <div className="mb-8">
@@ -215,7 +215,7 @@ const Settings = () => {
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-2">
             {/* Sidebar */}
             <div className="lg:col-span-1">
-              <div className="bg-white rounded-xl shadow-lg p-6 sticky top-8">
+              <div className="bg-gradient-to-r from-emerald-50 via-indigo-100 to-amber-100 rounded-xl shadow-lg p-6 sticky top-8">
                 <nav className="space-y-2">
                   {tabs.map((tab) => {
                     const Icon = tab.icon;
@@ -240,7 +240,7 @@ const Settings = () => {
 
             {/* Main Content */}
             <div className="lg:col-span-3">
-              <div className="bg-white rounded-xl shadow-lg p-8">
+              <div className="bg-gradient-to-r from-emerald-50 via-indigo-100 to-amber-100 rounded-xl shadow-lg p-8">
                 {/* Profile Settings */}
                 {activeTab === "profile" && (
                   <div className="space-y-6">
@@ -444,8 +444,8 @@ const Settings = () => {
                         </label>
                       </div>
 
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div>
+                      <div className="grid grid-cols-1 md:grid-cols-1 md:px-40 gap-6">
+                        {/* <div>
                           <label className="block text-sm font-medium text-gray-700 mb-2">
                             Reminder Advance Time
                           </label>
@@ -458,14 +458,14 @@ const Settings = () => {
                                 parseInt(e.target.value)
                               )
                             }
-                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent text-black"
+                            className="w-full hidden px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent text-black"
                           >
                             <option value={15}>15 minutes before</option>
                             <option value={30}>30 minutes before</option>
                             <option value={60}>1 hour before</option>
                             <option value={120}>2 hours before</option>
                           </select>
-                        </div>
+                        </div> */}
 
                         <div className="space-y-4">
                           <div className="flex items-center justify-between">

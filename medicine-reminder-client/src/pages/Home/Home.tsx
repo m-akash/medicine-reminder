@@ -12,29 +12,29 @@ const Home = () => {
   if (loading) {
     return (
       <>
-        <BaseHelmet 
+        <BaseHelmet
           title="Medicine Reminder - Your Health Dashboard"
           description="Manage your medications, track your daily doses, and stay on top of your health routine with our comprehensive medicine reminder dashboard."
         />
-        <LoadingSpinner 
-          message="Loading your dashboard..." 
-          size="large" 
-          fullScreen={true} 
+        <LoadingSpinner
+          message="Loading your dashboard..."
+          size="large"
+          fullScreen={false}
         />
       </>
     );
   }
 
   return (
-    <>
-      <BaseHelmet 
+    <div className="bg-gradient-to-r from-emerald-50 via-indigo-100 to-amber-100 shadow-lg">
+      <BaseHelmet
         title="Medicine Reminder - Your Health Dashboard"
         description="Manage your medications, track your daily doses, and stay on top of your health routine with our comprehensive medicine reminder dashboard."
       />
-      <div className="min-h-screen bg-gray-100 py-2">
+      <div className="min-h-screen bg-gradient-to-r from-emerald-50 via-indigo-100 to-amber-100 shadow-lg">
         {user ? (
-          <div className="max-w-7xl mx-auto px-4">
-            <div className="rounded-3xl shadow-xl flex flex-col gap-6">
+          <div className="max-w-7xl mx-auto">
+            <div className="rounded-3xl shadow-lg flex flex-col gap-6 bg-gradient-to-r from-emerald-50 via-indigo-100 to-amber-100">
               <Greeting />
               <DailyMedications />
               <MyMedications />
@@ -47,7 +47,7 @@ const Home = () => {
           </div>
         )}
       </div>
-    </>
+    </div>
   );
 };
 

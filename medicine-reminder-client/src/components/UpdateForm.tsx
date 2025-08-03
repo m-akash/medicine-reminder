@@ -135,7 +135,7 @@ const UpdateForm = () => {
   return (
     <form
       onSubmit={handleSubmit}
-      className="space-y-3 bg-white p-6 rounded-xl shadow"
+      className="space-y-3 bg-gradient-to-r from-emerald-50 via-indigo-100 to-amber-100 shadow-lg p-6 rounded-xl"
     >
       <h2 className="text-xl font-bold text-primary text-center mb-2">
         Update Medicine
@@ -320,7 +320,7 @@ const UpdateForm = () => {
         className="hidden"
       />
 
-      <div className="space-y-2">
+      {/* <div className="space-y-2">
         <label className="text-sm font-medium text-gray-700">
           Instructions
         </label>
@@ -331,7 +331,7 @@ const UpdateForm = () => {
           placeholder="Any special instructions (optional)"
           className="textarea textarea-bordered w-full text-black bg-gray-100"
         />
-      </div>
+      </div> */}
 
       <button
         type="submit"

@@ -42,7 +42,7 @@ const Schedule = () => {
   const { user } = useAuth();
   const email = user?.email || "";
   const { data, isLoading, isError } = useMedicinesUser(email);
-  const medicines: Medicine[] = data?.findMedicine || [];
+  const medicines: Medicine[] = useMemo(() => data?.findMedicine || [], [data]);
   const axiosSecure = useAxiosSecure();
   const [takenMap, setTakenMap] = useState<Record<string, string>>({});
   const [loadingTaken, setLoadingTaken] = useState(false);
@@ -97,7 +97,7 @@ const Schedule = () => {
     return () => {
       cancelled = true;
     };
-  }, [scheduledMeds, selectedDay, axiosSecure]);
+  }, [scheduledMeds, selectedDay]);
 
   const periodMeds = useMemo(() => {
     const groups: { [periodIdx: number]: { med: Medicine; taken: boolean }[] } =
@@ -176,8 +176,8 @@ const Schedule = () => {
         title="Medication Schedule - Medicine Reminder"
         description="View your daily medication schedule, track taken doses, and manage your medication routine with our comprehensive scheduling system."
       />
-      <div className="min-h-screen bg-gray-100 md:py-8 md:px-2 flex flex-col items-center">
-        <div className="w-full max-w-7xl bg-white md:rounded-3xl shadow-xl p-6 md:p-10 flex flex-col gap-6">
+      <div className="min-h-screen bg-gradient-to-r from-emerald-50 via-indigo-100 to-amber-100 shadow-lg md:py-8 md:px-2 flex flex-col items-center">
+        <div className="w-full max-w-7xl bg-gradient-to-r from-emerald-50 via-indigo-100 to-amber-100 shadow-lg md:rounded-3xl p-6 md:p-10 flex flex-col gap-6">
           <h1 className="text-2xl md:text-3xl font-bold text-indigo-700 mb-2 text-center">
             Medication Schedule
           </h1>
@@ -208,7 +208,7 @@ const Schedule = () => {
               <div className="text-center text-gray-400 py-8">Loading...</div>
             ) : isError ? (
               <div className="text-center text-red-400 py-8">
-                Failed to load schedule.
+                You have no medications schedule now!.
               </div>
             ) : scheduledMeds.length === 0 ? (
               <div className="text-gray-400 text-center py-8">
