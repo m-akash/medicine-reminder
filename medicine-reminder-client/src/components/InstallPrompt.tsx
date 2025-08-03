@@ -1,7 +1,4 @@
 import { useEffect, useState } from 'react';
-
-// The BeforeInstallPromptEvent is not yet in the standard DOM typings.
-// We define it here for better type safety.
 interface BeforeInstallPromptEvent extends Event {
   readonly platforms: string[];
   readonly userChoice: Promise<{
