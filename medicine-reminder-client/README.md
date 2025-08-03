@@ -1,12 +1,5 @@
 # Medicine Reminder Client
 
-[![React](https://img.shields.io/badge/React-18-61DAFB?logo=react)](https://reactjs.org/)  
-[![TypeScript](https://img.shields.io/badge/TypeScript-5-blue?logo=typescript)](https://www.typescriptlang.org/)  
-[![Vite](https://img.shields.io/badge/Vite-5-646CFF?logo=vite)](https://vitejs.dev/)  
-[![Tailwind CSS](https://img.shields.io/badge/TailwindCSS-3-38B2AC?logo=tailwind-css)](https://tailwindcss.com/)  
-[![Firebase](https://img.shields.io/badge/Firebase-FCM-FFCA28?logo=firebase)](https://firebase.google.com/)  
-[![PWA](https://img.shields.io/badge/PWA-Ready-purple?logo=pwa)](https://web.dev/progressive-web-apps/)
-
 A **modern, responsive Progressive Web App (PWA)** for **medicine tracking and reminders**, designed to help users **manage their medications and receive push notifications**. This is the **frontend** of the **Medicine Reminder** project, built with **React, TypeScript, Vite, and Firebase**.
 
 ---
