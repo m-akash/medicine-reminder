@@ -1,4 +1,4 @@
-import express, { Request, Response, NextFunction } from "express";
+import express, { Request, Response } from "express";
 import dotenv from "dotenv";
 import cors from "cors";
 import jwt from "jsonwebtoken";
@@ -81,18 +81,6 @@ app.post("/jwt", (req: Request, res: Response) => {
 
 app.get("/", (_: Request, res: Response) => {
   res.status(200).send("Medicine Reminder API is running");
-});
-
-app.use((req: Request, res: Response, next: NextFunction) => {
-  res.status(404).json({
-    message: "route not found!",
-  });
-});
-
-app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
-  res.status(500).json({
-    message: "something broke!",
-  });
 });
 
 app.listen(port, () => {
