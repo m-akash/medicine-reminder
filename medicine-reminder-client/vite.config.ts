@@ -19,7 +19,7 @@ export default defineConfig(({ mode }) => ({
       srcDir: "src",
       filename: "sw.ts",
       manifest: {
-        name: "Medicine Reminder",
+        name: "MediPing",
         short_name: "MediPing",
         description:
           "A comprehensive medicine reminder app to help you never miss your medications",
