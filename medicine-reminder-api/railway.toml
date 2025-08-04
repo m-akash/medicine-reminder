@@ -1,0 +1,18 @@
+[build]
+# Run Prisma generate and compile TypeScript
+command = "npm install && npm run build"
+
+[deploy]
+# Start your server from dist/index.js after build
+startCommand = "npm start"
+
+# Deploy only from this directory
+root = "."
+
+# Optional: set health check URL for Railway to know service is alive
+healthcheckPath = "/"
+healthcheckTimeout = 30
+
+[service]
+# This is your backend service name
+name = "medicine-reminder-api"
