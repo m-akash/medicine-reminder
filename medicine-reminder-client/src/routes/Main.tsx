@@ -53,22 +53,13 @@ const router = createBrowserRouter([
       },
       {
         path: "/update-medicine/:id",
-        element: (
-          <PrivateRoute>
-            <UpdateMedicine />
-          </PrivateRoute>
-        ),
-        loader: async ({ params }) => {
-          const res = await fetch(
+        element: <UpdateMedicine />,
+        loader: ({ params }) =>
+          fetch(
             `https://medicine-reminder-api-production.up.railway.app/api/medicine/${params.id}`
-          );
-          if (!res.ok)
-            throw new Response("Failed to fetch medicine", {
-              status: res.status,
-            });
-          return res.json();
-        },
+          ),
       },
+
       {
         path: "/settings",
         element: (

@@ -8,24 +8,35 @@ import useAxiosPublic from "../hooks/useAxiosPublic.tsx";
 const UpdateForm = () => {
   const [loading, setLoading] = useState(false);
   const loaderData = useLoaderData();
-  const med = loaderData || {};
+  const med = loaderData?.findMedi || {};
   const axiosPublic = useAxiosPublic();
   const navigate = useNavigate();
 
   const { register, handleSubmit } = useForm({
     defaultValues: {
-      name: med?.name || "",
-      dosage: med?.dosage || "",
-      frequency: med?.frequency || "",
+      name: med.name,
+      dosage: med.dosage,
+      frequency: med.frequency,
       startDate: med?.startDate
         ? med.startDate.slice(0, 10)
         : new Date().toISOString().split("T")[0],
-      durationDays: med?.durationDays?.toString() || "",
-      originalDurationDays: med?.originalDurationDays?.toString() || "",
-      totalPills: med?.totalPills?.toString() || "",
-      pillsPerDose: med?.pillsPerDose?.toString() || "",
+      durationDays: med.durationDays,
+      originalDurationDays: med.originalDurationDays,
+      totalPills: med.totalPills,
+      pillsPerDose: med.pillsPerDose,
     },
   });
+
+  //  name: med?.name || "",
+  //     dosage: med?.dosage || "",
+  //     frequency: med?.frequency || "",
+  //     startDate: med?.startDate
+  //       ? med.startDate.slice(0, 10)
+  //       : new Date().toISOString().split("T")[0],
+  //     durationDays: med?.durationDays?.toString() || "",
+  //     originalDurationDays: med?.originalDurationDays?.toString() || "",
+  //     totalPills: med?.totalPills?.toString() || "",
+  //     pillsPerDose: med?.pillsPerDose?.toString() || "",
 
   const onSubmit = async (data: any) => {
     setLoading(true);
