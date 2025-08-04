@@ -1,46 +1,26 @@
 import admin from "firebase-admin";
-import fs from "fs";
 
-let serviceAccount: admin.ServiceAccount;
+const { FIREBASE_PROJECT_ID, FIREBASE_CLIENT_EMAIL, FIREBASE_PRIVATE_KEY } = process.env;
 
-if (process.env.FIREBASE_SERVICE_ACCOUNT) {
-  try {
-    let raw = process.env.FIREBASE_SERVICE_ACCOUNT;
+if (!FIREBASE_PROJECT_ID) {
+  throw new Error("FATAL ERROR: The FIREBASE_PROJECT_ID environment variable is not set.");
+}
 
-    // If it starts and ends with quotes, remove them and unescape inner quotes
-    if (raw.startsWith('"') && raw.endsWith('"')) {
-      raw = raw.slice(1, -1).replace(/\\"/g, '"');
-    }
+if (!FIREBASE_CLIENT_EMAIL) {
+  throw new Error("FATAL ERROR: The FIREBASE_CLIENT_EMAIL environment variable is not set.");
+}
 
-    serviceAccount = JSON.parse(raw) as admin.ServiceAccount;
-    if (
-      serviceAccount &&
-      typeof (serviceAccount as any).private_key === "string"
-    ) {
-      let pk = (serviceAccount as any).private_key as string;
-      // Replace double-escaped \\n and single-escaped \n with actual newlines
-      pk = pk.replace(/\\\\n/g, "\n").replace(/\\n/g, "\n").replace(/\r/g, "");
-      (serviceAccount as any).private_key = pk;
-    }
-  } catch (error: any) {
-    throw new Error(
-      `Failed to parse FIREBASE_SERVICE_ACCOUNT. Please ensure it's valid JSON string. Error: ${error.message}`
-    );
-  }
-} else if (process.env.NODE_ENV !== "production") {
-  // Local fallback (dev only)
-  serviceAccount = JSON.parse(
-    fs.readFileSync("firebaseAdminSDK.json", "utf-8")
-  ) as admin.ServiceAccount;
-} else {
-  throw new Error(
-    "FATAL ERROR: The FIREBASE_SERVICE_ACCOUNT environment variable is not set in production."
-  );
+if (!FIREBASE_PRIVATE_KEY) {
+  throw new Error("FATAL ERROR: The FIREBASE_PRIVATE_KEY environment variable is not set.");
 }
 
 if (!admin.apps.length) {
   admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount),
+    credential: admin.credential.cert({
+      projectId: FIREBASE_PROJECT_ID,
+      clientEmail: FIREBASE_CLIENT_EMAIL,
+      privateKey: FIREBASE_PRIVATE_KEY.replace(/\\n/g, "\n"),
+    }),
   });
 }
 
