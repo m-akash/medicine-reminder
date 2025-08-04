@@ -13,8 +13,14 @@ if (process.env.FIREBASE_SERVICE_ACCOUNT) {
     }
 
     serviceAccount = JSON.parse(raw) as admin.ServiceAccount;
-    if (serviceAccount && typeof (serviceAccount as any).private_key === "string") {
-      (serviceAccount as any).private_key = (serviceAccount as any).private_key.replace(/\\\\n/g, "\n");
+    if (
+      serviceAccount &&
+      typeof (serviceAccount as any).private_key === "string"
+    ) {
+      let pk = (serviceAccount as any).private_key as string;
+      // Replace double-escaped \\n and single-escaped \n with actual newlines
+      pk = pk.replace(/\\\\n/g, "\n").replace(/\\n/g, "\n").replace(/\r/g, "");
+      (serviceAccount as any).private_key = pk;
     }
   } catch (error: any) {
     throw new Error(
