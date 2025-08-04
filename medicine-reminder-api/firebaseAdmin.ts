@@ -13,6 +13,9 @@ if (process.env.FIREBASE_SERVICE_ACCOUNT) {
     }
 
     serviceAccount = JSON.parse(raw) as admin.ServiceAccount;
+    if (serviceAccount && typeof (serviceAccount as any).private_key === "string") {
+      (serviceAccount as any).private_key = (serviceAccount as any).private_key.replace(/\\\\n/g, "\n");
+    }
   } catch (error: any) {
     throw new Error(
       `Failed to parse FIREBASE_SERVICE_ACCOUNT. Please ensure it's valid JSON string. Error: ${error.message}`
