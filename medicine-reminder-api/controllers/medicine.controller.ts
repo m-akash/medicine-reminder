@@ -167,15 +167,11 @@ const updateMedicine = async (
   res: Response
 ): Promise<Response> => {
   try {
-    console.log("Update medicine request body:", req.body);
-    console.log("Medicine ID:", req.params.id);
-
     const existingMedicine = await prisma.medicine.findUnique({
       where: { id: req.params.id },
     });
 
     if (!existingMedicine) {
-      console.log("Medicine not found:", req.params.id);
       return res.status(404).json({
         status: 404,
         message: "Medicine not found",
@@ -184,16 +180,10 @@ const updateMedicine = async (
     const dateOnly = req.body.startDate
       ? new Date(req.body.startDate)
       : undefined;
-    const scheduledTimes = req.body.scheduledTimes || [];
 
     const dateString = req.body.startDate
       ? new Date(req.body.startDate).toISOString().split("T")[0]
       : new Date().toISOString().split("T")[0];
-
-    const mainScheduledTime =
-      scheduledTimes.length > 0
-        ? createLocalDateTime(dateString, scheduledTimes[0])
-        : undefined;
 
     const updateData: any = {
       name: req.body.name,
@@ -202,64 +192,15 @@ const updateMedicine = async (
       startDate: dateOnly,
       durationDays: req.body.durationDays,
       originalDurationDays: req.body.originalDurationDays,
-      instructions: req.body.instructions,
       totalPills: req.body.totalPills,
-      originalTotalPills: req.body.originalTotalPills,
       pillsPerDose: req.body.pillsPerDose,
-      dosesPerDay: req.body.dosesPerDay,
     };
-
-    Object.keys(updateData).forEach(
-      (key) =>
-        (updateData[key] === undefined || updateData[key] === null) &&
-        delete updateData[key]
-    );
-
-    if (dateOnly) updateData.startDate = dateOnly;
-    if (mainScheduledTime) updateData.scheduledTime = mainScheduledTime;
-    if (typeof req.body.taken !== "undefined") {
-      updateData.taken = req.body.taken;
-    }
-
-    console.log("Update data:", updateData);
 
     const updatedMedicine = await prisma.medicine.update({
       where: { id: req.params.id },
       data: updateData,
     });
-
     console.log("Medicine updated successfully:", updatedMedicine);
-
-    if (scheduledTimes.length > 0) {
-      console.log("Updating reminders with times:", scheduledTimes);
-      await prisma.reminderTime.deleteMany({
-        where: {
-          reminder: {
-            medicineId: req.params.id,
-          },
-        },
-      });
-
-      await prisma.reminder.deleteMany({
-        where: { medicineId: req.params.id },
-      });
-
-      await prisma.reminder.create({
-        data: {
-          medicineId: req.params.id,
-          repeatEveryDay: true,
-          isActive: true,
-          times: {
-            create: scheduledTimes.map((time: string) => ({
-              time: createLocalDateTime(dateString, time),
-            })),
-          },
-        },
-      });
-
-      console.log("Reminders updated successfully");
-    }
-
     return res.status(200).json({
       status: 200,
       message: "Medicine updated successfully",
@@ -270,7 +211,7 @@ const updateMedicine = async (
     return res.status(500).json({
       status: 500,
       message: "Internal server error",
-      error: error instanceof Error ? error.message : String(error),
+      error,
     });
   }
 };
