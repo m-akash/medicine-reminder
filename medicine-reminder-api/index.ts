@@ -31,7 +31,6 @@ const allowedOriginsEnv = process.env.ALLOWED_ORIGINS as string;
 
 const app = express();
 
-// --- CORS Configuration ---
 const allowedOrigins = allowedOriginsEnv
   .split(",")
   .map((origin) => origin.trim());
@@ -42,12 +41,10 @@ const corsOptions: cors.CorsOptions = {
   credentials: true,
 };
 
-// --- Middleware ---
 app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-// --- Routers ---
 import userRouter from "./routers/user.route";
 import medicineRouter from "./routers/medicine.route";
 import notificationRouter from "./routers/notification.route";
