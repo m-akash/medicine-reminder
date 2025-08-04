@@ -10,7 +10,9 @@ const validateEnvironmentVariables = () => {
     "DATABASE_URL",
     "JWT_SECRET_KEY",
     "ALLOWED_ORIGINS",
-    "FIREBASE_SERVICE_ACCOUNT",
+    "FIREBASE_PROJECT_ID",
+    "FIREBASE_CLIENT_EMAIL",
+    "FIREBASE_PRIVATE_KEY",
   ];
   const missingVars = requiredEnvVars.filter((key) => !process.env[key]);
   if (missingVars.length > 0) {
