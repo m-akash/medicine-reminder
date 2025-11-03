@@ -12,10 +12,12 @@ const SocialLogin = () => {
       await loginWithGoogle();
       authNotifications.loginSuccess();
       navigate("/");
-    } catch (error) {
-      authNotifications.loginError(
-        "Failed to sign in with Google. Please try again."
-      );
+    } catch (error: any) {
+      const msg =
+        error?.message ||
+        error?.code ||
+        "Failed to sign in with Google. Please try again.";
+      authNotifications.loginError(msg);
     }
   };
 

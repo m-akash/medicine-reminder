@@ -23,6 +23,7 @@ const AuthProvider = ({ children }: React.PropsWithChildren) => {
   const createUser = async (email: string, password: string, name: string) => {
     setLoading(true);
     try {
+      if (!auth) throw new Error("Firebase is not configured");
       await createUserWithEmailAndPassword(auth, email, password);
     } catch (error) {
       throw error;
@@ -34,6 +35,7 @@ const AuthProvider = ({ children }: React.PropsWithChildren) => {
   const loginUser = async (email: string, password: string) => {
     setLoading(true);
     try {
+      if (!auth) throw new Error("Firebase is not configured");
       await signInWithEmailAndPassword(auth, email, password);
     } catch (error) {
       throw error;
@@ -46,13 +48,18 @@ const AuthProvider = ({ children }: React.PropsWithChildren) => {
     const tokenForNotification = await requestFCMToken();
     setLoading(true);
     try {
+      if (!auth) throw new Error("Firebase is not configured");
       const result = await signInWithPopup(auth, provider);
-      const data = await axiosPublic.post("/api/user/social-login", {
-        email: result.user.email,
-        name: result.user.displayName,
-        tokenForNotification,
-      });
-      console.log(data);
+      // Try to sync user to backend, but do not block login on failure
+      try {
+        await axiosPublic.post("/api/user/social-login", {
+          email: result.user.email,
+          name: result.user.displayName,
+          tokenForNotification,
+        });
+      } catch (apiError) {
+        console.warn("social-login API failed", apiError);
+      }
     } catch (error) {
       throw error;
     } finally {
@@ -63,6 +70,7 @@ const AuthProvider = ({ children }: React.PropsWithChildren) => {
   const logoutUser = async () => {
     setLoading(true);
     try {
+      if (!auth) return;
       await signOut(auth);
     } catch (error) {
       throw error;
@@ -101,6 +109,11 @@ const AuthProvider = ({ children }: React.PropsWithChildren) => {
   };
 
   useEffect(() => {
+    if (!auth) {
+      setUser(null);
+      setLoading(false);
+      return;
+    }
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       if (currentUser) {
         const userInfo: User = {
