@@ -31,14 +31,6 @@ Medicine Reminder is a full-stack application built to help users track daily me
 
 ---
 
-## Live Demo
-
-- **Live Application**: [HungerHub](https://hunger-hub-2908c.web.app/)
-- **Frontend Repository**: [GitHub Frontend](https://github.com/m-akash/food-hunting/tree/main/frontend)
-- **Backend Repository**: [GitHub Backend](https://github.com/m-akash/food-hunting/tree/main/backend)
-
----
-
 ## 📁 Project Structure
 
 ```
